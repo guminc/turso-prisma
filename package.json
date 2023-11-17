@@ -1,0 +1,18 @@
+{
+  "name": "script",
+  "license": "MIT",
+  "scripts": {
+    "dev": "ts-node ./script.ts"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.3.5",
+    "@prisma/adapter-libsql": "^5.6.0",
+    "@prisma/client": "^5.6.0",
+    "@types/node": "20.9.1"
+  },
+  "devDependencies": {
+    "prisma": "5.6.0",
+    "ts-node": "10.9.1",
+    "typescript": "5.2.2"
+  }
+}
