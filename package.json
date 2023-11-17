@@ -8,7 +8,8 @@
     "@libsql/client": "^0.3.5",
     "@prisma/adapter-libsql": "^5.6.0",
     "@prisma/client": "^5.6.0",
-    "@types/node": "20.9.1"
+    "@types/node": "20.9.1",
+    "prettier-plugin-prisma": "^5.0.0"
   },
   "devDependencies": {
     "prisma": "5.6.0",

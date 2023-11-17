@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["driverAdapters"]
 }
 
@@ -8,18 +8,142 @@ datasource db {
   url      = "file:./dev.db"
 }
 
-model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
-  posts Post[]
+model Collection {
+  id                      Int          @id @default(autoincrement())
+  name                    String
+  max_items               Int
+  maxBatchSize            Int
+  symbol                  String
+  creator                 String
+  isHidden                Boolean
+  sort_order              Int
+  is_mint_active          Boolean
+  is_archetype            Boolean
+  isPending               Boolean
+  discounts               String // Json
+  ownerAltPayout          String
+  superAffiliatePayout    String
+  contract_version        Int
+  slug                    String
+  mint_info               String
+  socials                 String
+  token_address           String
+  token_address_lowercase String
+  trait_counts            String // Json
+  avatar_uri              String
+  banner_uri              String
+  description             String
+  hero_uri                String
+  twitter                 String
+  website                 String
+  discord                 String
+  num_items               Int
+  num_owners              Int
+  created_at              DateTime
+  updated_at              DateTime
+  last_refreshed          DateTime
+  MintData                MintData?
+  CreatorData             CreatorData?
 }
 
-model Post {
-  id        Int      @id @default(autoincrement())
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  author    User?    @relation(fields: [authorId], references: [id])
-  authorId  Int?
+model NFT {
+  id                      Int         @id @default(autoincrement())
+  token_address           String
+  token_address_lowercase String
+  token_id                String
+  attributes              String // Json
+  block_minted            Int
+  contract_type           String
+  description             String
+  dna                     String
+  edition                 Int
+  image                   String
+  image_url               String
+  metadata                String // Json
+  name                    String
+  network                 String
+  old_image_url           String
+  old_token_uri           String
+  owner_of                String
+  token_id_int            Int
+  token_uri               String
+  created_at              DateTime
+  updated_at              DateTime
+  openRarity              OpenRarity?
+}
+
+model CreatorData {
+  id                Int        @id @default(autoincrement())
+  avatar_uri        String
+  username          String
+  address           String
+  address_lowercase String
+  ens               String
+  collection        Collection @relation(fields: [collection_id], references: [id])
+  collection_id     Int        @unique
+}
+
+model MintData {
+  id                Int        @id @default(autoincrement())
+  time_last_mint    Int
+  date_last_mint    Int
+  mints_last_1h     Int
+  mints_last_12h    Int
+  mints_last_24h    Int
+  mints_last_7d     Int
+  mints_last_1m     Int
+  mints_last_6m     Int
+  block_last_mint   Int
+  floorPriceRaw     String
+  floorPriceDecimal Float
+  all_time_raw      String
+  all_time_decimal  Float
+  last_12h_decimal  Float
+  last_1h_decimal   Float
+  last_24h_decimal  Float
+  last_7d_decimal   Float
+  last_1m_decimal   Float
+  last_6m_decimal   Float
+  date_last_sale    DateTime
+  updated_at        DateTime
+  collection        Collection @relation(fields: [collection_id], references: [id])
+  collection_id     Int        @unique
+}
+
+model OpenRarity {
+  id                String @id @default(uuid())
+  rank              Int
+  score             Float
+  unique_attributes Int
+  nft               NFT    @relation(fields: [nft_id], references: [id])
+  nft_id            Int    @unique
+}
+
+model Users {
+  id                Int    @id @default(autoincrement())
+  address           String
+  address_lowercase String
+  token             String
+  avatar_uri        String
+  banner_uri        String
+  description       String
+  username          String
+  joined_time       String
+  nonce             Int
+}
+
+model MintSaleTransactions {
+  id               Int      @id @default(autoincrement())
+  transaction_hash String
+  block_number     Int
+  timestamp        DateTime
+  token_address    String
+  value_decimal    Float
+  value_raw        String
+  from             String
+}
+
+model InstarevealCollections {
+  id      Int    @id @default(autoincrement())
+  address String
 }
