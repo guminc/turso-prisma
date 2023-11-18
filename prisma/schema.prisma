@@ -9,27 +9,27 @@ datasource db {
 }
 
 model Collection {
-  id                      Int          @id @default(autoincrement())
+  id                      Int       @id @default(autoincrement())
   name                    String
   max_items               Int
-  maxBatchSize            Int
+  max_batch_size          Int
   symbol                  String
-  creator                 String
-  isHidden                Boolean
+  creator_address         String
+  is_hidden               Boolean
   sort_order              Int
   is_mint_active          Boolean
   is_archetype            Boolean
-  isPending               Boolean
-  discounts               String // Json
-  ownerAltPayout          String
-  superAffiliatePayout    String
+  is_pending              Boolean
+  discounts               String // JSON serialized as a string
+  owner_alt_payout        String
+  super_affiliate_payout  String
   contract_version        Int
   slug                    String
-  mint_info               String
-  socials                 String
+  mint_info               String // JSON serialized as a string
+  socials                 String // JSON serialized as a string
   token_address           String
   token_address_lowercase String
-  trait_counts            String // Json
+  trait_counts            String // JSON serialized as a string
   avatar_uri              String
   banner_uri              String
   description             String
@@ -43,15 +43,17 @@ model Collection {
   updated_at              DateTime
   last_refreshed          DateTime
   MintData                MintData?
-  CreatorData             CreatorData?
+  Creator                 Users     @relation(fields: [userId], references: [id])
+  userId                  Int       @unique
+  Nfts                    Nft[]
 }
 
-model NFT {
+model Nft {
   id                      Int         @id @default(autoincrement())
   token_address           String
   token_address_lowercase String
   token_id                String
-  attributes              String // Json
+  attributes              String // JSON serialized as a string
   block_minted            Int
   contract_type           String
   description             String
@@ -59,7 +61,7 @@ model NFT {
   edition                 Int
   image                   String
   image_url               String
-  metadata                String // Json
+  metadata                String // JSON serialized as a string
   name                    String
   network                 String
   old_image_url           String
@@ -69,66 +71,59 @@ model NFT {
   token_uri               String
   created_at              DateTime
   updated_at              DateTime
-  openRarity              OpenRarity?
-}
-
-model CreatorData {
-  id                Int        @id @default(autoincrement())
-  avatar_uri        String
-  username          String
-  address           String
-  address_lowercase String
-  ens               String
-  collection        Collection @relation(fields: [collection_id], references: [id])
-  collection_id     Int        @unique
+  OpenRarity              OpenRarity?
+  Collection              Collection  @relation(fields: [collectionId], references: [id])
+  collectionId            Int
 }
 
 model MintData {
-  id                Int        @id @default(autoincrement())
-  block_last_mint   Int
-  date_last_mint    DateTime
-  mints_last_1h     Int
-  mints_last_12h    Int
-  mints_last_24h    Int
-  mints_last_7d     Int
-  mints_last_1m     Int
-  mints_last_6m     Int
-  floorPriceRaw     String
-  floorPriceDecimal Float
-  all_time_raw      String
-  all_time_decimal  Float
-  last_12h_decimal  Float
-  last_1h_decimal   Float
-  last_24h_decimal  Float
-  last_7d_decimal   Float
-  last_1m_decimal   Float
-  last_6m_decimal   Float
-  date_last_sale    DateTime
-  updated_at        DateTime
-  collection        Collection @relation(fields: [collection_id], references: [id])
-  collection_id     Int        @unique
+  id                  Int        @id @default(autoincrement())
+  block_last_mint     Int
+  date_last_mint      DateTime
+  mints_last_1h       Int
+  mints_last_12h      Int
+  mints_last_24h      Int
+  mints_last_7d       Int
+  mints_last_1m       Int
+  mints_last_6m       Int
+  floor_price_raw     String
+  floor_price_decimal Float
+  all_time_raw        String
+  all_time_decimal    Float
+  last_12h_decimal    Float
+  last_1h_decimal     Float
+  last_24h_decimal    Float
+  last_7d_decimal     Float
+  last_1m_decimal     Float
+  last_6m_decimal     Float
+  date_last_sale      DateTime
+  updated_at          DateTime
+  Collection          Collection @relation(fields: [collectionId], references: [id])
+  collectionId        Int        @unique
 }
 
 model OpenRarity {
-  id                String @id @default(uuid())
+  id                Int   @id @default(autoincrement())
   rank              Int
   score             Float
   unique_attributes Int
-  nft               NFT    @relation(fields: [nft_id], references: [id])
-  nft_id            Int    @unique
+  Nft               Nft   @relation(fields: [nftId], references: [id])
+  nftId             Int   @unique
 }
 
 model Users {
-  id                Int    @id @default(autoincrement())
-  address           String
+  id                Int          @id @default(autoincrement())
+  address           String       @unique
   address_lowercase String
   token             String
   avatar_uri        String
   banner_uri        String
   description       String
   username          String
-  joined_time       String
+  ens               String
+  joined_time       DateTime
   nonce             Int
+  Collections       Collection[]
 }
 
 model MintSaleTransactions {
@@ -145,5 +140,19 @@ model MintSaleTransactions {
 model InstarevealCollections {
   id      Int    @id @default(autoincrement())
   address String
-  paths   String // Json
+  paths   String // JSON serialized as a string
+}
+
+model Referrals {
+  id                  Int      @id @default(autoincrement())
+  collection_address  String
+  referral_amount_eth String
+  referral_amount_wei String
+  affiliate           String
+  transaction_hash    String
+  minter_ens          String
+  txn_value           String
+  date                DateTime
+  block_number        Int
+  affiliate_ens       String
 }
