@@ -1,20 +1,20 @@
 import { MongoClient } from "mongodb";
 
-// import { Prisma, PrismaClient } from '@prisma/client'
-// import { PrismaLibSQL } from '@prisma/adapter-libsql'
-import { createClient } from "@libsql/client";
+import { Prisma, PrismaClient } from '@prisma/client'
+import { PrismaLibSQL } from '@prisma/adapter-libsql'
+import { createClient } from '@libsql/client'
+
+const localClient = createClient({
+    url: "file:prisma/dev.db",
+    // syncUrl: process.env.TURSO_DATABASE_URL,
+    // authToken: process.env.TURSO_AUTH_TOKEN
+});
+
+const adapter = new PrismaLibSQL(localClient)
+const prisma = new PrismaClient({ adapter })
 
 import dotenv from "dotenv";
 dotenv.config();
-
-const localClient = createClient({
-    url: "file:local.db",
-    syncUrl: process.env.TURSO_DATABASE_URL,
-    authToken: process.env.TURSO_AUTH_TOKEN,
-});
-
-// const adapter = new PrismaLibSQL(localClient)
-// const prisma = new PrismaClient({ adapter })
 
 const MONGO_URI = process.env.MONGO_URI || "";
 const DATABASE_NAME = "Scatter";
@@ -23,34 +23,21 @@ let mongoClient = new MongoClient(MONGO_URI);
 
 function cleanUserForSqlite(userMongo: any) {
     return {
-        address: userMongo.address || "",
-        address_lowercase: userMongo.address_lowercase || "",
-        token: userMongo.token || "",
-        avatar_uri: userMongo.avatar_uri || "",
-        banner_uri: userMongo.banner_uri || "",
-        description: userMongo.description || "",
-        username: userMongo.username || "",
-        ens: userMongo.ens || "",
-        joined_time: userMongo.joined_time
-            ? new Date(userMongo.joined_time)
-            : new Date(),
+        address: userMongo.address || '',
+        address_lowercase: userMongo.address_lowercase || '',
+        token: userMongo.token || '',
+        avatar_uri: userMongo.avatar_uri || '',
+        banner_uri: userMongo.banner_uri || '',
+        description: userMongo.description || '',
+        username: userMongo.username || '',
+        ens: userMongo.ens || '',
+        joined_time: userMongo.joined_time ? new Date(userMongo.joined_time) : new Date(),
         nonce: userMongo.nonce || 0,
     };
 }
 
-function createInsertStatement(tableName: string, data: any) {
-    const keys = Object.keys(data);
-    const placeholders = keys.map(() => "?").join(", ");
-    const sql = `INSERT INTO ${tableName} (${keys.join(
-        ", ",
-    )}) VALUES (${placeholders})`;
-    const args = keys.map((key) => data[key]);
-
-    return { sql, args };
-}
-
 async function main() {
-    await localClient.sync()
+    // await localClient.sync()
 
     await mongoClient.connect();
     const mongoDb = mongoClient.db(DATABASE_NAME);
@@ -59,28 +46,28 @@ async function main() {
     // const nftsMongo = await mongoDb.collection("NFTs").find().toArray();;
     // const mintSaleTransactionsMongo = await mongoDb.collection("MintSaleTransactions").find().toArray();
 
-    const statements = usersMongo.map((user) => {
-        const cleanedUser = cleanUserForSqlite(user);
-        return createInsertStatement("users", cleanedUser);
-    });
+    const batchSize = 1000;
+    for (let i = 0; i < usersMongo.length; i += batchSize) {
+        const usersBatch = usersMongo.slice(i, i + batchSize);
 
-    try {
-        await localClient.batch(statements, "write");
-    } catch (error) {
-        console.error("Error processing batch:", error);
-        // Optionally, rethrow the error if you want to stop the whole process
-        // throw error;
+        const userInserts = usersBatch.map(user => {
+            const cleanedUser = cleanUserForSqlite(user);
+            return prisma.users.create({ data: cleanedUser });
+        });
+
+        prisma.$transaction(userInserts);
     }
+
 }
 
 main()
     .then(async () => {
         await mongoClient.close();
-        // await prisma.$disconnect()
+        await prisma.$disconnect()
     })
     .catch(async (e) => {
         console.error(e);
         await mongoClient.close();
-        // await prisma.$disconnect()
+        await prisma.$disconnect()
         process.exit(1);
     });
