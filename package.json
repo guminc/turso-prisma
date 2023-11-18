@@ -2,13 +2,14 @@
   "name": "script",
   "license": "MIT",
   "scripts": {
-    "dev": "ts-node ./script.ts",
+    "dev": "ts-node ./sync.ts",
     "createMigration": "prisma migrate dev",
     "migrate": "ts-node ./mongo/migrate.ts",
     "studio": "prisma studio",
     "updateTypes": "prisma generate",
     "prettier": "prettier --write .",
-    "pushToTurso": "turso db shell turso-prisma < "
+    "pushToTurso": "turso db shell turso-prisma < ",
+    "getSqlDump": "sqlite3 ./prisma/dev.db '.output ./dump.sql' '.dump'"
   },
   "dependencies": {
     "@libsql/client": "^0.3.5",
