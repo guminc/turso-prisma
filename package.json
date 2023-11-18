@@ -6,6 +6,7 @@
     "createMigration": "prisma migrate dev",
     "studio": "prisma studio",
     "updateTypes": "prisma generate",
+    "prettier": "prettier --write .",
     "pushToTurso": "turso db shell turso-prisma < "
   },
   "dependencies": {
