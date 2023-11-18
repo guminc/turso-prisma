@@ -13,8 +13,7 @@ const localClient = createClient({
 const adapter = new PrismaLibSQL(localClient);
 const prisma = new PrismaClient({ adapter });
 
-import dotenv from "dotenv";
-dotenv.config();
+require("dotenv-safe").config();
 
 const MONGO_URI = process.env.MONGO_URI || "";
 const DATABASE_NAME = "Scatter";

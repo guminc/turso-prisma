@@ -4,6 +4,10 @@ import { PrismaClient } from "@prisma/client";
 import { PrismaLibSQL } from "@prisma/adapter-libsql";
 import { createClient } from "@libsql/client";
 
+require("dotenv-safe").config();
+
+console.log({ TURSO_DATABASE_URL: process.env.TURSO_DATABASE_URL });
+
 // 2. Instantiate libSQL
 const libsql = createClient({
   // @ts-expect-error

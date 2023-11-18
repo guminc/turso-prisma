@@ -4,6 +4,7 @@
   "scripts": {
     "dev": "ts-node ./script.ts",
     "createMigration": "prisma migrate dev",
+    "migrate": "ts-node ./mongo/migrate.ts",
     "studio": "prisma studio",
     "updateTypes": "prisma generate",
     "prettier": "prettier --write .",
@@ -14,7 +15,7 @@
     "@prisma/adapter-libsql": "^5.6.0",
     "@prisma/client": "^5.6.0",
     "@types/node": "20.9.1",
-    "dotenv": "^16.3.1",
+    "dotenv-safe": "^8.2.0",
     "mongodb": "^6.3.0",
     "prettier-plugin-prisma": "^5.0.0"
   },
