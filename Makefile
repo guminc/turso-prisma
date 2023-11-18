@@ -10,9 +10,13 @@ all: migrate-users-to-prod
 create-migration:
 	npx prisma migrate dev
 
-migrate-everything:
+dump-mongo-everything:
 	./scripts/echo.sh
 	mongodump --forceTableScan --uri $$MONGO_URI
+
+dump-mongo-users:
+	./scripts/echo.sh
+	mongodump --collection=Users --forceTableScan --uri $$MONGO_URI
 
 wipe-prod:
 	turso db shell $$REMOTE_DB_NAME < ./prisma/reset/dropTables.sql
@@ -32,7 +36,7 @@ seed-local-users:
 
 migrate-users-to-prod:
 	./scripts/echo.sh
-	mongodump --collection=Users --forceTableScan --uri $$MONGO_URI
+	$(MAKE) dump-mongo-users
 	$(MAKE) reset-local
 	$(MAKE) seed-local-users
 	$(MAKE) dump-local
