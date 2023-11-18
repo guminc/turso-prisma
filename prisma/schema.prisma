@@ -9,7 +9,7 @@ datasource db {
 }
 
 model Collection {
-  id                      Int       @id @default(autoincrement())
+  id                      String    @id @default(cuid())
   name                    String
   max_items               Int
   max_batch_size          Int
@@ -39,17 +39,18 @@ model Collection {
   discord                 String
   num_items               Int
   num_owners              Int
-  created_at              DateTime
-  updated_at              DateTime
   last_refreshed          DateTime
   MintData                MintData?
-  Creator                 Users     @relation(fields: [userId], references: [id])
-  userId                  Int       @unique
+  Creator                 User      @relation(fields: [user_id], references: [id])
+  user_id                 String    @unique
   Nfts                    Nft[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 }
 
 model Nft {
-  id                      Int         @id @default(autoincrement())
+  id                      String      @id @default(cuid())
   token_address           String
   token_address_lowercase String
   token_id                String
@@ -69,15 +70,16 @@ model Nft {
   owner_of                String
   token_id_int            Int
   token_uri               String
-  created_at              DateTime
-  updated_at              DateTime
   OpenRarity              OpenRarity?
-  Collection              Collection  @relation(fields: [collectionId], references: [id])
-  collectionId            Int
+  Collection              Collection  @relation(fields: [collection_id], references: [id])
+  collection_id           String
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 }
 
 model MintData {
-  id                  Int        @id @default(autoincrement())
+  id                  String     @id @default(cuid())
   block_last_mint     Int
   date_last_mint      DateTime
   mints_last_1h       Int
@@ -97,37 +99,42 @@ model MintData {
   last_1m_decimal     Float
   last_6m_decimal     Float
   date_last_sale      DateTime
-  updated_at          DateTime
-  Collection          Collection @relation(fields: [collectionId], references: [id])
-  collectionId        Int        @unique
+  Collection          Collection @relation(fields: [collection_id], references: [id])
+  collection_id       String     @unique
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 }
 
 model OpenRarity {
-  id                Int   @id @default(autoincrement())
+  id                String @id @default(cuid())
   rank              Int
   score             Float
   unique_attributes Int
-  Nft               Nft   @relation(fields: [nftId], references: [id])
-  nftId             Int   @unique
+  Nft               Nft    @relation(fields: [nft_id], references: [id])
+  nft_id            String @unique
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 }
 
-model Users {
-  id                Int          @id @default(autoincrement())
-  address           String       @unique
-  address_lowercase String
-  token             String
-  avatar_uri        String
-  banner_uri        String
-  description       String
-  username          String
-  ens               String
-  joined_time       DateTime
-  nonce             Int
-  Collections       Collection[]
+model User {
+  id          String       @id @default(cuid())
+  address     String       @unique
+  token       String
+  avatar_uri  String
+  banner_uri  String
+  description String
+  username    String
+  ens         String
+  Collections Collection[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 }
 
-model MintSaleTransactions {
-  id               Int      @id @default(autoincrement())
+model MintSaleTransaction {
+  id               String   @id @default(cuid())
   transaction_hash String
   block_number     Int
   timestamp        DateTime
@@ -135,16 +142,22 @@ model MintSaleTransactions {
   value_decimal    Float
   value_raw        String
   from             String
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 }
 
-model InstarevealCollections {
-  id      Int    @id @default(autoincrement())
+model InstarevealCollection {
+  id      String @id @default(cuid())
   address String
   paths   String // JSON serialized as a string
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 }
 
-model Referrals {
-  id                  Int      @id @default(autoincrement())
+model Referral {
+  id                  String   @id @default(cuid())
   collection_address  String
   referral_amount_eth String
   referral_amount_wei String
@@ -155,4 +168,7 @@ model Referrals {
   date                DateTime
   block_number        Int
   affiliate_ens       String
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 }
