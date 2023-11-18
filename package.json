@@ -5,6 +5,7 @@
     "dev": "ts-node ./script.ts",
     "createMigration": "prisma migrate dev",
     "studio": "prisma studio",
+    "updateTypes": "prisma generate",
     "pushToTurso": "turso db shell turso-prisma < "
   },
   "dependencies": {
