@@ -41,6 +41,8 @@ async function main() {
 
   let userInserts = [];
 
+  let i = 0;
+
   try {
     while (offset < buffer.length) {
       // Read the size of the next document
@@ -52,6 +54,8 @@ async function main() {
 
       const cleanedUser = cleanUserForSqlite(document);
       userInserts.push(prisma.user.create({ data: cleanedUser }));
+
+      console.log("count:", ++i);
 
       // Move to the next document
       offset += size;
@@ -65,16 +69,6 @@ async function main() {
 
   console.timeEnd("Migration Duration");
 }
-
-main()
-  .then(async () => {
-    await prisma.$disconnect();
-  })
-  .catch(async (e) => {
-    console.error(e);
-    await prisma.$disconnect();
-    process.exit(1);
-  });
 
 main()
   .then(async () => {
