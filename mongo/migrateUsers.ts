@@ -39,8 +39,7 @@ async function main() {
   const buffer = fs.readFileSync(pathToUsersBson);
   let offset = 0;
 
-  const batchSize = 1000; // Adjust the batch size as needed
-  let batchPromises = [];
+  let userInserts = [];
 
   try {
     while (offset < buffer.length) {
@@ -52,30 +51,30 @@ async function main() {
       const document = BSON.deserialize(documentBuffer);
 
       const cleanedUser = cleanUserForSqlite(document);
-
-      console.log({ cleanedUser });
-
-      batchPromises.push(prisma.user.create({ data: cleanedUser }));
-
-      if (batchPromises.length >= batchSize) {
-        await Promise.all(batchPromises);
-        batchPromises = []; // Reset the batch
-      }
+      userInserts.push(prisma.user.create({ data: cleanedUser }));
 
       // Move to the next document
       offset += size;
     }
 
-    // Process any remaining promises
-    if (batchPromises.length > 0) {
-      await Promise.all(batchPromises);
-    }
+    // Execute all insert operations in a single transaction
+    await prisma.$transaction(userInserts);
   } catch (error) {
     console.error("Error parsing BSON file:", error);
   }
 
   console.timeEnd("Migration Duration");
 }
+
+main()
+  .then(async () => {
+    await prisma.$disconnect();
+  })
+  .catch(async (e) => {
+    console.error(e);
+    await prisma.$disconnect();
+    process.exit(1);
+  });
 
 main()
   .then(async () => {
