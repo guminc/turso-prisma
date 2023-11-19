@@ -36,6 +36,7 @@ function cleanUserForSqlite(userMongo: any) {
 }
 
 async function main() {
+    console.time("ExecutionTime");
     // await localClient.sync()
 
     await mongoClient.connect();
@@ -45,17 +46,15 @@ async function main() {
     // const nftsMongo = await mongoDb.collection("NFTs").find().toArray();;
     // const mintSaleTransactionsMongo = await mongoDb.collection("MintSaleTransactions").find().toArray();
 
-    const batchSize = 1000;
-    for (let i = 0; i < usersMongo.length; i += batchSize) {
-        const usersBatch = usersMongo.slice(i, i + batchSize);
 
-        const userInserts = usersBatch.map((user) => {
-            const cleanedUser = cleanUserForSqlite(user);
-            return prisma.user.create({ data: cleanedUser });
-        });
+    const userInserts = usersMongo.map((user) => {
+        const cleanedUser = cleanUserForSqlite(user);
+        return prisma.user.create({ data: cleanedUser });
+    });
 
-        prisma.$transaction(userInserts);
-    }
+    await prisma.$transaction(userInserts);
+
+    console.timeEnd("ExecutionTime");
 }
 
 main()
