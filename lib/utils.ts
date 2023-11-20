@@ -57,10 +57,7 @@ export async function getMongoUsersFromNetwork() {
   await mongoClient.connect();
   const mongoDb = mongoClient.db(DATABASE_NAME);
 
-  console.log("");
   const usersMongo = await mongoDb.collection("Users").find().toArray();
-
-  console.timeEnd("Fetching users from MongoDB");
 
   await mongoClient.close();
 

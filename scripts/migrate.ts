@@ -42,14 +42,14 @@ async function main() {
   console.log("\nInitiating migration from:", source);
 
   try {
-    console.time("Fetching users");
+    console.time(`Fetching users from ${source}`);
 
     const usersMongo =
       source === "network"
         ? await getMongoUsersFromNetwork()
         : getMongoUsersFromFile();
 
-    console.timeEnd("Fetching users");
+    console.timeEnd(`Fetching users from ${source}`);
 
     console.time("Inserting docs into Prisma");
 
