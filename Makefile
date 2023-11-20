@@ -32,11 +32,13 @@ reset-local:
 	$(MAKE) create-migration
 
 seed-local-users:
-	npx ts-node ./mongo/migrateUsers.ts
+	npx ts-node ./scripts/migrate.ts --source=$(source)
 
 migrate-users-to-prod:
 	./scripts/echo.sh
-	$(MAKE) dump-mongo-users
+	@if [ "$(source)" = "file" ]; then \
+		$(MAKE) dump-mongo-users; \
+	fi
 	$(MAKE) reset-local
 	$(MAKE) seed-local-users
 	$(MAKE) dump-local

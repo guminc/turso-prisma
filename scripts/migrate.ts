@@ -1,10 +1,11 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaLibSQL } from "@prisma/adapter-libsql";
 import { createClient } from "@libsql/client";
-import fs from "fs";
-import path from "path";
-
-import { BSON } from "bson";
+import {
+  getMongoUsersFromNetwork,
+  getMongoUsersFromFile,
+  parseArgs,
+} from "../lib/utils";
 
 require("dotenv-safe").config();
 
@@ -33,41 +34,37 @@ function cleanUserForSqlite(userMongo: any) {
 }
 
 async function main() {
-  console.time("Migration Duration");
+  console.time("Total Migration Duration");
 
-  const pathToUsersBson = path.join(__dirname, "../dump/Scatter/Users.bson");
-  const buffer = fs.readFileSync(pathToUsersBson);
-  let offset = 0;
+  const args = parseArgs();
+  const source = args.source === "file" ? "file" : "network";
 
-  let userInserts = [];
-
-  let i = 0;
+  console.log("\nInitiating migration from:", source);
 
   try {
-    while (offset < buffer.length) {
-      // Read the size of the next document
-      const size = buffer.readInt32LE(offset);
-      // Extract the document's buffer using subarray
-      const documentBuffer = buffer.subarray(offset, offset + size);
-      // Deserialize the document
-      const document = BSON.deserialize(documentBuffer);
+    console.time(`Fetching users from ${source}`);
 
-      const cleanedUser = cleanUserForSqlite(document);
-      userInserts.push(prisma.user.create({ data: cleanedUser }));
+    const usersMongo =
+      source === "network"
+        ? await getMongoUsersFromNetwork()
+        : getMongoUsersFromFile();
 
-      console.log("count:", ++i);
+    console.timeEnd(`Fetching users from ${source}`);
 
-      // Move to the next document
-      offset += size;
-    }
+    console.time("Inserting docs into Prisma");
 
-    // Execute all insert operations in a single transaction
+    const userInserts = usersMongo.map((user) => {
+      const cleanedUser = cleanUserForSqlite(user);
+      return prisma.user.create({ data: cleanedUser });
+    });
     await prisma.$transaction(userInserts);
+
+    console.timeEnd("Inserting docs into Prisma");
   } catch (error) {
-    console.error("Error parsing BSON file:", error);
+    console.error(error);
   }
 
-  console.timeEnd("Migration Duration");
+  console.timeEnd("Total Migration Duration");
 }
 
 main()
