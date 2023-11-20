@@ -5,6 +5,7 @@ import fs from "fs";
 import path from "path";
 
 import { BSON } from "bson";
+import { parseArgs } from "../lib/utils";
 
 // import { UserSchema } from "../prisma/generated/zod"; // All schemas are here by default, use the 'output' option to change it
 
@@ -39,7 +40,13 @@ function cleanUserForSqlite(userMongo: any) {
 async function main() {
   console.time("Migration Duration");
 
+  const args = parseArgs();
+  console.log("Source argument:", args.source);
+
+  const source = args.source || "file";
+
   const pathToUsersBson = path.join(__dirname, "../dump/Scatter/Users.bson");
+
   const buffer = fs.readFileSync(pathToUsersBson);
   let offset = 0;
 
