@@ -9,7 +9,7 @@ generator zod {
 
 datasource db {
   provider = "sqlite"
-  url      = "file:./dev.db"
+  url      = "libsql://scatter-prod-gum-inc.turso.io"
 }
 
 model Collection {

@@ -6,6 +6,10 @@ import path from "path";
 
 import { BSON } from "bson";
 
+// import { UserSchema } from "../prisma/generated/zod"; // All schemas are here by default, use the 'output' option to change it
+
+// console.log({ UserSchema });
+
 require("dotenv-safe").config();
 
 const localClient = createClient({
@@ -20,7 +24,6 @@ const prisma = new PrismaClient({ adapter });
 function cleanUserForSqlite(userMongo: any) {
   return {
     address: userMongo.address || "",
-    token: userMongo.token || "",
     avatar_uri: userMongo.avatar_uri || "",
     banner_uri: userMongo.banner_uri || "",
     description: userMongo.description || "",
@@ -29,6 +32,7 @@ function cleanUserForSqlite(userMongo: any) {
     created_at: userMongo.joined_time
       ? new Date(userMongo.joined_time)
       : new Date(),
+    status: "active",
   };
 }
 
