@@ -23,7 +23,7 @@ async fn main() {
 
     let commands: Vec<&str> = batch_commands.split(';').filter(|cmd| !cmd.is_empty()).collect();
 
-    println!("{}", "sending batch");
+    println!("{}", "sending sql batch");
     match client.batch(&commands).await {
         Ok(_) => println!("Batch executed successfully"),
         Err(e) => eprintln!("Error executing batch: {}", e),

@@ -34,16 +34,30 @@ reset-local:
 seed-local-users:
 	npx ts-node ./scripts/migrate.ts --source=$(source)
 
+migrate-prod:
+	for file in ./prisma/migrations/*/*.sql; do \
+		turso db shell $$REMOTE_DB_NAME < $$file; \
+	done
+
+seed-prod-rust:
+	npx ts-node ./scripts/migrate.ts --source=$(source) --write='rust'
+
 migrate-users-to-prod:
 	./scripts/echo.sh
 	@if [ "$(source)" = "file" ]; then \
 		$(MAKE) dump-mongo-users; \
 	fi
-	$(MAKE) reset-local
-	$(MAKE) seed-local-users
-	$(MAKE) dump-local
-	$(MAKE) wipe-prod
-	$(MAKE) seed-prod
+	@if [ "$(write)" = "rust" ]; then \
+		$(MAKE) wipe-prod; \
+		$(MAKE) migrate-prod; \
+		$(MAKE) seed-prod-rust; \
+	else \
+		$(MAKE) reset-local; \
+		$(MAKE) seed-local-users; \
+		$(MAKE) dump-local; \
+		$(MAKE) wipe-prod; \
+		$(MAKE) seed-prod ;\
+	fi
 
 dump-local:
 	sqlite3 ./prisma/dev.db '.output ./dump.sql' '.dump'

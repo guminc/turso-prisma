@@ -63,3 +63,16 @@ export async function getMongoUsersFromNetwork() {
 
   return usersMongo;
 }
+
+export function getBatchSqlStatements(objects: Object[], tableName: string, cleanObject: Function): string {
+  return objects.map((obj) => {
+    const cleanedObj = cleanObject(obj);
+
+    const keys = Object.keys(cleanedObj);
+    const columns = keys.join(", ");
+    const values = Object.values(cleanedObj).map(value => {
+      return typeof value === 'string' ? `'${value.replace(/'/g, "''")}'` : value;
+    })
+    return `INSERT INTO ${tableName} (${columns}) VALUES (${values})`
+  }).join(";\n");
+}
