@@ -1,0 +1,10 @@
+[package]
+name = "upload"
+version = "1.0.0"
+edition = "2021"
+
+[dependencies]
+url = "2.3.1"
+dotenv = "0.15.0"
+libsql-client = "0.33.1"
+tokio = { version = "1.29.1", features = ["full"] }
