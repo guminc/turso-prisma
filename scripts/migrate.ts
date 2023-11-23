@@ -17,8 +17,8 @@ require("dotenv-safe").config();
 
 const localClient = createClient({
   url: "file:prisma/dev.db",
-  // syncUrl: process.env.TURSO_DATABASE_URL,
-  // authToken: process.env.TURSO_AUTH_TOKEN
+  syncUrl: process.env.TURSO_DATABASE_URL,
+  authToken: process.env.TURSO_AUTH_TOKEN
 });
 
 const adapter = new PrismaLibSQL(localClient);
@@ -64,7 +64,9 @@ async function main() {
       console.time("Inserting docs into prod with Rust");
 
       const batchStatements = getBatchSqlStatements(usersMongo, 'User', cleanUserForSqlite)
-      const tempFilePath = path.join(os.tmpdir(), 'sql_batch.txt');
+
+
+      const tempFilePath = path.join(os.tmpdir(), 'batch.txt');
       fs.writeFileSync(tempFilePath, batchStatements);
       await new Promise((resolve, reject) => {
         const rustProcess = spawn('./scripts/rust/target/release/upload', [tempFilePath]);
