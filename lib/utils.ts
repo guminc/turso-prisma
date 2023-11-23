@@ -57,22 +57,34 @@ export async function getMongoUsersFromNetwork() {
   await mongoClient.connect();
   const mongoDb = mongoClient.db(DATABASE_NAME);
 
-  const usersMongo = await mongoDb.collection("Users").find().toArray();
+  const usersMongo = await mongoDb
+    .collection("Users")
+    .find()
+    .limit(6800)
+    .toArray();
 
   await mongoClient.close();
 
   return usersMongo;
 }
 
-export function getBatchSqlStatements(objects: Object[], tableName: string, cleanObject: Function): string {
-  return objects.map((obj) => {
-    const cleanedObj = cleanObject(obj);
+export function getBatchSqlStatements(
+  objects: Object[],
+  tableName: string,
+  cleanObject: Function
+): string {
+  return objects
+    .map((obj) => {
+      const cleanedObj = cleanObject(obj);
 
-    const keys = Object.keys(cleanedObj);
-    const columns = keys.join(", ");
-    const values = Object.values(cleanedObj).map(value => {
-      return typeof value === 'string' ? `'${value.replace(/'/g, "''")}'` : value;
+      const keys = Object.keys(cleanedObj);
+      const columns = keys.join(", ");
+      const values = Object.values(cleanedObj).map((value) => {
+        return typeof value === "string"
+          ? `'${value.replace(/'/g, "''")}'`
+          : value;
+      });
+      return `INSERT INTO ${tableName} (${columns}) VALUES (${values})`;
     })
-    return `INSERT INTO ${tableName} (${columns}) VALUES (${values})`
-  }).join(";\n");
+    .join(";\n");
 }

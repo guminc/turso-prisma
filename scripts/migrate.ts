@@ -7,11 +7,11 @@ import {
   parseArgs,
   getBatchSqlStatements,
 } from "../lib/utils";
-import path from 'path'
-import os from 'os'
-import fs from 'fs'
+import path from "path";
+import os from "os";
+import fs from "fs";
 import cuid from "cuid";
-import { spawn } from "child_process"
+import { spawn } from "child_process";
 
 require("dotenv-safe").config();
 
@@ -37,7 +37,7 @@ function cleanUserForSqlite(userMongo: any) {
     created_at: userMongo.joined_time
       ? new Date(userMongo.joined_time).toISOString()
       : new Date().toISOString(),
-    updated_at: new Date().toISOString()
+    updated_at: new Date().toISOString(),
   };
 }
 
@@ -60,32 +60,44 @@ async function main() {
 
     console.timeEnd(`Fetching users from ${source}`);
 
-    if (write == 'rust') {
+    if (write == "rust") {
       console.time("Inserting docs into prod with Rust");
 
-      const batchStatements = getBatchSqlStatements(usersMongo, 'User', cleanUserForSqlite)
-      const tempFilePath = path.join(os.tmpdir(), 'sql_batch.txt');
+      const batchStatements = getBatchSqlStatements(
+        usersMongo,
+        "User",
+        cleanUserForSqlite
+      );
+      const tempFilePath = path.join(os.tmpdir(), "sql_batch.txt");
+      console.log({ tempFilePath });
+
       fs.writeFileSync(tempFilePath, batchStatements);
-      await new Promise((resolve, reject) => {
-        const rustProcess = spawn('./scripts/rust/target/release/upload', [tempFilePath]);
 
-        rustProcess.stdout.on('data', (data) => {
-          console.log(`stdout: ${data}`);
+      try {
+        await new Promise((resolve, reject) => {
+          const rustProcess = spawn("./scripts/rust/target/release/upload", [
+            tempFilePath,
+          ]);
+
+          rustProcess.stdout.on("data", (data) => {
+            console.log(`stdout: ${data}`);
+          });
+
+          rustProcess.stderr.on("data", (data) => {
+            console.error(`stderr: ${data}`);
+            reject(new Error(`Rust process error: ${data}`));
+          });
+
+          rustProcess.on("close", (code) => {
+            console.log(`Rust process exited with code ${code}`);
+            // fs.unlinkSync(tempFilePath);
+            resolve(0);
+          });
         });
-
-        rustProcess.stderr.on('data', (data) => {
-          console.error(`stderr: ${data}`);
-          reject(new Error(`Rust process error: ${data}`));
-        });
-
-        rustProcess.on('close', (code) => {
-          console.log(`Rust process exited with code ${code}`);
-          fs.unlinkSync(tempFilePath);
-          resolve(0);
-        });
-      });
-      console.timeEnd("Inserting docs into prod with Rust");
-
+        console.timeEnd("Inserting docs into prod with Rust");
+      } catch (e) {
+        console.error(e);
+      }
     } else {
       console.time("Inserting docs into Prisma");
       const userInserts = usersMongo.map((user) => {

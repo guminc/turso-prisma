@@ -25,7 +25,11 @@ wipe-local:
 	sqlite3 ./prisma/dev.db < ./prisma/reset/dropTables.sql
 
 seed-prod:
-	turso db shell $$REMOTE_DB_NAME < ./dump.sql
+	turso db shell $$REMOTE_DB_NAME < ./dump/dump.sql
+
+seed-prod-rust:
+	./scripts/echo.sh
+	npx ts-node ./scripts/migrate.ts --source=$(source) --write=rust
 
 reset-local:
 	$(MAKE) wipe-local
@@ -39,15 +43,16 @@ migrate-prod:
 		turso db shell $$REMOTE_DB_NAME < $$file; \
 	done
 
-seed-prod-rust:
-	npx ts-node ./scripts/migrate.ts --source=$(source) --write='rust'
+build-rust-binary:
+	cargo build --release --manifest-path ./scripts/rust/Cargo.toml
 
 migrate-users-to-prod:
 	./scripts/echo.sh
-	@if [ "$(source)" = "file" ]; then \
-		$(MAKE) dump-mongo-users; \
-	fi
+# @if [ "$(source)" = "file" ]; then \
+# 	$(MAKE) dump-mongo-users; \
+# fi
 	@if [ "$(write)" = "rust" ]; then \
+		$(MAKE) build-rust-binary; \
 		$(MAKE) wipe-prod; \
 		$(MAKE) migrate-prod; \
 		$(MAKE) seed-prod-rust; \
@@ -60,6 +65,24 @@ migrate-users-to-prod:
 	fi
 
 dump-local:
-	sqlite3 ./prisma/dev.db '.output ./dump.sql' '.dump'
+	sqlite3 ./prisma/dev.db '.output ./dump/dump.sql' '.dump'
 
 
+wipe-prod-everything:
+# sqlite3 ./prisma/dev.db '.output ./dump/dump.sql' '.dump'
+# turso db shell $$REMOTE_DB_NAME "PRAGMA writable_schema = 1; VACUUM;"
+	./scripts/drop-tables.sh
+
+
+
+# -- Delete all tables and views
+# DELETE FROM sqlite_master WHERE type IN ('table', 'view');
+
+# -- Clean up
+# PRAGMA writable_schema = 0;
+
+# -- Verify that the schema is empty
+# VACUUM;
+
+# -- Disable the write-ahead log mode
+# PRAGMA integrity_check;
