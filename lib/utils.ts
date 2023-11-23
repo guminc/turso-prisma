@@ -23,8 +23,9 @@ export function getMongoTablesFromFile() {
   let collectionsMongo = [];
 
   const pathToUsersBson = path.join(__dirname, "../dump/Scatter/Users.bson");
+  const pathToCollectionsBson = path.join(__dirname, "../dump/Scatter/Collections.bson");
   const userbuffer = fs.readFileSync(pathToUsersBson);
-  const collectionBuffer = fs.readFileSync(pathToUsersBson);
+  const collectionBuffer = fs.readFileSync(pathToCollectionsBson);
 
   let offset = 0;
   let i = 0;
