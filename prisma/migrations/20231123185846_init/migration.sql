@@ -19,7 +19,6 @@ CREATE TABLE "Collection" (
     "mint_info" TEXT NOT NULL,
     "socials" TEXT NOT NULL,
     "token_address" TEXT NOT NULL,
-    "token_address_lowercase" TEXT NOT NULL,
     "trait_counts" TEXT NOT NULL,
     "avatar_uri" TEXT NOT NULL,
     "banner_uri" TEXT NOT NULL,
@@ -31,17 +30,15 @@ CREATE TABLE "Collection" (
     "num_items" INTEGER NOT NULL,
     "num_owners" INTEGER NOT NULL,
     "last_refreshed" DATETIME NOT NULL,
-    "user_id" TEXT NOT NULL,
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" DATETIME NOT NULL,
-    CONSTRAINT "Collection_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "Collection_creator_address_fkey" FOREIGN KEY ("creator_address") REFERENCES "User" ("address") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- CreateTable
 CREATE TABLE "Nft" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "token_address" TEXT NOT NULL,
-    "token_address_lowercase" TEXT NOT NULL,
     "token_id" TEXT NOT NULL,
     "attributes" TEXT NOT NULL,
     "block_minted" INTEGER NOT NULL,
@@ -158,9 +155,6 @@ CREATE TABLE "Referral" (
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" DATETIME NOT NULL
 );
-
--- CreateIndex
-CREATE UNIQUE INDEX "Collection_user_id_key" ON "Collection"("user_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "MintData_collection_id_key" ON "MintData"("collection_id");

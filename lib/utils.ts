@@ -18,19 +18,26 @@ export function parseArgs() {
   return parsedArgs;
 }
 
-export function getMongoUsersFromFile() {
+export function getMongoTablesFromFile() {
   let usersMongo = [];
-  const pathToUsersBson = path.join(__dirname, "../dump/Scatter/Users.bson");
-  const buffer = fs.readFileSync(pathToUsersBson);
-  let offset = 0;
+  let collectionsMongo = [];
 
+  const pathToUsersBson = path.join(__dirname, "../dump/Scatter/Users.bson");
+  const pathToCollectionsBson = path.join(
+    __dirname,
+    "../dump/Scatter/Collections.bson"
+  );
+  const userbuffer = fs.readFileSync(pathToUsersBson);
+  const collectionBuffer = fs.readFileSync(pathToCollectionsBson);
+
+  let offset = 0;
   let i = 0;
 
-  while (offset < buffer.length) {
+  while (offset < userbuffer.length) {
     // Read the size of the next document
-    const size = buffer.readInt32LE(offset);
+    const size = userbuffer.readInt32LE(offset);
     // Extract the document's buffer using subarray
-    const documentBuffer = buffer.subarray(offset, offset + size);
+    const documentBuffer = userbuffer.subarray(offset, offset + size);
     // Deserialize the document
     const document = BSON.deserialize(documentBuffer);
 
@@ -42,12 +49,31 @@ export function getMongoUsersFromFile() {
     offset += size;
   }
 
+  offset = 0;
+  i = 0;
+
+  while (offset < collectionBuffer.length) {
+    // Read the size of the next document
+    const size = collectionBuffer.readInt32LE(offset);
+    // Extract the document's buffer using subarray
+    const documentBuffer = collectionBuffer.subarray(offset, offset + size);
+    // Deserialize the document
+    const document = BSON.deserialize(documentBuffer);
+
+    collectionsMongo.push(document);
+
+    process.stdout.write(`\rCount: ${++i}`);
+
+    // Move to the next document
+    offset += size;
+  }
+
   process.stdout.write("\n");
 
-  return usersMongo;
+  return { usersMongo, collectionsMongo };
 }
 
-export async function getMongoUsersFromNetwork() {
+export async function getMongoTablesFromNetwork() {
   const MONGO_URI = process.env.MONGO_URI || "";
 
   const DATABASE_NAME = "Scatter";
@@ -57,15 +83,15 @@ export async function getMongoUsersFromNetwork() {
   await mongoClient.connect();
   const mongoDb = mongoClient.db(DATABASE_NAME);
 
-  const usersMongo = await mongoDb
-    .collection("Users")
+  const usersMongo = await mongoDb.collection("Users").find().toArray();
+  const collectionsMongo = await mongoDb
+    .collection("Collections")
     .find()
-    .limit(6800)
     .toArray();
 
   await mongoClient.close();
 
-  return usersMongo;
+  return { usersMongo, collectionsMongo };
 }
 
 export function getBatchSqlStatements(
@@ -73,10 +99,10 @@ export function getBatchSqlStatements(
   tableName: string,
   cleanObject: Function
 ): string {
-  return objects
-    .map((obj) => {
-      const cleanedObj = cleanObject(obj);
-
+  let statements: string[] = [];
+  objects.map((obj) => {
+    const cleanedObj = cleanObject(obj);
+    if (cleanedObj != null) {
       const keys = Object.keys(cleanedObj);
       const columns = keys.join(", ");
       const values = Object.values(cleanedObj).map((value) => {
@@ -84,7 +110,10 @@ export function getBatchSqlStatements(
           ? `'${value.replace(/'/g, "''")}'`
           : value;
       });
-      return `INSERT INTO ${tableName} (${columns}) VALUES (${values})`;
-    })
-    .join(";\n");
+      statements.push(
+        `INSERT INTO ${tableName} (${columns}) VALUES (${values})`
+      );
+    }
+  });
+  return statements.join(";\n");
 }

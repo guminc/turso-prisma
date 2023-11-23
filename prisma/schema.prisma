@@ -9,70 +9,67 @@ datasource db {
 }
 
 model Collection {
-  id                      String    @id @default(cuid())
-  name                    String
-  max_items               Int
-  max_batch_size          Int
-  symbol                  String
-  creator_address         String
-  is_hidden               Boolean
-  sort_order              Int
-  is_mint_active          Boolean
-  is_archetype            Boolean
-  is_pending              Boolean
-  discounts               String // JSON serialized as a string
-  owner_alt_payout        String
-  super_affiliate_payout  String
-  contract_version        Int
-  slug                    String
-  mint_info               String // JSON serialized as a string
-  socials                 String // JSON serialized as a string
-  token_address           String
-  token_address_lowercase String
-  trait_counts            String // JSON serialized as a string
-  avatar_uri              String
-  banner_uri              String
-  description             String
-  hero_uri                String
-  twitter                 String
-  website                 String
-  discord                 String
-  num_items               Int
-  num_owners              Int
-  last_refreshed          DateTime
-  MintData                MintData?
-  Creator                 User      @relation(fields: [user_id], references: [id])
-  user_id                 String    @unique
-  Nfts                    Nft[]
+  id                     String    @id @default(cuid())
+  name                   String
+  max_items              Int
+  max_batch_size         Int
+  symbol                 String
+  creator_address        String
+  is_hidden              Boolean
+  sort_order             Int
+  is_mint_active         Boolean
+  is_archetype           Boolean
+  is_pending             Boolean
+  discounts              String // JSON serialized as a string
+  owner_alt_payout       String
+  super_affiliate_payout String
+  contract_version       Int
+  slug                   String
+  mint_info              String // JSON serialized as a string
+  socials                String // JSON serialized as a string
+  token_address          String
+  trait_counts           String // JSON serialized as a string
+  avatar_uri             String
+  banner_uri             String
+  description            String
+  hero_uri               String
+  twitter                String
+  website                String
+  discord                String
+  num_items              Int
+  num_owners             Int
+  last_refreshed         DateTime
+  MintData               MintData?
+  Creator                User      @relation(fields: [creator_address], references: [address])
+  Nfts                   Nft[]
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 }
 
 model Nft {
-  id                      String      @id @default(cuid())
-  token_address           String
-  token_address_lowercase String
-  token_id                String
-  attributes              String // JSON serialized as a string
-  block_minted            Int
-  contract_type           String
-  description             String
-  dna                     String
-  edition                 Int
-  image                   String
-  image_url               String
-  metadata                String // JSON serialized as a string
-  name                    String
-  network                 String
-  old_image_url           String
-  old_token_uri           String
-  owner_of                String
-  token_id_int            Int
-  token_uri               String
-  OpenRarity              OpenRarity?
-  Collection              Collection  @relation(fields: [collection_id], references: [id])
-  collection_id           String
+  id            String      @id @default(cuid())
+  token_address String
+  token_id      String
+  attributes    String // JSON serialized as a string
+  block_minted  Int
+  contract_type String
+  description   String
+  dna           String
+  edition       Int
+  image         String
+  image_url     String
+  metadata      String // JSON serialized as a string
+  name          String
+  network       String
+  old_image_url String
+  old_token_uri String
+  owner_of      String
+  token_id_int  Int
+  token_uri     String
+  OpenRarity    OpenRarity?
+  Collection    Collection  @relation(fields: [collection_id], references: [id])
+  collection_id String
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt

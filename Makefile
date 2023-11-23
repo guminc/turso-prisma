@@ -18,6 +18,10 @@ dump-mongo-users:
 	./scripts/echo.sh
 	mongodump --collection=Users --forceTableScan --uri $$MONGO_URI
 
+dump-mongo-collections:
+	./scripts/echo.sh
+	mongodump --collection=Collections --forceTableScan --uri $$MONGO_URI
+
 wipe-prod:
 	turso db shell $$REMOTE_DB_NAME < ./prisma/reset/dropTables.sql
 
@@ -48,9 +52,10 @@ build-rust-binary:
 
 migrate-users-to-prod:
 	./scripts/echo.sh
-# @if [ "$(source)" = "file" ]; then \
-# 	$(MAKE) dump-mongo-users; \
-# fi
+	@if [ "$(source)" = "file" ]; then \
+		$(MAKE) dump-mongo-users; \
+		$(MAKE) dump-mongo-collections; \
+	fi
 	@if [ "$(write)" = "rust" ]; then \
 		$(MAKE) build-rust-binary; \
 		$(MAKE) wipe-prod; \
