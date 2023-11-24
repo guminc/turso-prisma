@@ -13,7 +13,18 @@ function getArrayFromCommand(command) {
           .split("\n")
           .map((item) => item.trim())
           .filter(Boolean)
-          .filter((table) => !table.startsWith("sqlite_"));
+          .filter((table) => !table.startsWith("sqlite_"))
+          .sort((a, b) => {
+            // due to foreign key constraints, we need to drop joining tables first. Those tables start with _
+            if (a.startsWith("_") && !b.startsWith("_")) {
+              return -1;
+            } else if (!a.startsWith("_") && b.startsWith("_")) {
+              return 1;
+            } else {
+              return 0;
+            }
+          });
+
         resolve(array);
       }
     });
