@@ -53,9 +53,7 @@ function dropItem(item, type) {
 getArrayFromCommand(
   `turso db shell --location iad ${REMOTE_DB_NAME} ".tables"`
 ).then((tables) => {
-  tables.forEach((table) => {
-    dropItem(table, "TABLE");
-  });
+  tables.forEach((table) => dropItem(table, "TABLE"));
 });
 
 // Get all index names and drop them
