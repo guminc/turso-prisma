@@ -9,6 +9,7 @@ all: migrate-users-to-prod
 
 create-migration:
 	npx prisma migrate dev
+# npx prisma migrate dev
 
 dump-mongo-everything:
 	./scripts/echo.sh
@@ -23,7 +24,9 @@ migrate-prod:
 		turso db shell --location iad $$REMOTE_DB_NAME < $$file; \
 	done
 
+# running this twice as a hack to get around foreign keys constraints
 wipe-prod:
+	node ./scripts/dropAllTables.js
 	node ./scripts/dropAllTables.js
 
 wipe-local:

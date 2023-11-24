@@ -15,10 +15,6 @@ function getArrayFromCommand(command) {
           .filter(Boolean)
           .filter((table) => !table.startsWith("sqlite_"))
           .sort((a, b) => {
-            // drop the User table last because a lot of tables have foreign key constraints to it
-            if (a === "User") return 1;
-            if (b === "User") return -1;
-
             // due to foreign key constraints, we need to drop joining tables first. Those tables start with _
             if (a.startsWith("_") && !b.startsWith("_")) {
               return -1;
