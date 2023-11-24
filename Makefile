@@ -29,7 +29,10 @@ wipe-local:
 	sqlite3 ./prisma/dev.db < ./prisma/reset/dropTables.sql
 
 seed-prod:
-	turso db shell $$REMOTE_DB_NAME < ./dump.sql
+	turso db shell $$REMOTE_DB_NAME < ./dump/dump.sql
+
+seed-prod-rust:
+	npx ts-node ./scripts/migrate.ts --source=$(source) --write=rust
 
 reset-local:
 	$(MAKE) wipe-local
@@ -43,8 +46,8 @@ migrate-prod:
 		turso db shell $$REMOTE_DB_NAME < $$file; \
 	done
 
-seed-prod-rust:
-	npx ts-node ./scripts/migrate.ts --source=$(source) --write='rust'
+build-rust-binary:
+	cargo build --release --manifest-path ./scripts/rust/Cargo.toml
 
 migrate-users-to-prod:
 	./scripts/echo.sh
@@ -53,6 +56,7 @@ migrate-users-to-prod:
 		$(MAKE) dump-mongo-collections; \
 	fi
 	@if [ "$(write)" = "rust" ]; then \
+		$(MAKE) build-rust-binary; \
 		$(MAKE) wipe-prod; \
 		$(MAKE) migrate-prod; \
 		$(MAKE) seed-prod-rust; \
@@ -65,6 +69,4 @@ migrate-users-to-prod:
 	fi
 
 dump-local:
-	sqlite3 ./prisma/dev.db '.output ./dump.sql' '.dump'
-
-
+	sqlite3 ./prisma/dev.db '.output ./dump/dump.sql' '.dump'

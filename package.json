@@ -9,7 +9,7 @@
     "updateTypes": "prisma generate",
     "prettier": "prettier --write .",
     "pushToTurso": "turso db shell turso-prisma-1 < ",
-    "getSqlDump": "sqlite3 ./prisma/dev.db '.output ./dump.sql' '.dump'"
+    "getSqlDump": "sqlite3 ./prisma/dev.db '.output ./dump/dump.sql' '.dump'"
   },
   "dependencies": {
     "@libsql/client": "0.3.6",
