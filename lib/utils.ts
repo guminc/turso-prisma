@@ -23,7 +23,10 @@ export function getMongoTablesFromFile() {
   let collectionsMongo = [];
 
   const pathToUsersBson = path.join(__dirname, "../dump/Scatter/Users.bson");
-  const pathToCollectionsBson = path.join(__dirname, "../dump/Scatter/Collections.bson");
+  const pathToCollectionsBson = path.join(
+    __dirname,
+    "../dump/Scatter/Collections.bson"
+  );
   const userbuffer = fs.readFileSync(pathToUsersBson);
   const collectionBuffer = fs.readFileSync(pathToCollectionsBson);
 
@@ -81,25 +84,36 @@ export async function getMongoTablesFromNetwork() {
   const mongoDb = mongoClient.db(DATABASE_NAME);
 
   const usersMongo = await mongoDb.collection("Users").find().toArray();
-  const collectionsMongo = await mongoDb.collection("Collections").find().toArray();
+  const collectionsMongo = await mongoDb
+    .collection("Collections")
+    .find()
+    .toArray();
 
   await mongoClient.close();
 
   return { usersMongo, collectionsMongo };
 }
 
-export function getBatchSqlStatements(objects: Object[], tableName: string, cleanObject: Function): string {
-  let statements: string[] = []
+export function getBatchSqlStatements(
+  objects: Object[],
+  tableName: string,
+  cleanObject: Function
+): string {
+  let statements: string[] = [];
   objects.map((obj) => {
     const cleanedObj = cleanObject(obj);
     if (cleanedObj != null) {
       const keys = Object.keys(cleanedObj);
       const columns = keys.join(", ");
-      const values = Object.values(cleanedObj).map(value => {
-        return typeof value === 'string' ? `'${value.replace(/'/g, "''")}'` : value;
-      })
-      statements.push(`INSERT INTO ${tableName} (${columns}) VALUES (${values})`)
+      const values = Object.values(cleanedObj).map((value) => {
+        return typeof value === "string"
+          ? `'${value.replace(/'/g, "''")}'`
+          : value;
+      });
+      statements.push(
+        `INSERT INTO ${tableName} (${columns}) VALUES (${values})`
+      );
     }
-  })
+  });
   return statements.join(";\n");
 }
