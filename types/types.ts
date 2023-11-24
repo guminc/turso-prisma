@@ -47,3 +47,6 @@ export const CollectionSchema = z.object({
 });
 
 export type ICollectionHot = z.infer<typeof CollectionSchema>;
+
+export const userStatusEnums = ["active", "pending"] as const;
+export const UserStatusEnum = z.enum(userStatusEnums);

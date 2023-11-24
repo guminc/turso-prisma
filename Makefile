@@ -18,14 +18,19 @@ dump-mongo-users:
 	./scripts/echo.sh
 	mongodump --collection=Users --forceTableScan --uri $$MONGO_URI
 
+migrate-prod:
+	for file in ./prisma/migrations/*/*.sql; do \
+		turso db shell --location iad $$REMOTE_DB_NAME < $$file; \
+	done
+
 wipe-prod:
-	turso db shell $$REMOTE_DB_NAME < ./prisma/reset/dropTables.sql
+	node ./scripts/dropAllTables.js
 
 wipe-local:
 	sqlite3 ./prisma/dev.db < ./prisma/reset/dropTables.sql
 
 seed-prod:
-	turso db shell $$REMOTE_DB_NAME < ./dump.sql
+	turso db shell --location iad $$REMOTE_DB_NAME < ./dump.sql
 
 reset-local:
 	$(MAKE) wipe-local
@@ -36,13 +41,14 @@ seed-local-users:
 
 migrate-users-to-prod:
 	./scripts/echo.sh
-	@if [ "$(source)" = "file" ]; then \
-		$(MAKE) dump-mongo-users; \
-	fi
+# @if [ "$(source)" = "file" ]; then \
+# 	$(MAKE) dump-mongo-users; \
+# fi
 	$(MAKE) reset-local
 	$(MAKE) seed-local-users
 	$(MAKE) dump-local
 	$(MAKE) wipe-prod
+# $(MAKE) migrate-prod don't need this because the dump includes migrations
 	$(MAKE) seed-prod
 
 dump-local:

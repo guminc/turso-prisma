@@ -1,10 +1,14 @@
+/// refer to https://github.com/chrishoermann/zod-prisma-types for @zod validators
+
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["driverAdapters"]
 }
 
 generator zod {
-  provider = "zod-prisma-types"
+  provider                 = "zod-prisma-types"
+  output                   = "../types/generated"
+  writeNullishInModelTypes = true
 }
 
 datasource db {
@@ -122,13 +126,14 @@ model OpenRarity {
   updated_at DateTime @updatedAt
 }
 
+/// @zod.import(["import { getAddress } from 'ethers'", "import { userStatusEnums } from '../types'"])
 model User {
   id          String  @id @default(cuid())
-  address     String  @unique
-  avatar_uri  String
-  banner_uri  String
-  username    String?
-  description String?
+  address     String  @unique ///@zod.import(["import { getAddress } from 'ethers'"]).custom.use(z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }))
+  avatar_uri  String? /// @zod.string.url({ message: "Invalid url" })
+  banner_uri  String? /// @zod.string.url({ message: "Invalid url" })
+  username    String? /// @zod.string.max(64, { message: "too lengthy" })
+  description String? /// @zod.string.max(512, { message: "too long" })
   ens         String?
   status      String  @default("pending")
 
@@ -138,11 +143,11 @@ model User {
   roles       Role[]
   connections Connection[]
 
-  email    String?   @unique
+  email    String?
   password Password?
 
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  created_at DateTime  @default(now())
+  updated_at DateTime? @updatedAt
 }
 
 model Connection {
@@ -175,8 +180,8 @@ model Chain {
 
   is_testnet Boolean @default(false)
 
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  created_at DateTime  @default(now())
+  updated_at DateTime? @updatedAt
 
   wallet Wallet[]
 }

@@ -1,5 +1,7 @@
 import { z } from 'zod';
 import type { Prisma } from '@prisma/client';
+import { getAddress } from 'ethers'
+import { userStatusEnums } from '../types'
 
 /////////////////////////////////////////
 // HELPER FUNCTIONS
@@ -178,19 +180,27 @@ export type OpenRarity = z.infer<typeof OpenRaritySchema>
 
 export const UserSchema = z.object({
   id: z.string().cuid(),
-  address: z.string(),
-  avatar_uri: z.string(),
-  banner_uri: z.string(),
-  username: z.string().nullable(),
-  description: z.string().nullable(),
-  ens: z.string().nullable(),
+  address: z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }),
+  avatar_uri: z.string().url({ message: "Invalid url" }).nullish(),
+  banner_uri: z.string().url({ message: "Invalid url" }).nullish(),
+  username: z.string().max(64, { message: "too lengthy" }).nullish(),
+  description: z.string().max(512, { message: "too long" }).nullish(),
+  ens: z.string().nullish(),
   status: z.string(),
-  email: z.string().nullable(),
+  email: z.string().nullish(),
   created_at: z.coerce.date(),
-  updated_at: z.coerce.date(),
+  updated_at: z.coerce.date().nullish(),
 })
 
 export type User = z.infer<typeof UserSchema>
+
+/////////////////////////////////////////
+// USER CUSTOM VALIDATORS SCHEMA
+/////////////////////////////////////////
+
+export const UserCustomValidatorsSchema = UserSchema
+
+export type UserCustomValidators = z.infer<typeof UserCustomValidatorsSchema>
 
 /////////////////////////////////////////
 // CONNECTION SCHEMA
@@ -229,7 +239,7 @@ export const ChainSchema = z.object({
   symbol: z.string(),
   is_testnet: z.boolean(),
   created_at: z.coerce.date(),
-  updated_at: z.coerce.date(),
+  updated_at: z.coerce.date().nullish(),
 })
 
 export type Chain = z.infer<typeof ChainSchema>
@@ -259,9 +269,9 @@ export const SessionSchema = z.object({
   user_id: z.string(),
   wallet_id: z.string(),
   user_agent: z.string(),
-  locale: z.string().nullable(),
-  ip_address: z.string().nullable(),
-  nonce: z.string().nullable(),
+  locale: z.string().nullish(),
+  ip_address: z.string().nullish(),
+  nonce: z.string().nullish(),
   created_at: z.coerce.date(),
   updated_at: z.coerce.date(),
 })
@@ -1447,15 +1457,15 @@ export const UserWhereInputSchema: z.ZodType<Prisma.UserWhereInput> = z.object({
   NOT: z.union([ z.lazy(() => UserWhereInputSchema),z.lazy(() => UserWhereInputSchema).array() ]).optional(),
   id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   address: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  avatar_uri: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  banner_uri: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  avatar_uri: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
+  banner_uri: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
   username: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
   description: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
   ens: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
   status: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   email: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
   created_at: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
-  updated_at: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  updated_at: z.union([ z.lazy(() => DateTimeNullableFilterSchema),z.coerce.date() ]).optional().nullable(),
   collections: z.lazy(() => CollectionListRelationFilterSchema).optional(),
   wallets: z.lazy(() => WalletListRelationFilterSchema).optional(),
   sessions: z.lazy(() => SessionListRelationFilterSchema).optional(),
@@ -1467,15 +1477,15 @@ export const UserWhereInputSchema: z.ZodType<Prisma.UserWhereInput> = z.object({
 export const UserOrderByWithRelationInputSchema: z.ZodType<Prisma.UserOrderByWithRelationInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
   address: z.lazy(() => SortOrderSchema).optional(),
-  avatar_uri: z.lazy(() => SortOrderSchema).optional(),
-  banner_uri: z.lazy(() => SortOrderSchema).optional(),
+  avatar_uri: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
+  banner_uri: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
   username: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
   description: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
   ens: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
   status: z.lazy(() => SortOrderSchema).optional(),
   email: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
   created_at: z.lazy(() => SortOrderSchema).optional(),
-  updated_at: z.lazy(() => SortOrderSchema).optional(),
+  updated_at: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
   collections: z.lazy(() => CollectionOrderByRelationAggregateInputSchema).optional(),
   wallets: z.lazy(() => WalletOrderByRelationAggregateInputSchema).optional(),
   sessions: z.lazy(() => SessionOrderByRelationAggregateInputSchema).optional(),
@@ -1487,46 +1497,30 @@ export const UserOrderByWithRelationInputSchema: z.ZodType<Prisma.UserOrderByWit
 export const UserWhereUniqueInputSchema: z.ZodType<Prisma.UserWhereUniqueInput> = z.union([
   z.object({
     id: z.string().cuid(),
-    address: z.string(),
-    email: z.string()
-  }),
-  z.object({
-    id: z.string().cuid(),
-    address: z.string(),
-  }),
-  z.object({
-    id: z.string().cuid(),
-    email: z.string(),
+    address: z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' })
   }),
   z.object({
     id: z.string().cuid(),
   }),
   z.object({
-    address: z.string(),
-    email: z.string(),
-  }),
-  z.object({
-    address: z.string(),
-  }),
-  z.object({
-    email: z.string(),
+    address: z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }),
   }),
 ])
 .and(z.object({
   id: z.string().cuid().optional(),
-  address: z.string().optional(),
-  email: z.string().optional(),
+  address: z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }).optional(),
   AND: z.union([ z.lazy(() => UserWhereInputSchema),z.lazy(() => UserWhereInputSchema).array() ]).optional(),
   OR: z.lazy(() => UserWhereInputSchema).array().optional(),
   NOT: z.union([ z.lazy(() => UserWhereInputSchema),z.lazy(() => UserWhereInputSchema).array() ]).optional(),
-  avatar_uri: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  banner_uri: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  username: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
-  description: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
+  avatar_uri: z.union([ z.lazy(() => StringNullableFilterSchema),z.string().url({ message: "Invalid url" }) ]).optional().nullable(),
+  banner_uri: z.union([ z.lazy(() => StringNullableFilterSchema),z.string().url({ message: "Invalid url" }) ]).optional().nullable(),
+  username: z.union([ z.lazy(() => StringNullableFilterSchema),z.string().max(64, { message: "too lengthy" }) ]).optional().nullable(),
+  description: z.union([ z.lazy(() => StringNullableFilterSchema),z.string().max(512, { message: "too long" }) ]).optional().nullable(),
   ens: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
   status: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  email: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
   created_at: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
-  updated_at: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  updated_at: z.union([ z.lazy(() => DateTimeNullableFilterSchema),z.coerce.date() ]).optional().nullable(),
   collections: z.lazy(() => CollectionListRelationFilterSchema).optional(),
   wallets: z.lazy(() => WalletListRelationFilterSchema).optional(),
   sessions: z.lazy(() => SessionListRelationFilterSchema).optional(),
@@ -1538,15 +1532,15 @@ export const UserWhereUniqueInputSchema: z.ZodType<Prisma.UserWhereUniqueInput> 
 export const UserOrderByWithAggregationInputSchema: z.ZodType<Prisma.UserOrderByWithAggregationInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
   address: z.lazy(() => SortOrderSchema).optional(),
-  avatar_uri: z.lazy(() => SortOrderSchema).optional(),
-  banner_uri: z.lazy(() => SortOrderSchema).optional(),
+  avatar_uri: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
+  banner_uri: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
   username: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
   description: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
   ens: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
   status: z.lazy(() => SortOrderSchema).optional(),
   email: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
   created_at: z.lazy(() => SortOrderSchema).optional(),
-  updated_at: z.lazy(() => SortOrderSchema).optional(),
+  updated_at: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
   _count: z.lazy(() => UserCountOrderByAggregateInputSchema).optional(),
   _max: z.lazy(() => UserMaxOrderByAggregateInputSchema).optional(),
   _min: z.lazy(() => UserMinOrderByAggregateInputSchema).optional()
@@ -1558,15 +1552,15 @@ export const UserScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.UserScal
   NOT: z.union([ z.lazy(() => UserScalarWhereWithAggregatesInputSchema),z.lazy(() => UserScalarWhereWithAggregatesInputSchema).array() ]).optional(),
   id: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
   address: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
-  avatar_uri: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
-  banner_uri: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  avatar_uri: z.union([ z.lazy(() => StringNullableWithAggregatesFilterSchema),z.string() ]).optional().nullable(),
+  banner_uri: z.union([ z.lazy(() => StringNullableWithAggregatesFilterSchema),z.string() ]).optional().nullable(),
   username: z.union([ z.lazy(() => StringNullableWithAggregatesFilterSchema),z.string() ]).optional().nullable(),
   description: z.union([ z.lazy(() => StringNullableWithAggregatesFilterSchema),z.string() ]).optional().nullable(),
   ens: z.union([ z.lazy(() => StringNullableWithAggregatesFilterSchema),z.string() ]).optional().nullable(),
   status: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
   email: z.union([ z.lazy(() => StringNullableWithAggregatesFilterSchema),z.string() ]).optional().nullable(),
   created_at: z.union([ z.lazy(() => DateTimeWithAggregatesFilterSchema),z.coerce.date() ]).optional(),
-  updated_at: z.union([ z.lazy(() => DateTimeWithAggregatesFilterSchema),z.coerce.date() ]).optional(),
+  updated_at: z.union([ z.lazy(() => DateTimeNullableWithAggregatesFilterSchema),z.coerce.date() ]).optional().nullable(),
 }).strict();
 
 export const ConnectionWhereInputSchema: z.ZodType<Prisma.ConnectionWhereInput> = z.object({
@@ -1748,7 +1742,7 @@ export const ChainWhereInputSchema: z.ZodType<Prisma.ChainWhereInput> = z.object
   symbol: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   is_testnet: z.union([ z.lazy(() => BoolFilterSchema),z.boolean() ]).optional(),
   created_at: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
-  updated_at: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  updated_at: z.union([ z.lazy(() => DateTimeNullableFilterSchema),z.coerce.date() ]).optional().nullable(),
   wallet: z.lazy(() => WalletListRelationFilterSchema).optional()
 }).strict();
 
@@ -1759,7 +1753,7 @@ export const ChainOrderByWithRelationInputSchema: z.ZodType<Prisma.ChainOrderByW
   symbol: z.lazy(() => SortOrderSchema).optional(),
   is_testnet: z.lazy(() => SortOrderSchema).optional(),
   created_at: z.lazy(() => SortOrderSchema).optional(),
-  updated_at: z.lazy(() => SortOrderSchema).optional(),
+  updated_at: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
   wallet: z.lazy(() => WalletOrderByRelationAggregateInputSchema).optional()
 }).strict();
 
@@ -1837,7 +1831,7 @@ export const ChainWhereUniqueInputSchema: z.ZodType<Prisma.ChainWhereUniqueInput
   NOT: z.union([ z.lazy(() => ChainWhereInputSchema),z.lazy(() => ChainWhereInputSchema).array() ]).optional(),
   is_testnet: z.union([ z.lazy(() => BoolFilterSchema),z.boolean() ]).optional(),
   created_at: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
-  updated_at: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  updated_at: z.union([ z.lazy(() => DateTimeNullableFilterSchema),z.coerce.date() ]).optional().nullable(),
   wallet: z.lazy(() => WalletListRelationFilterSchema).optional()
 }).strict());
 
@@ -1848,7 +1842,7 @@ export const ChainOrderByWithAggregationInputSchema: z.ZodType<Prisma.ChainOrder
   symbol: z.lazy(() => SortOrderSchema).optional(),
   is_testnet: z.lazy(() => SortOrderSchema).optional(),
   created_at: z.lazy(() => SortOrderSchema).optional(),
-  updated_at: z.lazy(() => SortOrderSchema).optional(),
+  updated_at: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
   _count: z.lazy(() => ChainCountOrderByAggregateInputSchema).optional(),
   _avg: z.lazy(() => ChainAvgOrderByAggregateInputSchema).optional(),
   _max: z.lazy(() => ChainMaxOrderByAggregateInputSchema).optional(),
@@ -1866,7 +1860,7 @@ export const ChainScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.ChainSc
   symbol: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
   is_testnet: z.union([ z.lazy(() => BoolWithAggregatesFilterSchema),z.boolean() ]).optional(),
   created_at: z.union([ z.lazy(() => DateTimeWithAggregatesFilterSchema),z.coerce.date() ]).optional(),
-  updated_at: z.union([ z.lazy(() => DateTimeWithAggregatesFilterSchema),z.coerce.date() ]).optional(),
+  updated_at: z.union([ z.lazy(() => DateTimeNullableWithAggregatesFilterSchema),z.coerce.date() ]).optional().nullable(),
 }).strict();
 
 export const WalletWhereInputSchema: z.ZodType<Prisma.WalletWhereInput> = z.object({
@@ -3031,16 +3025,16 @@ export const OpenRarityUncheckedUpdateManyInputSchema: z.ZodType<Prisma.OpenRari
 
 export const UserCreateInputSchema: z.ZodType<Prisma.UserCreateInput> = z.object({
   id: z.string().cuid().optional(),
-  address: z.string(),
-  avatar_uri: z.string(),
-  banner_uri: z.string(),
-  username: z.string().optional().nullable(),
-  description: z.string().optional().nullable(),
+  address: z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }),
+  avatar_uri: z.string().url({ message: "Invalid url" }).optional().nullable(),
+  banner_uri: z.string().url({ message: "Invalid url" }).optional().nullable(),
+  username: z.string().max(64, { message: "too lengthy" }).optional().nullable(),
+  description: z.string().max(512, { message: "too long" }).optional().nullable(),
   ens: z.string().optional().nullable(),
   status: z.string().optional(),
   email: z.string().optional().nullable(),
   created_at: z.coerce.date().optional(),
-  updated_at: z.coerce.date().optional(),
+  updated_at: z.coerce.date().optional().nullable(),
   collections: z.lazy(() => CollectionCreateNestedManyWithoutCreatorInputSchema).optional(),
   wallets: z.lazy(() => WalletCreateNestedManyWithoutOwnerInputSchema).optional(),
   sessions: z.lazy(() => SessionCreateNestedManyWithoutUserInputSchema).optional(),
@@ -3051,16 +3045,16 @@ export const UserCreateInputSchema: z.ZodType<Prisma.UserCreateInput> = z.object
 
 export const UserUncheckedCreateInputSchema: z.ZodType<Prisma.UserUncheckedCreateInput> = z.object({
   id: z.string().cuid().optional(),
-  address: z.string(),
-  avatar_uri: z.string(),
-  banner_uri: z.string(),
-  username: z.string().optional().nullable(),
-  description: z.string().optional().nullable(),
+  address: z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }),
+  avatar_uri: z.string().url({ message: "Invalid url" }).optional().nullable(),
+  banner_uri: z.string().url({ message: "Invalid url" }).optional().nullable(),
+  username: z.string().max(64, { message: "too lengthy" }).optional().nullable(),
+  description: z.string().max(512, { message: "too long" }).optional().nullable(),
   ens: z.string().optional().nullable(),
   status: z.string().optional(),
   email: z.string().optional().nullable(),
   created_at: z.coerce.date().optional(),
-  updated_at: z.coerce.date().optional(),
+  updated_at: z.coerce.date().optional().nullable(),
   collections: z.lazy(() => CollectionUncheckedCreateNestedManyWithoutCreatorInputSchema).optional(),
   wallets: z.lazy(() => WalletUncheckedCreateNestedManyWithoutOwnerInputSchema).optional(),
   sessions: z.lazy(() => SessionUncheckedCreateNestedManyWithoutUserInputSchema).optional(),
@@ -3071,16 +3065,16 @@ export const UserUncheckedCreateInputSchema: z.ZodType<Prisma.UserUncheckedCreat
 
 export const UserUpdateInputSchema: z.ZodType<Prisma.UserUpdateInput> = z.object({
   id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  address: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  avatar_uri: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  banner_uri: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  username: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  description: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  address: z.union([ z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  avatar_uri: z.union([ z.string().url({ message: "Invalid url" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  banner_uri: z.union([ z.string().url({ message: "Invalid url" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  username: z.union([ z.string().max(64, { message: "too lengthy" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  description: z.union([ z.string().max(512, { message: "too long" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   ens: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   status: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   email: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   created_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  updated_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updated_at: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   collections: z.lazy(() => CollectionUpdateManyWithoutCreatorNestedInputSchema).optional(),
   wallets: z.lazy(() => WalletUpdateManyWithoutOwnerNestedInputSchema).optional(),
   sessions: z.lazy(() => SessionUpdateManyWithoutUserNestedInputSchema).optional(),
@@ -3091,16 +3085,16 @@ export const UserUpdateInputSchema: z.ZodType<Prisma.UserUpdateInput> = z.object
 
 export const UserUncheckedUpdateInputSchema: z.ZodType<Prisma.UserUncheckedUpdateInput> = z.object({
   id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  address: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  avatar_uri: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  banner_uri: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  username: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  description: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  address: z.union([ z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  avatar_uri: z.union([ z.string().url({ message: "Invalid url" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  banner_uri: z.union([ z.string().url({ message: "Invalid url" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  username: z.union([ z.string().max(64, { message: "too lengthy" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  description: z.union([ z.string().max(512, { message: "too long" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   ens: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   status: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   email: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   created_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  updated_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updated_at: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   collections: z.lazy(() => CollectionUncheckedUpdateManyWithoutCreatorNestedInputSchema).optional(),
   wallets: z.lazy(() => WalletUncheckedUpdateManyWithoutOwnerNestedInputSchema).optional(),
   sessions: z.lazy(() => SessionUncheckedUpdateManyWithoutUserNestedInputSchema).optional(),
@@ -3111,30 +3105,30 @@ export const UserUncheckedUpdateInputSchema: z.ZodType<Prisma.UserUncheckedUpdat
 
 export const UserUpdateManyMutationInputSchema: z.ZodType<Prisma.UserUpdateManyMutationInput> = z.object({
   id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  address: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  avatar_uri: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  banner_uri: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  username: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  description: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  address: z.union([ z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  avatar_uri: z.union([ z.string().url({ message: "Invalid url" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  banner_uri: z.union([ z.string().url({ message: "Invalid url" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  username: z.union([ z.string().max(64, { message: "too lengthy" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  description: z.union([ z.string().max(512, { message: "too long" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   ens: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   status: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   email: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   created_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  updated_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updated_at: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
 }).strict();
 
 export const UserUncheckedUpdateManyInputSchema: z.ZodType<Prisma.UserUncheckedUpdateManyInput> = z.object({
   id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  address: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  avatar_uri: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  banner_uri: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  username: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  description: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  address: z.union([ z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  avatar_uri: z.union([ z.string().url({ message: "Invalid url" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  banner_uri: z.union([ z.string().url({ message: "Invalid url" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  username: z.union([ z.string().max(64, { message: "too lengthy" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  description: z.union([ z.string().max(512, { message: "too long" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   ens: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   status: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   email: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   created_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  updated_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updated_at: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
 }).strict();
 
 export const ConnectionCreateInputSchema: z.ZodType<Prisma.ConnectionCreateInput> = z.object({
@@ -3226,7 +3220,7 @@ export const ChainCreateInputSchema: z.ZodType<Prisma.ChainCreateInput> = z.obje
   symbol: z.string(),
   is_testnet: z.boolean().optional(),
   created_at: z.coerce.date().optional(),
-  updated_at: z.coerce.date().optional(),
+  updated_at: z.coerce.date().optional().nullable(),
   wallet: z.lazy(() => WalletCreateNestedManyWithoutChainInputSchema).optional()
 }).strict();
 
@@ -3237,7 +3231,7 @@ export const ChainUncheckedCreateInputSchema: z.ZodType<Prisma.ChainUncheckedCre
   symbol: z.string(),
   is_testnet: z.boolean().optional(),
   created_at: z.coerce.date().optional(),
-  updated_at: z.coerce.date().optional(),
+  updated_at: z.coerce.date().optional().nullable(),
   wallet: z.lazy(() => WalletUncheckedCreateNestedManyWithoutChainInputSchema).optional()
 }).strict();
 
@@ -3248,7 +3242,7 @@ export const ChainUpdateInputSchema: z.ZodType<Prisma.ChainUpdateInput> = z.obje
   symbol: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   is_testnet: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
   created_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  updated_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updated_at: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   wallet: z.lazy(() => WalletUpdateManyWithoutChainNestedInputSchema).optional()
 }).strict();
 
@@ -3259,7 +3253,7 @@ export const ChainUncheckedUpdateInputSchema: z.ZodType<Prisma.ChainUncheckedUpd
   symbol: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   is_testnet: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
   created_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  updated_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updated_at: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   wallet: z.lazy(() => WalletUncheckedUpdateManyWithoutChainNestedInputSchema).optional()
 }).strict();
 
@@ -3270,7 +3264,7 @@ export const ChainUpdateManyMutationInputSchema: z.ZodType<Prisma.ChainUpdateMan
   symbol: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   is_testnet: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
   created_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  updated_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updated_at: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
 }).strict();
 
 export const ChainUncheckedUpdateManyInputSchema: z.ZodType<Prisma.ChainUncheckedUpdateManyInput> = z.object({
@@ -3280,7 +3274,7 @@ export const ChainUncheckedUpdateManyInputSchema: z.ZodType<Prisma.ChainUnchecke
   symbol: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   is_testnet: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
   created_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  updated_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updated_at: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
 }).strict();
 
 export const WalletCreateInputSchema: z.ZodType<Prisma.WalletCreateInput> = z.object({
@@ -4304,6 +4298,17 @@ export const StringNullableFilterSchema: z.ZodType<Prisma.StringNullableFilter> 
   not: z.union([ z.string(),z.lazy(() => NestedStringNullableFilterSchema) ]).optional().nullable(),
 }).strict();
 
+export const DateTimeNullableFilterSchema: z.ZodType<Prisma.DateTimeNullableFilter> = z.object({
+  equals: z.coerce.date().optional().nullable(),
+  in: z.coerce.date().array().optional().nullable(),
+  notIn: z.coerce.date().array().optional().nullable(),
+  lt: z.coerce.date().optional(),
+  lte: z.coerce.date().optional(),
+  gt: z.coerce.date().optional(),
+  gte: z.coerce.date().optional(),
+  not: z.union([ z.coerce.date(),z.lazy(() => NestedDateTimeNullableFilterSchema) ]).optional().nullable(),
+}).strict();
+
 export const CollectionListRelationFilterSchema: z.ZodType<Prisma.CollectionListRelationFilter> = z.object({
   every: z.lazy(() => CollectionWhereInputSchema).optional(),
   some: z.lazy(() => CollectionWhereInputSchema).optional(),
@@ -4421,6 +4426,20 @@ export const StringNullableWithAggregatesFilterSchema: z.ZodType<Prisma.StringNu
   _count: z.lazy(() => NestedIntNullableFilterSchema).optional(),
   _min: z.lazy(() => NestedStringNullableFilterSchema).optional(),
   _max: z.lazy(() => NestedStringNullableFilterSchema).optional()
+}).strict();
+
+export const DateTimeNullableWithAggregatesFilterSchema: z.ZodType<Prisma.DateTimeNullableWithAggregatesFilter> = z.object({
+  equals: z.coerce.date().optional().nullable(),
+  in: z.coerce.date().array().optional().nullable(),
+  notIn: z.coerce.date().array().optional().nullable(),
+  lt: z.coerce.date().optional(),
+  lte: z.coerce.date().optional(),
+  gt: z.coerce.date().optional(),
+  gte: z.coerce.date().optional(),
+  not: z.union([ z.coerce.date(),z.lazy(() => NestedDateTimeNullableWithAggregatesFilterSchema) ]).optional().nullable(),
+  _count: z.lazy(() => NestedIntNullableFilterSchema).optional(),
+  _min: z.lazy(() => NestedDateTimeNullableFilterSchema).optional(),
+  _max: z.lazy(() => NestedDateTimeNullableFilterSchema).optional()
 }).strict();
 
 export const ConnectionProvider_nameProvider_idCompoundUniqueInputSchema: z.ZodType<Prisma.ConnectionProvider_nameProvider_idCompoundUniqueInput> = z.object({
@@ -5073,6 +5092,10 @@ export const NullableStringFieldUpdateOperationsInputSchema: z.ZodType<Prisma.Nu
   set: z.string().optional().nullable()
 }).strict();
 
+export const NullableDateTimeFieldUpdateOperationsInputSchema: z.ZodType<Prisma.NullableDateTimeFieldUpdateOperationsInput> = z.object({
+  set: z.coerce.date().optional().nullable()
+}).strict();
+
 export const CollectionUpdateManyWithoutCreatorNestedInputSchema: z.ZodType<Prisma.CollectionUpdateManyWithoutCreatorNestedInput> = z.object({
   create: z.union([ z.lazy(() => CollectionCreateWithoutCreatorInputSchema),z.lazy(() => CollectionCreateWithoutCreatorInputSchema).array(),z.lazy(() => CollectionUncheckedCreateWithoutCreatorInputSchema),z.lazy(() => CollectionUncheckedCreateWithoutCreatorInputSchema).array() ]).optional(),
   connectOrCreate: z.union([ z.lazy(() => CollectionCreateOrConnectWithoutCreatorInputSchema),z.lazy(() => CollectionCreateOrConnectWithoutCreatorInputSchema).array() ]).optional(),
@@ -5634,6 +5657,17 @@ export const NestedStringNullableFilterSchema: z.ZodType<Prisma.NestedStringNull
   not: z.union([ z.string(),z.lazy(() => NestedStringNullableFilterSchema) ]).optional().nullable(),
 }).strict();
 
+export const NestedDateTimeNullableFilterSchema: z.ZodType<Prisma.NestedDateTimeNullableFilter> = z.object({
+  equals: z.coerce.date().optional().nullable(),
+  in: z.coerce.date().array().optional().nullable(),
+  notIn: z.coerce.date().array().optional().nullable(),
+  lt: z.coerce.date().optional(),
+  lte: z.coerce.date().optional(),
+  gt: z.coerce.date().optional(),
+  gte: z.coerce.date().optional(),
+  not: z.union([ z.coerce.date(),z.lazy(() => NestedDateTimeNullableFilterSchema) ]).optional().nullable(),
+}).strict();
+
 export const NestedStringNullableWithAggregatesFilterSchema: z.ZodType<Prisma.NestedStringNullableWithAggregatesFilter> = z.object({
   equals: z.string().optional().nullable(),
   in: z.string().array().optional().nullable(),
@@ -5660,6 +5694,20 @@ export const NestedIntNullableFilterSchema: z.ZodType<Prisma.NestedIntNullableFi
   gt: z.number().optional(),
   gte: z.number().optional(),
   not: z.union([ z.number(),z.lazy(() => NestedIntNullableFilterSchema) ]).optional().nullable(),
+}).strict();
+
+export const NestedDateTimeNullableWithAggregatesFilterSchema: z.ZodType<Prisma.NestedDateTimeNullableWithAggregatesFilter> = z.object({
+  equals: z.coerce.date().optional().nullable(),
+  in: z.coerce.date().array().optional().nullable(),
+  notIn: z.coerce.date().array().optional().nullable(),
+  lt: z.coerce.date().optional(),
+  lte: z.coerce.date().optional(),
+  gt: z.coerce.date().optional(),
+  gte: z.coerce.date().optional(),
+  not: z.union([ z.coerce.date(),z.lazy(() => NestedDateTimeNullableWithAggregatesFilterSchema) ]).optional().nullable(),
+  _count: z.lazy(() => NestedIntNullableFilterSchema).optional(),
+  _min: z.lazy(() => NestedDateTimeNullableFilterSchema).optional(),
+  _max: z.lazy(() => NestedDateTimeNullableFilterSchema).optional()
 }).strict();
 
 export const MintDataCreateWithoutCollectionInputSchema: z.ZodType<Prisma.MintDataCreateWithoutCollectionInput> = z.object({
@@ -5719,16 +5767,16 @@ export const MintDataCreateOrConnectWithoutCollectionInputSchema: z.ZodType<Pris
 
 export const UserCreateWithoutCollectionsInputSchema: z.ZodType<Prisma.UserCreateWithoutCollectionsInput> = z.object({
   id: z.string().cuid().optional(),
-  address: z.string(),
-  avatar_uri: z.string(),
-  banner_uri: z.string(),
-  username: z.string().optional().nullable(),
-  description: z.string().optional().nullable(),
+  address: z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }),
+  avatar_uri: z.string().url({ message: "Invalid url" }).optional().nullable(),
+  banner_uri: z.string().url({ message: "Invalid url" }).optional().nullable(),
+  username: z.string().max(64, { message: "too lengthy" }).optional().nullable(),
+  description: z.string().max(512, { message: "too long" }).optional().nullable(),
   ens: z.string().optional().nullable(),
   status: z.string().optional(),
   email: z.string().optional().nullable(),
   created_at: z.coerce.date().optional(),
-  updated_at: z.coerce.date().optional(),
+  updated_at: z.coerce.date().optional().nullable(),
   wallets: z.lazy(() => WalletCreateNestedManyWithoutOwnerInputSchema).optional(),
   sessions: z.lazy(() => SessionCreateNestedManyWithoutUserInputSchema).optional(),
   roles: z.lazy(() => RoleCreateNestedManyWithoutUsersInputSchema).optional(),
@@ -5738,16 +5786,16 @@ export const UserCreateWithoutCollectionsInputSchema: z.ZodType<Prisma.UserCreat
 
 export const UserUncheckedCreateWithoutCollectionsInputSchema: z.ZodType<Prisma.UserUncheckedCreateWithoutCollectionsInput> = z.object({
   id: z.string().cuid().optional(),
-  address: z.string(),
-  avatar_uri: z.string(),
-  banner_uri: z.string(),
-  username: z.string().optional().nullable(),
-  description: z.string().optional().nullable(),
+  address: z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }),
+  avatar_uri: z.string().url({ message: "Invalid url" }).optional().nullable(),
+  banner_uri: z.string().url({ message: "Invalid url" }).optional().nullable(),
+  username: z.string().max(64, { message: "too lengthy" }).optional().nullable(),
+  description: z.string().max(512, { message: "too long" }).optional().nullable(),
   ens: z.string().optional().nullable(),
   status: z.string().optional(),
   email: z.string().optional().nullable(),
   created_at: z.coerce.date().optional(),
-  updated_at: z.coerce.date().optional(),
+  updated_at: z.coerce.date().optional().nullable(),
   wallets: z.lazy(() => WalletUncheckedCreateNestedManyWithoutOwnerInputSchema).optional(),
   sessions: z.lazy(() => SessionUncheckedCreateNestedManyWithoutUserInputSchema).optional(),
   roles: z.lazy(() => RoleUncheckedCreateNestedManyWithoutUsersInputSchema).optional(),
@@ -5891,16 +5939,16 @@ export const UserUpdateToOneWithWhereWithoutCollectionsInputSchema: z.ZodType<Pr
 
 export const UserUpdateWithoutCollectionsInputSchema: z.ZodType<Prisma.UserUpdateWithoutCollectionsInput> = z.object({
   id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  address: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  avatar_uri: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  banner_uri: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  username: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  description: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  address: z.union([ z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  avatar_uri: z.union([ z.string().url({ message: "Invalid url" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  banner_uri: z.union([ z.string().url({ message: "Invalid url" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  username: z.union([ z.string().max(64, { message: "too lengthy" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  description: z.union([ z.string().max(512, { message: "too long" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   ens: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   status: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   email: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   created_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  updated_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updated_at: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   wallets: z.lazy(() => WalletUpdateManyWithoutOwnerNestedInputSchema).optional(),
   sessions: z.lazy(() => SessionUpdateManyWithoutUserNestedInputSchema).optional(),
   roles: z.lazy(() => RoleUpdateManyWithoutUsersNestedInputSchema).optional(),
@@ -5910,16 +5958,16 @@ export const UserUpdateWithoutCollectionsInputSchema: z.ZodType<Prisma.UserUpdat
 
 export const UserUncheckedUpdateWithoutCollectionsInputSchema: z.ZodType<Prisma.UserUncheckedUpdateWithoutCollectionsInput> = z.object({
   id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  address: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  avatar_uri: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  banner_uri: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  username: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  description: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  address: z.union([ z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  avatar_uri: z.union([ z.string().url({ message: "Invalid url" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  banner_uri: z.union([ z.string().url({ message: "Invalid url" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  username: z.union([ z.string().max(64, { message: "too lengthy" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  description: z.union([ z.string().max(512, { message: "too long" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   ens: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   status: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   email: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   created_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  updated_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updated_at: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   wallets: z.lazy(() => WalletUncheckedUpdateManyWithoutOwnerNestedInputSchema).optional(),
   sessions: z.lazy(() => SessionUncheckedUpdateManyWithoutUserNestedInputSchema).optional(),
   roles: z.lazy(() => RoleUncheckedUpdateManyWithoutUsersNestedInputSchema).optional(),
@@ -6862,16 +6910,16 @@ export const PasswordUncheckedUpdateWithoutUserInputSchema: z.ZodType<Prisma.Pas
 
 export const UserCreateWithoutConnectionsInputSchema: z.ZodType<Prisma.UserCreateWithoutConnectionsInput> = z.object({
   id: z.string().cuid().optional(),
-  address: z.string(),
-  avatar_uri: z.string(),
-  banner_uri: z.string(),
-  username: z.string().optional().nullable(),
-  description: z.string().optional().nullable(),
+  address: z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }),
+  avatar_uri: z.string().url({ message: "Invalid url" }).optional().nullable(),
+  banner_uri: z.string().url({ message: "Invalid url" }).optional().nullable(),
+  username: z.string().max(64, { message: "too lengthy" }).optional().nullable(),
+  description: z.string().max(512, { message: "too long" }).optional().nullable(),
   ens: z.string().optional().nullable(),
   status: z.string().optional(),
   email: z.string().optional().nullable(),
   created_at: z.coerce.date().optional(),
-  updated_at: z.coerce.date().optional(),
+  updated_at: z.coerce.date().optional().nullable(),
   collections: z.lazy(() => CollectionCreateNestedManyWithoutCreatorInputSchema).optional(),
   wallets: z.lazy(() => WalletCreateNestedManyWithoutOwnerInputSchema).optional(),
   sessions: z.lazy(() => SessionCreateNestedManyWithoutUserInputSchema).optional(),
@@ -6881,16 +6929,16 @@ export const UserCreateWithoutConnectionsInputSchema: z.ZodType<Prisma.UserCreat
 
 export const UserUncheckedCreateWithoutConnectionsInputSchema: z.ZodType<Prisma.UserUncheckedCreateWithoutConnectionsInput> = z.object({
   id: z.string().cuid().optional(),
-  address: z.string(),
-  avatar_uri: z.string(),
-  banner_uri: z.string(),
-  username: z.string().optional().nullable(),
-  description: z.string().optional().nullable(),
+  address: z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }),
+  avatar_uri: z.string().url({ message: "Invalid url" }).optional().nullable(),
+  banner_uri: z.string().url({ message: "Invalid url" }).optional().nullable(),
+  username: z.string().max(64, { message: "too lengthy" }).optional().nullable(),
+  description: z.string().max(512, { message: "too long" }).optional().nullable(),
   ens: z.string().optional().nullable(),
   status: z.string().optional(),
   email: z.string().optional().nullable(),
   created_at: z.coerce.date().optional(),
-  updated_at: z.coerce.date().optional(),
+  updated_at: z.coerce.date().optional().nullable(),
   collections: z.lazy(() => CollectionUncheckedCreateNestedManyWithoutCreatorInputSchema).optional(),
   wallets: z.lazy(() => WalletUncheckedCreateNestedManyWithoutOwnerInputSchema).optional(),
   sessions: z.lazy(() => SessionUncheckedCreateNestedManyWithoutUserInputSchema).optional(),
@@ -6916,16 +6964,16 @@ export const UserUpdateToOneWithWhereWithoutConnectionsInputSchema: z.ZodType<Pr
 
 export const UserUpdateWithoutConnectionsInputSchema: z.ZodType<Prisma.UserUpdateWithoutConnectionsInput> = z.object({
   id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  address: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  avatar_uri: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  banner_uri: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  username: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  description: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  address: z.union([ z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  avatar_uri: z.union([ z.string().url({ message: "Invalid url" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  banner_uri: z.union([ z.string().url({ message: "Invalid url" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  username: z.union([ z.string().max(64, { message: "too lengthy" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  description: z.union([ z.string().max(512, { message: "too long" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   ens: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   status: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   email: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   created_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  updated_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updated_at: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   collections: z.lazy(() => CollectionUpdateManyWithoutCreatorNestedInputSchema).optional(),
   wallets: z.lazy(() => WalletUpdateManyWithoutOwnerNestedInputSchema).optional(),
   sessions: z.lazy(() => SessionUpdateManyWithoutUserNestedInputSchema).optional(),
@@ -6935,16 +6983,16 @@ export const UserUpdateWithoutConnectionsInputSchema: z.ZodType<Prisma.UserUpdat
 
 export const UserUncheckedUpdateWithoutConnectionsInputSchema: z.ZodType<Prisma.UserUncheckedUpdateWithoutConnectionsInput> = z.object({
   id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  address: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  avatar_uri: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  banner_uri: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  username: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  description: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  address: z.union([ z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  avatar_uri: z.union([ z.string().url({ message: "Invalid url" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  banner_uri: z.union([ z.string().url({ message: "Invalid url" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  username: z.union([ z.string().max(64, { message: "too lengthy" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  description: z.union([ z.string().max(512, { message: "too long" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   ens: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   status: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   email: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   created_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  updated_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updated_at: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   collections: z.lazy(() => CollectionUncheckedUpdateManyWithoutCreatorNestedInputSchema).optional(),
   wallets: z.lazy(() => WalletUncheckedUpdateManyWithoutOwnerNestedInputSchema).optional(),
   sessions: z.lazy(() => SessionUncheckedUpdateManyWithoutUserNestedInputSchema).optional(),
@@ -6954,16 +7002,16 @@ export const UserUncheckedUpdateWithoutConnectionsInputSchema: z.ZodType<Prisma.
 
 export const UserCreateWithoutPasswordInputSchema: z.ZodType<Prisma.UserCreateWithoutPasswordInput> = z.object({
   id: z.string().cuid().optional(),
-  address: z.string(),
-  avatar_uri: z.string(),
-  banner_uri: z.string(),
-  username: z.string().optional().nullable(),
-  description: z.string().optional().nullable(),
+  address: z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }),
+  avatar_uri: z.string().url({ message: "Invalid url" }).optional().nullable(),
+  banner_uri: z.string().url({ message: "Invalid url" }).optional().nullable(),
+  username: z.string().max(64, { message: "too lengthy" }).optional().nullable(),
+  description: z.string().max(512, { message: "too long" }).optional().nullable(),
   ens: z.string().optional().nullable(),
   status: z.string().optional(),
   email: z.string().optional().nullable(),
   created_at: z.coerce.date().optional(),
-  updated_at: z.coerce.date().optional(),
+  updated_at: z.coerce.date().optional().nullable(),
   collections: z.lazy(() => CollectionCreateNestedManyWithoutCreatorInputSchema).optional(),
   wallets: z.lazy(() => WalletCreateNestedManyWithoutOwnerInputSchema).optional(),
   sessions: z.lazy(() => SessionCreateNestedManyWithoutUserInputSchema).optional(),
@@ -6973,16 +7021,16 @@ export const UserCreateWithoutPasswordInputSchema: z.ZodType<Prisma.UserCreateWi
 
 export const UserUncheckedCreateWithoutPasswordInputSchema: z.ZodType<Prisma.UserUncheckedCreateWithoutPasswordInput> = z.object({
   id: z.string().cuid().optional(),
-  address: z.string(),
-  avatar_uri: z.string(),
-  banner_uri: z.string(),
-  username: z.string().optional().nullable(),
-  description: z.string().optional().nullable(),
+  address: z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }),
+  avatar_uri: z.string().url({ message: "Invalid url" }).optional().nullable(),
+  banner_uri: z.string().url({ message: "Invalid url" }).optional().nullable(),
+  username: z.string().max(64, { message: "too lengthy" }).optional().nullable(),
+  description: z.string().max(512, { message: "too long" }).optional().nullable(),
   ens: z.string().optional().nullable(),
   status: z.string().optional(),
   email: z.string().optional().nullable(),
   created_at: z.coerce.date().optional(),
-  updated_at: z.coerce.date().optional(),
+  updated_at: z.coerce.date().optional().nullable(),
   collections: z.lazy(() => CollectionUncheckedCreateNestedManyWithoutCreatorInputSchema).optional(),
   wallets: z.lazy(() => WalletUncheckedCreateNestedManyWithoutOwnerInputSchema).optional(),
   sessions: z.lazy(() => SessionUncheckedCreateNestedManyWithoutUserInputSchema).optional(),
@@ -7008,16 +7056,16 @@ export const UserUpdateToOneWithWhereWithoutPasswordInputSchema: z.ZodType<Prism
 
 export const UserUpdateWithoutPasswordInputSchema: z.ZodType<Prisma.UserUpdateWithoutPasswordInput> = z.object({
   id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  address: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  avatar_uri: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  banner_uri: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  username: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  description: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  address: z.union([ z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  avatar_uri: z.union([ z.string().url({ message: "Invalid url" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  banner_uri: z.union([ z.string().url({ message: "Invalid url" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  username: z.union([ z.string().max(64, { message: "too lengthy" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  description: z.union([ z.string().max(512, { message: "too long" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   ens: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   status: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   email: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   created_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  updated_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updated_at: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   collections: z.lazy(() => CollectionUpdateManyWithoutCreatorNestedInputSchema).optional(),
   wallets: z.lazy(() => WalletUpdateManyWithoutOwnerNestedInputSchema).optional(),
   sessions: z.lazy(() => SessionUpdateManyWithoutUserNestedInputSchema).optional(),
@@ -7027,16 +7075,16 @@ export const UserUpdateWithoutPasswordInputSchema: z.ZodType<Prisma.UserUpdateWi
 
 export const UserUncheckedUpdateWithoutPasswordInputSchema: z.ZodType<Prisma.UserUncheckedUpdateWithoutPasswordInput> = z.object({
   id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  address: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  avatar_uri: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  banner_uri: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  username: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  description: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  address: z.union([ z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  avatar_uri: z.union([ z.string().url({ message: "Invalid url" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  banner_uri: z.union([ z.string().url({ message: "Invalid url" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  username: z.union([ z.string().max(64, { message: "too lengthy" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  description: z.union([ z.string().max(512, { message: "too long" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   ens: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   status: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   email: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   created_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  updated_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updated_at: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   collections: z.lazy(() => CollectionUncheckedUpdateManyWithoutCreatorNestedInputSchema).optional(),
   wallets: z.lazy(() => WalletUncheckedUpdateManyWithoutOwnerNestedInputSchema).optional(),
   sessions: z.lazy(() => SessionUncheckedUpdateManyWithoutUserNestedInputSchema).optional(),
@@ -7085,16 +7133,16 @@ export const WalletUpdateManyWithWhereWithoutChainInputSchema: z.ZodType<Prisma.
 
 export const UserCreateWithoutWalletsInputSchema: z.ZodType<Prisma.UserCreateWithoutWalletsInput> = z.object({
   id: z.string().cuid().optional(),
-  address: z.string(),
-  avatar_uri: z.string(),
-  banner_uri: z.string(),
-  username: z.string().optional().nullable(),
-  description: z.string().optional().nullable(),
+  address: z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }),
+  avatar_uri: z.string().url({ message: "Invalid url" }).optional().nullable(),
+  banner_uri: z.string().url({ message: "Invalid url" }).optional().nullable(),
+  username: z.string().max(64, { message: "too lengthy" }).optional().nullable(),
+  description: z.string().max(512, { message: "too long" }).optional().nullable(),
   ens: z.string().optional().nullable(),
   status: z.string().optional(),
   email: z.string().optional().nullable(),
   created_at: z.coerce.date().optional(),
-  updated_at: z.coerce.date().optional(),
+  updated_at: z.coerce.date().optional().nullable(),
   collections: z.lazy(() => CollectionCreateNestedManyWithoutCreatorInputSchema).optional(),
   sessions: z.lazy(() => SessionCreateNestedManyWithoutUserInputSchema).optional(),
   roles: z.lazy(() => RoleCreateNestedManyWithoutUsersInputSchema).optional(),
@@ -7104,16 +7152,16 @@ export const UserCreateWithoutWalletsInputSchema: z.ZodType<Prisma.UserCreateWit
 
 export const UserUncheckedCreateWithoutWalletsInputSchema: z.ZodType<Prisma.UserUncheckedCreateWithoutWalletsInput> = z.object({
   id: z.string().cuid().optional(),
-  address: z.string(),
-  avatar_uri: z.string(),
-  banner_uri: z.string(),
-  username: z.string().optional().nullable(),
-  description: z.string().optional().nullable(),
+  address: z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }),
+  avatar_uri: z.string().url({ message: "Invalid url" }).optional().nullable(),
+  banner_uri: z.string().url({ message: "Invalid url" }).optional().nullable(),
+  username: z.string().max(64, { message: "too lengthy" }).optional().nullable(),
+  description: z.string().max(512, { message: "too long" }).optional().nullable(),
   ens: z.string().optional().nullable(),
   status: z.string().optional(),
   email: z.string().optional().nullable(),
   created_at: z.coerce.date().optional(),
-  updated_at: z.coerce.date().optional(),
+  updated_at: z.coerce.date().optional().nullable(),
   collections: z.lazy(() => CollectionUncheckedCreateNestedManyWithoutCreatorInputSchema).optional(),
   sessions: z.lazy(() => SessionUncheckedCreateNestedManyWithoutUserInputSchema).optional(),
   roles: z.lazy(() => RoleUncheckedCreateNestedManyWithoutUsersInputSchema).optional(),
@@ -7133,7 +7181,7 @@ export const ChainCreateWithoutWalletInputSchema: z.ZodType<Prisma.ChainCreateWi
   symbol: z.string(),
   is_testnet: z.boolean().optional(),
   created_at: z.coerce.date().optional(),
-  updated_at: z.coerce.date().optional()
+  updated_at: z.coerce.date().optional().nullable()
 }).strict();
 
 export const ChainUncheckedCreateWithoutWalletInputSchema: z.ZodType<Prisma.ChainUncheckedCreateWithoutWalletInput> = z.object({
@@ -7143,7 +7191,7 @@ export const ChainUncheckedCreateWithoutWalletInputSchema: z.ZodType<Prisma.Chai
   symbol: z.string(),
   is_testnet: z.boolean().optional(),
   created_at: z.coerce.date().optional(),
-  updated_at: z.coerce.date().optional()
+  updated_at: z.coerce.date().optional().nullable()
 }).strict();
 
 export const ChainCreateOrConnectWithoutWalletInputSchema: z.ZodType<Prisma.ChainCreateOrConnectWithoutWalletInput> = z.object({
@@ -7193,16 +7241,16 @@ export const UserUpdateToOneWithWhereWithoutWalletsInputSchema: z.ZodType<Prisma
 
 export const UserUpdateWithoutWalletsInputSchema: z.ZodType<Prisma.UserUpdateWithoutWalletsInput> = z.object({
   id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  address: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  avatar_uri: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  banner_uri: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  username: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  description: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  address: z.union([ z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  avatar_uri: z.union([ z.string().url({ message: "Invalid url" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  banner_uri: z.union([ z.string().url({ message: "Invalid url" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  username: z.union([ z.string().max(64, { message: "too lengthy" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  description: z.union([ z.string().max(512, { message: "too long" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   ens: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   status: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   email: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   created_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  updated_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updated_at: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   collections: z.lazy(() => CollectionUpdateManyWithoutCreatorNestedInputSchema).optional(),
   sessions: z.lazy(() => SessionUpdateManyWithoutUserNestedInputSchema).optional(),
   roles: z.lazy(() => RoleUpdateManyWithoutUsersNestedInputSchema).optional(),
@@ -7212,16 +7260,16 @@ export const UserUpdateWithoutWalletsInputSchema: z.ZodType<Prisma.UserUpdateWit
 
 export const UserUncheckedUpdateWithoutWalletsInputSchema: z.ZodType<Prisma.UserUncheckedUpdateWithoutWalletsInput> = z.object({
   id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  address: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  avatar_uri: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  banner_uri: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  username: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  description: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  address: z.union([ z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  avatar_uri: z.union([ z.string().url({ message: "Invalid url" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  banner_uri: z.union([ z.string().url({ message: "Invalid url" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  username: z.union([ z.string().max(64, { message: "too lengthy" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  description: z.union([ z.string().max(512, { message: "too long" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   ens: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   status: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   email: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   created_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  updated_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updated_at: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   collections: z.lazy(() => CollectionUncheckedUpdateManyWithoutCreatorNestedInputSchema).optional(),
   sessions: z.lazy(() => SessionUncheckedUpdateManyWithoutUserNestedInputSchema).optional(),
   roles: z.lazy(() => RoleUncheckedUpdateManyWithoutUsersNestedInputSchema).optional(),
@@ -7247,7 +7295,7 @@ export const ChainUpdateWithoutWalletInputSchema: z.ZodType<Prisma.ChainUpdateWi
   symbol: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   is_testnet: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
   created_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  updated_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updated_at: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
 }).strict();
 
 export const ChainUncheckedUpdateWithoutWalletInputSchema: z.ZodType<Prisma.ChainUncheckedUpdateWithoutWalletInput> = z.object({
@@ -7257,7 +7305,7 @@ export const ChainUncheckedUpdateWithoutWalletInputSchema: z.ZodType<Prisma.Chai
   symbol: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   is_testnet: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
   created_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  updated_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updated_at: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
 }).strict();
 
 export const SessionUpsertWithWhereUniqueWithoutWalletInputSchema: z.ZodType<Prisma.SessionUpsertWithWhereUniqueWithoutWalletInput> = z.object({
@@ -7278,16 +7326,16 @@ export const SessionUpdateManyWithWhereWithoutWalletInputSchema: z.ZodType<Prism
 
 export const UserCreateWithoutSessionsInputSchema: z.ZodType<Prisma.UserCreateWithoutSessionsInput> = z.object({
   id: z.string().cuid().optional(),
-  address: z.string(),
-  avatar_uri: z.string(),
-  banner_uri: z.string(),
-  username: z.string().optional().nullable(),
-  description: z.string().optional().nullable(),
+  address: z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }),
+  avatar_uri: z.string().url({ message: "Invalid url" }).optional().nullable(),
+  banner_uri: z.string().url({ message: "Invalid url" }).optional().nullable(),
+  username: z.string().max(64, { message: "too lengthy" }).optional().nullable(),
+  description: z.string().max(512, { message: "too long" }).optional().nullable(),
   ens: z.string().optional().nullable(),
   status: z.string().optional(),
   email: z.string().optional().nullable(),
   created_at: z.coerce.date().optional(),
-  updated_at: z.coerce.date().optional(),
+  updated_at: z.coerce.date().optional().nullable(),
   collections: z.lazy(() => CollectionCreateNestedManyWithoutCreatorInputSchema).optional(),
   wallets: z.lazy(() => WalletCreateNestedManyWithoutOwnerInputSchema).optional(),
   roles: z.lazy(() => RoleCreateNestedManyWithoutUsersInputSchema).optional(),
@@ -7297,16 +7345,16 @@ export const UserCreateWithoutSessionsInputSchema: z.ZodType<Prisma.UserCreateWi
 
 export const UserUncheckedCreateWithoutSessionsInputSchema: z.ZodType<Prisma.UserUncheckedCreateWithoutSessionsInput> = z.object({
   id: z.string().cuid().optional(),
-  address: z.string(),
-  avatar_uri: z.string(),
-  banner_uri: z.string(),
-  username: z.string().optional().nullable(),
-  description: z.string().optional().nullable(),
+  address: z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }),
+  avatar_uri: z.string().url({ message: "Invalid url" }).optional().nullable(),
+  banner_uri: z.string().url({ message: "Invalid url" }).optional().nullable(),
+  username: z.string().max(64, { message: "too lengthy" }).optional().nullable(),
+  description: z.string().max(512, { message: "too long" }).optional().nullable(),
   ens: z.string().optional().nullable(),
   status: z.string().optional(),
   email: z.string().optional().nullable(),
   created_at: z.coerce.date().optional(),
-  updated_at: z.coerce.date().optional(),
+  updated_at: z.coerce.date().optional().nullable(),
   collections: z.lazy(() => CollectionUncheckedCreateNestedManyWithoutCreatorInputSchema).optional(),
   wallets: z.lazy(() => WalletUncheckedCreateNestedManyWithoutOwnerInputSchema).optional(),
   roles: z.lazy(() => RoleUncheckedCreateNestedManyWithoutUsersInputSchema).optional(),
@@ -7355,16 +7403,16 @@ export const UserUpdateToOneWithWhereWithoutSessionsInputSchema: z.ZodType<Prism
 
 export const UserUpdateWithoutSessionsInputSchema: z.ZodType<Prisma.UserUpdateWithoutSessionsInput> = z.object({
   id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  address: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  avatar_uri: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  banner_uri: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  username: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  description: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  address: z.union([ z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  avatar_uri: z.union([ z.string().url({ message: "Invalid url" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  banner_uri: z.union([ z.string().url({ message: "Invalid url" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  username: z.union([ z.string().max(64, { message: "too lengthy" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  description: z.union([ z.string().max(512, { message: "too long" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   ens: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   status: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   email: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   created_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  updated_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updated_at: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   collections: z.lazy(() => CollectionUpdateManyWithoutCreatorNestedInputSchema).optional(),
   wallets: z.lazy(() => WalletUpdateManyWithoutOwnerNestedInputSchema).optional(),
   roles: z.lazy(() => RoleUpdateManyWithoutUsersNestedInputSchema).optional(),
@@ -7374,16 +7422,16 @@ export const UserUpdateWithoutSessionsInputSchema: z.ZodType<Prisma.UserUpdateWi
 
 export const UserUncheckedUpdateWithoutSessionsInputSchema: z.ZodType<Prisma.UserUncheckedUpdateWithoutSessionsInput> = z.object({
   id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  address: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  avatar_uri: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  banner_uri: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  username: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  description: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  address: z.union([ z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  avatar_uri: z.union([ z.string().url({ message: "Invalid url" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  banner_uri: z.union([ z.string().url({ message: "Invalid url" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  username: z.union([ z.string().max(64, { message: "too lengthy" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  description: z.union([ z.string().max(512, { message: "too long" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   ens: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   status: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   email: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   created_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  updated_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updated_at: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   collections: z.lazy(() => CollectionUncheckedUpdateManyWithoutCreatorNestedInputSchema).optional(),
   wallets: z.lazy(() => WalletUncheckedUpdateManyWithoutOwnerNestedInputSchema).optional(),
   roles: z.lazy(() => RoleUncheckedUpdateManyWithoutUsersNestedInputSchema).optional(),
@@ -7461,16 +7509,16 @@ export const RoleUpdateManyWithWhereWithoutPermissionsInputSchema: z.ZodType<Pri
 
 export const UserCreateWithoutRolesInputSchema: z.ZodType<Prisma.UserCreateWithoutRolesInput> = z.object({
   id: z.string().cuid().optional(),
-  address: z.string(),
-  avatar_uri: z.string(),
-  banner_uri: z.string(),
-  username: z.string().optional().nullable(),
-  description: z.string().optional().nullable(),
+  address: z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }),
+  avatar_uri: z.string().url({ message: "Invalid url" }).optional().nullable(),
+  banner_uri: z.string().url({ message: "Invalid url" }).optional().nullable(),
+  username: z.string().max(64, { message: "too lengthy" }).optional().nullable(),
+  description: z.string().max(512, { message: "too long" }).optional().nullable(),
   ens: z.string().optional().nullable(),
   status: z.string().optional(),
   email: z.string().optional().nullable(),
   created_at: z.coerce.date().optional(),
-  updated_at: z.coerce.date().optional(),
+  updated_at: z.coerce.date().optional().nullable(),
   collections: z.lazy(() => CollectionCreateNestedManyWithoutCreatorInputSchema).optional(),
   wallets: z.lazy(() => WalletCreateNestedManyWithoutOwnerInputSchema).optional(),
   sessions: z.lazy(() => SessionCreateNestedManyWithoutUserInputSchema).optional(),
@@ -7480,16 +7528,16 @@ export const UserCreateWithoutRolesInputSchema: z.ZodType<Prisma.UserCreateWitho
 
 export const UserUncheckedCreateWithoutRolesInputSchema: z.ZodType<Prisma.UserUncheckedCreateWithoutRolesInput> = z.object({
   id: z.string().cuid().optional(),
-  address: z.string(),
-  avatar_uri: z.string(),
-  banner_uri: z.string(),
-  username: z.string().optional().nullable(),
-  description: z.string().optional().nullable(),
+  address: z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }),
+  avatar_uri: z.string().url({ message: "Invalid url" }).optional().nullable(),
+  banner_uri: z.string().url({ message: "Invalid url" }).optional().nullable(),
+  username: z.string().max(64, { message: "too lengthy" }).optional().nullable(),
+  description: z.string().max(512, { message: "too long" }).optional().nullable(),
   ens: z.string().optional().nullable(),
   status: z.string().optional(),
   email: z.string().optional().nullable(),
   created_at: z.coerce.date().optional(),
-  updated_at: z.coerce.date().optional(),
+  updated_at: z.coerce.date().optional().nullable(),
   collections: z.lazy(() => CollectionUncheckedCreateNestedManyWithoutCreatorInputSchema).optional(),
   wallets: z.lazy(() => WalletUncheckedCreateNestedManyWithoutOwnerInputSchema).optional(),
   sessions: z.lazy(() => SessionUncheckedCreateNestedManyWithoutUserInputSchema).optional(),
@@ -7549,15 +7597,15 @@ export const UserScalarWhereInputSchema: z.ZodType<Prisma.UserScalarWhereInput> 
   NOT: z.union([ z.lazy(() => UserScalarWhereInputSchema),z.lazy(() => UserScalarWhereInputSchema).array() ]).optional(),
   id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   address: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  avatar_uri: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  banner_uri: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  avatar_uri: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
+  banner_uri: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
   username: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
   description: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
   ens: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
   status: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   email: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
   created_at: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
-  updated_at: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  updated_at: z.union([ z.lazy(() => DateTimeNullableFilterSchema),z.coerce.date() ]).optional().nullable(),
 }).strict();
 
 export const PermissionUpsertWithWhereUniqueWithoutRolesInputSchema: z.ZodType<Prisma.PermissionUpsertWithWhereUniqueWithoutRolesInput> = z.object({
@@ -7980,16 +8028,16 @@ export const RoleUncheckedUpdateManyWithoutPermissionsInputSchema: z.ZodType<Pri
 
 export const UserUpdateWithoutRolesInputSchema: z.ZodType<Prisma.UserUpdateWithoutRolesInput> = z.object({
   id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  address: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  avatar_uri: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  banner_uri: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  username: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  description: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  address: z.union([ z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  avatar_uri: z.union([ z.string().url({ message: "Invalid url" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  banner_uri: z.union([ z.string().url({ message: "Invalid url" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  username: z.union([ z.string().max(64, { message: "too lengthy" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  description: z.union([ z.string().max(512, { message: "too long" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   ens: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   status: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   email: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   created_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  updated_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updated_at: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   collections: z.lazy(() => CollectionUpdateManyWithoutCreatorNestedInputSchema).optional(),
   wallets: z.lazy(() => WalletUpdateManyWithoutOwnerNestedInputSchema).optional(),
   sessions: z.lazy(() => SessionUpdateManyWithoutUserNestedInputSchema).optional(),
@@ -7999,16 +8047,16 @@ export const UserUpdateWithoutRolesInputSchema: z.ZodType<Prisma.UserUpdateWitho
 
 export const UserUncheckedUpdateWithoutRolesInputSchema: z.ZodType<Prisma.UserUncheckedUpdateWithoutRolesInput> = z.object({
   id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  address: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  avatar_uri: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  banner_uri: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  username: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  description: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  address: z.union([ z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  avatar_uri: z.union([ z.string().url({ message: "Invalid url" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  banner_uri: z.union([ z.string().url({ message: "Invalid url" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  username: z.union([ z.string().max(64, { message: "too lengthy" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  description: z.union([ z.string().max(512, { message: "too long" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   ens: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   status: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   email: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   created_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  updated_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updated_at: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   collections: z.lazy(() => CollectionUncheckedUpdateManyWithoutCreatorNestedInputSchema).optional(),
   wallets: z.lazy(() => WalletUncheckedUpdateManyWithoutOwnerNestedInputSchema).optional(),
   sessions: z.lazy(() => SessionUncheckedUpdateManyWithoutUserNestedInputSchema).optional(),
@@ -8018,16 +8066,16 @@ export const UserUncheckedUpdateWithoutRolesInputSchema: z.ZodType<Prisma.UserUn
 
 export const UserUncheckedUpdateManyWithoutRolesInputSchema: z.ZodType<Prisma.UserUncheckedUpdateManyWithoutRolesInput> = z.object({
   id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  address: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  avatar_uri: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  banner_uri: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  username: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  description: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  address: z.union([ z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  avatar_uri: z.union([ z.string().url({ message: "Invalid url" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  banner_uri: z.union([ z.string().url({ message: "Invalid url" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  username: z.union([ z.string().max(64, { message: "too lengthy" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  description: z.union([ z.string().max(512, { message: "too long" }),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   ens: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   status: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   email: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   created_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  updated_at: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updated_at: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
 }).strict();
 
 export const PermissionUpdateWithoutRolesInputSchema: z.ZodType<Prisma.PermissionUpdateWithoutRolesInput> = z.object({

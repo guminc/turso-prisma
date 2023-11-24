@@ -6,6 +6,8 @@ import {
   getMongoUsersFromFile,
   parseArgs,
 } from "../lib/utils";
+import { UserSchema } from "../types/generated";
+import cuid from "cuid";
 
 require("dotenv-safe").config();
 
@@ -19,18 +21,22 @@ const adapter = new PrismaLibSQL(localClient);
 const prisma = new PrismaClient({ adapter });
 
 function cleanUserForSqlite(userMongo: any) {
-  return {
-    address: userMongo.address || "",
-    avatar_uri: userMongo.avatar_uri || "",
-    banner_uri: userMongo.banner_uri || "",
-    description: userMongo.description || "",
-    username: userMongo.username || "",
-    ens: userMongo.ens || "",
-    created_at: userMongo.joined_time
-      ? new Date(userMongo.joined_time)
-      : new Date(),
+  const input = {
+    ...userMongo,
+    id: cuid(),
+    created_at: userMongo.joined_time,
     status: "active",
   };
+
+  const result = UserSchema.safeParse(input);
+
+  if (!result.success) {
+    console.error({ error: result.error });
+    // handle error then return
+    throw new Error("Invalid user", result.error);
+  }
+
+  return result.data;
 }
 
 async function main() {
