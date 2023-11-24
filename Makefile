@@ -32,7 +32,6 @@ seed-prod:
 	turso db shell $$REMOTE_DB_NAME < ./dump/dump.sql
 
 seed-prod-rust:
-	./scripts/echo.sh
 	npx ts-node ./scripts/migrate.ts --source=$(source) --write=rust
 
 reset-local:
@@ -71,23 +70,3 @@ migrate-users-to-prod:
 
 dump-local:
 	sqlite3 ./prisma/dev.db '.output ./dump/dump.sql' '.dump'
-
-
-wipe-prod-everything:
-# sqlite3 ./prisma/dev.db '.output ./dump/dump.sql' '.dump'
-# turso db shell $$REMOTE_DB_NAME "PRAGMA writable_schema = 1; VACUUM;"
-	./scripts/drop-tables.sh
-
-
-
-# -- Delete all tables and views
-# DELETE FROM sqlite_master WHERE type IN ('table', 'view');
-
-# -- Clean up
-# PRAGMA writable_schema = 0;
-
-# -- Verify that the schema is empty
-# VACUUM;
-
-# -- Disable the write-ahead log mode
-# PRAGMA integrity_check;
