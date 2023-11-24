@@ -24,7 +24,7 @@ migrate-prod:
 	done
 
 wipe-prod:
-	npx ts-node ./scripts/dropAllTables.js
+	node ./scripts/dropAllTables.js
 
 wipe-local:
 	rm -rf ./prisma/dev.db
