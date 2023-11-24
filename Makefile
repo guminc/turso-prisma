@@ -41,14 +41,13 @@ seed-local-users:
 
 migrate-users-to-prod:
 	./scripts/echo.sh
-# @if [ "$(source)" = "file" ]; then \
-# 	$(MAKE) dump-mongo-users; \
-# fi
+	@if [ "$(source)" = "file" ]; then \
+		$(MAKE) dump-mongo-users; \
+	fi
 	$(MAKE) reset-local
 	$(MAKE) seed-local-users
 	$(MAKE) dump-local
 	$(MAKE) wipe-prod
-# $(MAKE) migrate-prod don't need this because the dump includes migrations
 	$(MAKE) seed-prod
 
 dump-local:
