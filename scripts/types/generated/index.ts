@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import type { Prisma } from '@prisma/client';
 import { getAddress } from 'ethers'
+import { userStatusEnums } from '../types'
 
 /////////////////////////////////////////
 // HELPER FUNCTIONS

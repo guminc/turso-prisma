@@ -5,8 +5,8 @@ import {
   getMongoUsersFromNetwork,
   getMongoUsersFromFile,
   parseArgs,
-} from "../lib/utils";
-import { UserSchema } from "../types/generated";
+} from "./lib/utils";
+import { UserSchema } from "./types/generated";
 import cuid from "cuid";
 
 require("dotenv-safe").config();
@@ -59,7 +59,7 @@ async function main() {
 
     console.time("Inserting docs into Prisma");
 
-    const userInserts = usersMongo.map((user) => {
+    const userInserts = usersMongo.map((user: any) => {
       const cleanedUser = cleanUserForSqlite(user);
       return prisma.user.create({ data: cleanedUser });
     });

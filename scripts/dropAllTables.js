@@ -13,7 +13,22 @@ function getArrayFromCommand(command) {
           .split("\n")
           .map((item) => item.trim())
           .filter(Boolean)
-          .filter((table) => !table.startsWith("sqlite_"));
+          .filter((table) => !table.startsWith("sqlite_"))
+          .sort((a, b) => {
+            // drop the User table last because a lot of tables have foreign key constraints to it
+            if (a === "User") return 1;
+            if (b === "User") return -1;
+
+            // due to foreign key constraints, we need to drop joining tables first. Those tables start with _
+            if (a.startsWith("_") && !b.startsWith("_")) {
+              return -1;
+            } else if (!a.startsWith("_") && b.startsWith("_")) {
+              return 1;
+            } else {
+              return 0;
+            }
+          });
+
         resolve(array);
       }
     });
@@ -38,7 +53,9 @@ function dropItem(item, type) {
 getArrayFromCommand(
   `turso db shell --location iad ${REMOTE_DB_NAME} ".tables"`
 ).then((tables) => {
-  tables.forEach((table) => dropItem(table, "TABLE"));
+  tables.forEach((table) => {
+    dropItem(table, "TABLE");
+  });
 });
 
 // Get all index names and drop them

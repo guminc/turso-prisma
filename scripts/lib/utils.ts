@@ -20,7 +20,12 @@ export function parseArgs() {
 
 export function getMongoUsersFromFile() {
   let usersMongo = [];
-  const pathToUsersBson = path.join(__dirname, "../dump/Scatter/Users.bson");
+  const pathToUsersBson = path.join(__dirname, "../../dump/Scatter/Users.bson");
+
+  if (!fs.existsSync(pathToUsersBson)) {
+    throw new Error("Users.bson file not found at path: " + pathToUsersBson);
+  }
+
   const buffer = fs.readFileSync(pathToUsersBson);
   let offset = 0;
 
