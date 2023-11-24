@@ -4,3 +4,5 @@ dist/
 prisma/dev.db
 dump.sql
 dump/
+
+scripts/rust/target/

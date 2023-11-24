@@ -1,6 +1,14 @@
+/// refer to https://github.com/chrishoermann/zod-prisma-types for @zod validators
+
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["driverAdapters"]
+}
+
+generator zod {
+  provider                 = "zod-prisma-types"
+  output                   = "../types/generated"
+  writeNullishInModelTypes = true
 }
 
 datasource db {
@@ -40,10 +48,10 @@ model Collection {
   num_items               Int
   num_owners              Int
   last_refreshed          DateTime
-  MintData                MintData?
-  Creator                 User      @relation(fields: [user_id], references: [id])
+  mint_data               MintData?
+  creator                 User      @relation(fields: [user_id], references: [id])
   user_id                 String    @unique
-  Nfts                    Nft[]
+  nfts                    Nft[]
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -70,8 +78,8 @@ model Nft {
   owner_of                String
   token_id_int            Int
   token_uri               String
-  OpenRarity              OpenRarity?
-  Collection              Collection  @relation(fields: [collection_id], references: [id])
+  open_rarity             OpenRarity?
+  collection              Collection  @relation(fields: [collection_id], references: [id])
   collection_id           String
 
   created_at DateTime @default(now())
@@ -99,7 +107,7 @@ model MintData {
   last_1m_decimal     Float
   last_6m_decimal     Float
   date_last_sale      DateTime
-  Collection          Collection @relation(fields: [collection_id], references: [id])
+  collection          Collection @relation(fields: [collection_id], references: [id])
   collection_id       String     @unique
 
   created_at DateTime @default(now())
@@ -111,26 +119,140 @@ model OpenRarity {
   rank              Int
   score             Float
   unique_attributes Int
-  Nft               Nft    @relation(fields: [nft_id], references: [id])
+  nft               Nft    @relation(fields: [nft_id], references: [id])
   nft_id            String @unique
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 }
 
+/// @zod.import(["import { getAddress } from 'ethers'", "import { userStatusEnums } from '../types'"])
 model User {
-  id          String       @id @default(cuid())
-  address     String       @unique
-  token       String
-  avatar_uri  String
-  banner_uri  String
-  description String
-  username    String
-  ens         String
-  Collections Collection[]
+  id          String  @id @default(cuid())
+  address     String  @unique ///@zod.import(["import { getAddress } from 'ethers'"]).custom.use(z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }))
+  avatar_uri  String? /// @zod.string.url({ message: "Invalid url" })
+  banner_uri  String? /// @zod.string.url({ message: "Invalid url" })
+  username    String? /// @zod.string.max(64, { message: "too lengthy" })
+  description String? /// @zod.string.max(512, { message: "too long" })
+  ens         String?
+  status      String  @default("pending")
+
+  collections Collection[]
+  wallets     Wallet[]
+  sessions    Session[]
+  roles       Role[]
+  connections Connection[]
+
+  email    String?
+  password Password?
+
+  created_at DateTime  @default(now())
+  updated_at DateTime? @updatedAt
+}
+
+model Connection {
+  id            String @id @default(cuid())
+  provider_name String
+  provider_id   String @unique
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
+
+  user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user_id String
+
+  @@unique([provider_name, provider_id])
+  @@unique([provider_id, user_id])
+}
+
+model Password {
+  hash String
+
+  user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user_id String @unique
+}
+
+model Chain {
+  id     Int    @id @unique
+  slug   String @unique // "eth" || "sepolia"
+  name   String @unique
+  symbol String @unique
+
+  is_testnet Boolean @default(false)
+
+  created_at DateTime  @default(now())
+  updated_at DateTime? @updatedAt
+
+  wallet Wallet[]
+}
+
+model Wallet {
+  id      String @id @default(cuid())
+  address String @unique
+
+  owner    User   @relation(fields: [owner_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  owner_id String
+
+  chain    Chain @relation(fields: [chain_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  chain_id Int
+
+  sessions Session[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // non-unique foreign key
+  @@index([owner_id])
+}
+
+model Session {
+  id              String   @id @default(cuid())
+  expiration_date DateTime
+
+  user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user_id String
+
+  wallet    Wallet @relation(fields: [wallet_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  wallet_id String
+
+  user_agent String  @default("")
+  locale     String?
+  ip_address String?
+  nonce      String?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@unique([user_id, user_agent])
+  // non-unique foreign key
+  @@index([user_id])
+}
+
+model Permission {
+  id          String @id @default(cuid())
+  action      String // e.g. create, read, update, delete
+  entity      String // e.g. note, user, etc.
+  access      String // e.g. own or any
+  description String @default("")
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  roles Role[]
+
+  @@unique([action, entity, access])
+}
+
+model Role {
+  id          String @id @default(cuid())
+  name        String @unique
+  description String @default("")
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  users       User[]
+  permissions Permission[]
 }
 
 model MintSaleTransaction {
