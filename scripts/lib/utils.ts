@@ -1,5 +1,7 @@
 import fs from "fs";
 import path from "path";
+import os from "os";
+import { spawn } from "child_process";
 
 import { BSON } from "bson";
 import { MongoClient } from "mongodb";
@@ -98,23 +100,58 @@ export async function getMongoTablesFromNetwork() {
 export function getBatchSqlStatements(
   objects: Object[],
   tableName: string,
-  cleanObject: Function
 ): string {
   let statements: string[] = [];
-  objects.map((obj) => {
-    const cleanedObj = cleanObject(obj);
-    if (cleanedObj != null) {
-      const keys = Object.keys(cleanedObj);
-      const columns = keys.join(", ");
-      const values = Object.values(cleanedObj).map((value) => {
-        return typeof value === "string"
-          ? `'${value.replace(/'/g, "''")}'`
-          : value;
-      });
-      statements.push(
-        `INSERT INTO ${tableName} (${columns}) VALUES (${values})`
-      );
-    }
+  objects.map((cleanedObj) => {
+    const keys = Object.keys(cleanedObj);
+    const columns = keys.join(", ");
+    const values = Object.values(cleanedObj).map((value) => {
+      if (value instanceof Date) {
+        return `'${value.toISOString()}'`;
+      }
+      if (value === null || value === undefined) {
+        return 'NULL';
+      }
+      return typeof value === "string"
+        ? `'${value.replace(/'/g, "''")}'`
+        : value;
+    });
+    statements.push(
+      `INSERT INTO ${tableName} (${columns}) VALUES (${values})`
+    );
   });
   return statements.join(";\n");
+}
+
+export async function writeWithRustClient(batchStatements: string[], db: string) {
+  let arg = db == 'local' ? '--local-db' : ''
+  for (let i = 0; i < batchStatements.length; i++) {
+    const tempFilePath = path.join(os.tmpdir(), "batch.sql");
+    fs.writeFileSync(tempFilePath, batchStatements[i]);
+    await new Promise((resolve, reject) => {
+      const rustProcess = spawn("./scripts/rust/target/release/upload", [
+        tempFilePath,
+        arg
+      ]);
+
+      rustProcess.stdout.on("data", (data) => {
+        console.log(`stdout: ${data}`);
+      });
+
+      rustProcess.stderr.on("data", (data) => {
+        console.error(`stderr: ${data}`);
+        reject(new Error(`Rust process error: ${data}`));
+      });
+
+      rustProcess.on("close", (code) => {
+        console.log(`Rust process exited with code ${code}`);
+        fs.unlinkSync(tempFilePath);
+        resolve(code);
+      });
+    });
+  }
+}
+
+export function writeWithPrismaClient() {
+
 }

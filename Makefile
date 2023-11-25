@@ -47,7 +47,7 @@ reset-local:
 	$(MAKE) wipe-local
 	$(MAKE) create-migration
 
-seed-local-users:
+seed-local-tables:
 	npx ts-node ./scripts/migrate.ts --source=$(source)
 
 build-rust-binary:
@@ -66,7 +66,7 @@ migrate-users-to-prod:
 		$(MAKE) seed-prod-rust; \
 	else \
 		$(MAKE) reset-local; \
-		$(MAKE) seed-local-users; \
+		$(MAKE) seed-local-tables; \
 		$(MAKE) dump-local; \
 		$(MAKE) wipe-prod; \
 		$(MAKE) seed-prod ;\
