@@ -86,7 +86,7 @@ function cleanUserForSqlite(userMongo: any) {
   if (!result.success) {
     console.error({ error: result.error });
     // handle error then return
-    throw new Error(`Invalid user, ${result.error}`);
+    throw new Error("Invalid user", result.error);
   }
 
   return result.data;
