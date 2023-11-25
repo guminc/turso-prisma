@@ -69,7 +69,24 @@ function cleanCollectionForSqlite(collectionMongo: any) {
       ? new Date(collectionMongo.created_at).toISOString()
       : new Date().toISOString(),
     updated_at: new Date().toISOString(),
+
+function cleanUserForSqlite(userMongo: any) {
+  const input = {
+    ...userMongo,
+    id: cuid(),
+    created_at: userMongo.joined_time,
+    status: "active",
   };
+
+  const result = UserSchema.safeParse(input);
+
+  if (!result.success) {
+    console.error({ error: result.error });
+    // handle error then return
+    throw new Error("Invalid user", result.error);
+  }
+
+  return result.data;
 }
 
 function cleanUserForSqlite(userMongo: any) {

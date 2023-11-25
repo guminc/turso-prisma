@@ -38,6 +38,7 @@ export function getMongoTablesFromFile() {
     const size = userbuffer.readInt32LE(offset);
     // Extract the document's buffer using subarray
     const documentBuffer = userbuffer.subarray(offset, offset + size);
+
     // Deserialize the document
     const document = BSON.deserialize(documentBuffer);
 

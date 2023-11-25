@@ -50,11 +50,6 @@ reset-local:
 seed-local-users:
 	npx ts-node ./scripts/migrate.ts --source=$(source)
 
-migrate-prod:
-	for file in ./prisma/migrations/*/*.sql; do \
-		turso db shell $$REMOTE_DB_NAME < $$file; \
-	done
-
 build-rust-binary:
 	cargo build --release --manifest-path ./scripts/rust/Cargo.toml
 
