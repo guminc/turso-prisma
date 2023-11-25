@@ -24,6 +24,7 @@ const adapter = new PrismaLibSQL(localClient);
 const prisma = new PrismaClient({ adapter });
 
 function cleanCollectionForSqlite(collectionMongo: any) {
+  // revist forced empty and stringify fields
   const input = {
     ...collectionMongo,
     id: cuid(),
@@ -121,7 +122,6 @@ async function main() {
       if (cleaned != null && cleaned.creator_address) {
         const user = await prisma.user.findFirst({ where: { address: cleaned.creator_address } })
         if (!user) {
-          console.log(cleaned)
           console.log("User", cleaned.creator_address, "does not exist, creating User ...")
           await prisma.user.create({
             data: cleanUserForSqlite({
@@ -140,6 +140,7 @@ async function main() {
     );
 
     await writeToDb(batchStatements, write)
+
   } catch (error) {
     console.error(error);
   }
