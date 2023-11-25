@@ -24,11 +24,22 @@ export function getMongoTablesFromFile() {
   let usersMongo = [];
   let collectionsMongo = [];
 
-  const pathToUsersBson = path.join(__dirname, "../dump/Scatter/Users.bson");
+  const pathToUsersBson = path.join(__dirname, "../../dump/Scatter/Users.bson");
   const pathToCollectionsBson = path.join(
     __dirname,
-    "../dump/Scatter/Collections.bson"
+    "../../dump/Scatter/Collections.bson"
   );
+
+  if (!fs.existsSync(pathToUsersBson)) {
+    throw new Error("Users.bson file not found at path: " + pathToUsersBson);
+  }
+
+  if (!fs.existsSync(pathToCollectionsBson)) {
+    throw new Error(
+      "Collections.bson file not found at path: " + pathToCollectionsBson
+    );
+  }
+
   const userbuffer = fs.readFileSync(pathToUsersBson);
   const collectionBuffer = fs.readFileSync(pathToCollectionsBson);
 
