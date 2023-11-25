@@ -9,7 +9,7 @@ all: migrate-users-to-prod
 
 create-migration:
 	npx prisma migrate dev
-	npx prettier --write ./scripts/types/generated/index.ts
+	npx prettier --write ./types/generated/index.ts
 
 dump-mongo-everything:
 	./scripts/echo.sh

@@ -6,7 +6,7 @@ import {
   getMongoUsersFromFile,
   parseArgs,
 } from "./lib/utils";
-import { UserSchema } from "./types/generated";
+import { UserSchema } from "../types/generated";
 import cuid from "cuid";
 
 require("dotenv-safe").config();
