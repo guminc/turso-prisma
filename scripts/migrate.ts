@@ -1,19 +1,19 @@
-import { PrismaClient } from "@prisma/client";
-import { PrismaLibSQL } from "@prisma/adapter-libsql";
 import { createClient } from "@libsql/client";
-import {
-  getMongoTablesFromNetwork,
-  getMongoTablesFromFile,
-  parseArgs,
-  getBatchSqlStatements,
-} from "../lib/utils";
-import path from "path";
-import os from "os";
-import fs from "fs";
-import cuid from "cuid";
+import { PrismaLibSQL } from "@prisma/adapter-libsql";
+import { PrismaClient } from "@prisma/client";
 import { spawn } from "child_process";
+import cuid from "cuid";
 import { ethers } from "ethers";
-import { UserSchema } from "./types/generated";
+import fs from "fs";
+import os from "os";
+import path from "path";
+import { UserSchema } from "../types/generated";
+import {
+  getBatchSqlStatements,
+  getMongoTablesFromFile,
+  getMongoTablesFromNetwork,
+  parseArgs,
+} from "./lib/utils";
 
 require("dotenv-safe").config();
 
@@ -69,24 +69,6 @@ function cleanCollectionForSqlite(collectionMongo: any) {
       ? new Date(collectionMongo.created_at).toISOString()
       : new Date().toISOString(),
     updated_at: new Date().toISOString(),
-
-function cleanUserForSqlite(userMongo: any) {
-  const input = {
-    ...userMongo,
-    id: cuid(),
-    created_at: userMongo.joined_time,
-    status: "active",
-  };
-
-  const result = UserSchema.safeParse(input);
-
-  if (!result.success) {
-    console.error({ error: result.error });
-    // handle error then return
-    throw new Error("Invalid user", result.error);
-  }
-
-  return result.data;
 }
 
 function cleanUserForSqlite(userMongo: any) {
@@ -102,7 +84,7 @@ function cleanUserForSqlite(userMongo: any) {
   if (!result.success) {
     console.error({ error: result.error });
     // handle error then return
-    throw new Error("Invalid user", result.error);
+    throw new Error(`Invalid user, ${result.error}`);
   }
 
   return result.data;
@@ -130,10 +112,11 @@ async function main() {
     if (write == "rust") {
       console.time("Inserting docs into prod with Rust");
 
-      const batchStatements = [];
+      const batchStatements: string[] = [];
       batchStatements.push(
         getBatchSqlStatements(usersMongo, "User", cleanUserForSqlite)
       );
+
       batchStatements.push(
         getBatchSqlStatements(
           collectionsMongo,

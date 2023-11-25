@@ -7,7 +7,7 @@ generator client {
 
 generator zod {
   provider                 = "zod-prisma-types"
-  output                   = "../scripts/types/generated"
+  output                   = "../types/generated"
   writeNullishInModelTypes = true
 }
 
@@ -17,41 +17,40 @@ datasource db {
 }
 
 model Collection {
-  id                      String    @id @default(cuid())
-  name                    String
-  max_items               Int
-  max_batch_size          Int
-  symbol                  String
-  creator_address         String
-  is_hidden               Boolean
-  sort_order              Int
-  is_mint_active          Boolean
-  is_archetype            Boolean
-  is_pending              Boolean
-  discounts               String // JSON serialized as a string
-  owner_alt_payout        String
-  super_affiliate_payout  String
-  contract_version        Int
-  slug                    String
-  mint_info               String // JSON serialized as a string
-  socials                 String // JSON serialized as a string
-  token_address           String
-  token_address_lowercase String
-  trait_counts            String // JSON serialized as a string
-  avatar_uri              String
-  banner_uri              String
-  description             String
-  hero_uri                String
-  twitter                 String
-  website                 String
-  discord                 String
-  num_items               Int
-  num_owners              Int
-  last_refreshed          DateTime
-  mint_data               MintData?
-  creator                 User      @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  user_id                 String    @unique
-  nfts                    Nft[]
+  id                     String    @id @default(cuid())
+  name                   String
+  max_items              Int
+  max_batch_size         Int
+  symbol                 String
+  creator_address        String
+  is_hidden              Boolean
+  sort_order             Int
+  is_mint_active         Boolean
+  is_archetype           Boolean
+  is_pending             Boolean
+  discounts              String // JSON serialized as a string
+  owner_alt_payout       String
+  super_affiliate_payout String
+  contract_version       Int
+  slug                   String
+  mint_info              String // JSON serialized as a string
+  socials                String // JSON serialized as a string
+  token_address          String
+  trait_counts           String // JSON serialized as a string
+  avatar_uri             String
+  banner_uri             String
+  description            String
+  hero_uri               String
+  twitter                String
+  website                String
+  discord                String
+  num_items              Int
+  num_owners             Int
+  last_refreshed         DateTime
+  mint_data              MintData?
+  creator                User      @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user_id                String    @unique
+  nfts                   Nft[]
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
