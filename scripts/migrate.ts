@@ -13,6 +13,7 @@ import fs from "fs";
 import cuid from "cuid";
 import { spawn } from "child_process";
 import { ethers } from "ethers";
+import { UserSchema } from "./types/generated";
 
 require("dotenv-safe").config();
 
@@ -72,20 +73,22 @@ function cleanCollectionForSqlite(collectionMongo: any) {
 }
 
 function cleanUserForSqlite(userMongo: any) {
-  return {
+  const input = {
+    ...userMongo,
     id: cuid(),
-    address: ethers.getAddress(userMongo.address) || "",
-    token: userMongo.token || "",
-    avatar_uri: userMongo.avatar_uri || "",
-    banner_uri: userMongo.banner_uri || "",
-    description: userMongo.description || "",
-    username: userMongo.username || "",
-    ens: userMongo.ens || "",
-    created_at: userMongo.joined_time
-      ? new Date(userMongo.joined_time).toISOString()
-      : new Date().toISOString(),
-    updated_at: new Date().toISOString(),
+    created_at: userMongo.joined_time,
+    status: "active",
   };
+
+  const result = UserSchema.safeParse(input);
+
+  if (!result.success) {
+    console.error({ error: result.error });
+    // handle error then return
+    throw new Error("Invalid user", result.error);
+  }
+
+  return result.data;
 }
 
 async function main() {
@@ -149,13 +152,13 @@ async function main() {
       }
     } else {
       console.time("Inserting docs into Prisma");
-      const userInserts = usersMongo.map((user) => {
+      const userInserts = usersMongo.map((user: any) => {
         const cleanedUser = cleanUserForSqlite(user);
         return prisma.user.create({ data: cleanedUser });
       });
       await prisma.$transaction(userInserts);
       let collectionInserts: any[] = [];
-      collectionsMongo.map((collection) => {
+      collectionsMongo.map((collection: any) => {
         const cleanedCollection = cleanCollectionForSqlite(collection);
         if (cleanedCollection != null) {
           collectionInserts.push(

@@ -9,6 +9,7 @@ all: migrate-users-to-prod
 
 create-migration:
 	npx prisma migrate dev
+	npx prettier --write ./scripts/types/generated/index.ts
 
 dump-mongo-everything:
 	./scripts/echo.sh
@@ -22,14 +23,22 @@ dump-mongo-collections:
 	./scripts/echo.sh
 	mongodump --collection=Collections --forceTableScan --uri $$MONGO_URI
 
+migrate-prod:
+	for file in ./prisma/migrations/*/*.sql; do \
+		turso db shell --location iad $$REMOTE_DB_NAME < $$file; \
+	done
+
+# running this twice as a hack to get around foreign keys constraints
 wipe-prod:
-	turso db shell $$REMOTE_DB_NAME < ./prisma/reset/dropTables.sql
+	node ./scripts/dropAllTables.js
+	node ./scripts/dropAllTables.js
 
 wipe-local:
-	sqlite3 ./prisma/dev.db < ./prisma/reset/dropTables.sql
+	rm -rf ./prisma/dev.db
+	sqlite3 ./prisma/dev.db ".quit"
 
 seed-prod:
-	turso db shell $$REMOTE_DB_NAME < ./dump/dump.sql
+	turso db shell --location iad $$REMOTE_DB_NAME < ./dump.sql
 
 seed-prod-rust:
 	npx ts-node ./scripts/migrate.ts --source=$(source) --write=rust
@@ -69,4 +78,11 @@ migrate-users-to-prod:
 	fi
 
 dump-local:
-	sqlite3 ./prisma/dev.db '.output ./dump/dump.sql' '.dump'
+	sqlite3 ./prisma/dev.db '.output ./dump.sql' '.dump'
+
+baseline:
+	mkdir -p prisma/migrations/0_init
+	npx prisma migrate diff \
+		--from-empty \
+		--to-schema-datamodel prisma/schema.prisma \
+		--script > prisma/migrations/0_init/migration.sql
