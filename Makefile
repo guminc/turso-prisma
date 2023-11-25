@@ -12,15 +12,12 @@ create-migration:
 	npx prettier --write ./types/generated/index.ts
 
 dump-mongo-everything:
-	./scripts/echo.sh
 	mongodump --forceTableScan --uri $$MONGO_URI
 
 dump-mongo-users:
-	./scripts/echo.sh
 	mongodump --collection=Users --forceTableScan --uri $$MONGO_URI
 
 dump-mongo-collections:
-	./scripts/echo.sh
 	mongodump --collection=Collections --forceTableScan --uri $$MONGO_URI
 
 migrate-prod:
