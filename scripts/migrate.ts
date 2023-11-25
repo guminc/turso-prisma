@@ -75,6 +75,18 @@ function cleanUserForSqlite(userMongo: any) {
   return result.data;
 }
 
+async function writeToDb(batchStatements: string[], write: string,) {
+  if (write == "prod") {
+    console.time("Inserting docs into prod with Rust");
+    await writeWithRustClient(batchStatements, 'prod')
+    console.timeEnd("Inserting docs into prod with Rust");
+  } else {
+    console.time("Inserting docs into local with Rust");
+    await writeWithRustClient(batchStatements, 'local')
+    console.timeEnd("Inserting docs into local with Rust");
+  }
+}
+
 async function main() {
   console.time("Total Migration Duration");
 
@@ -100,15 +112,7 @@ async function main() {
       getBatchSqlStatements(cleanedUsers, "User")
     );
 
-    if (write == "prod") {
-      console.time("Inserting docs into prod with Rust");
-      await writeWithRustClient(batchStatements, 'prod')
-      console.timeEnd("Inserting docs into prod with Rust");
-    } else {
-      console.time("Inserting docs into local with Rust");
-      await writeWithRustClient(batchStatements, 'local')
-      console.timeEnd("Inserting docs into local with Rust");
-    }
+    await writeToDb(batchStatements, write)
     batchStatements.length = 0;
 
     const cleanedCollections: any[] = []
@@ -135,15 +139,7 @@ async function main() {
       )
     );
 
-    if (write == "prod") {
-      console.time("Inserting docs into prod with Rust");
-      await writeWithRustClient(batchStatements, 'prod')
-      console.timeEnd("Inserting docs into prod with Rust");
-    } else {
-      console.time("Inserting docs into local with Rust");
-      await writeWithRustClient(batchStatements, 'local')
-      console.timeEnd("Inserting docs into local with Rust");
-    }
+    await writeToDb(batchStatements, write)
   } catch (error) {
     console.error(error);
   }
