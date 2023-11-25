@@ -19,7 +19,6 @@ CREATE TABLE "Collection" (
     "mint_info" TEXT NOT NULL,
     "socials" TEXT NOT NULL,
     "token_address" TEXT NOT NULL,
-    "token_address_lowercase" TEXT NOT NULL,
     "trait_counts" TEXT NOT NULL,
     "avatar_uri" TEXT NOT NULL,
     "banner_uri" TEXT NOT NULL,

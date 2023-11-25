@@ -65,10 +65,12 @@ function cleanCollectionForSqlite(collectionMongo: any) {
     last_refreshed: collectionMongo.last_refreshed
       ? new Date(collectionMongo.last_refreshed).toISOString()
       : new Date().toISOString(),
+    creator: collectionMongo.creator,
     created_at: collectionMongo.created_at
       ? new Date(collectionMongo.created_at).toISOString()
       : new Date().toISOString(),
     updated_at: new Date().toISOString(),
+  };
 }
 
 function cleanUserForSqlite(userMongo: any) {

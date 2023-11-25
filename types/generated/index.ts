@@ -32,7 +32,6 @@ export const CollectionScalarFieldEnumSchema = z.enum([
   "mint_info",
   "socials",
   "token_address",
-  "token_address_lowercase",
   "trait_counts",
   "avatar_uri",
   "banner_uri",
@@ -254,7 +253,6 @@ export const CollectionSchema = z.object({
   mint_info: z.string(),
   socials: z.string(),
   token_address: z.string(),
-  token_address_lowercase: z.string(),
   trait_counts: z.string(),
   avatar_uri: z.string(),
   banner_uri: z.string(),
@@ -610,7 +608,6 @@ export const CollectionSelectSchema: z.ZodType<Prisma.CollectionSelect> = z
     mint_info: z.boolean().optional(),
     socials: z.boolean().optional(),
     token_address: z.boolean().optional(),
-    token_address_lowercase: z.boolean().optional(),
     trait_counts: z.boolean().optional(),
     avatar_uri: z.boolean().optional(),
     banner_uri: z.boolean().optional(),
@@ -1296,9 +1293,6 @@ export const CollectionWhereInputSchema: z.ZodType<Prisma.CollectionWhereInput> 
       token_address: z
         .union([z.lazy(() => StringFilterSchema), z.string()])
         .optional(),
-      token_address_lowercase: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
       trait_counts: z
         .union([z.lazy(() => StringFilterSchema), z.string()])
         .optional(),
@@ -1380,7 +1374,6 @@ export const CollectionOrderByWithRelationInputSchema: z.ZodType<Prisma.Collecti
       mint_info: z.lazy(() => SortOrderSchema).optional(),
       socials: z.lazy(() => SortOrderSchema).optional(),
       token_address: z.lazy(() => SortOrderSchema).optional(),
-      token_address_lowercase: z.lazy(() => SortOrderSchema).optional(),
       trait_counts: z.lazy(() => SortOrderSchema).optional(),
       avatar_uri: z.lazy(() => SortOrderSchema).optional(),
       banner_uri: z.lazy(() => SortOrderSchema).optional(),
@@ -1492,9 +1485,6 @@ export const CollectionWhereUniqueInputSchema: z.ZodType<Prisma.CollectionWhereU
           token_address: z
             .union([z.lazy(() => StringFilterSchema), z.string()])
             .optional(),
-          token_address_lowercase: z
-            .union([z.lazy(() => StringFilterSchema), z.string()])
-            .optional(),
           trait_counts: z
             .union([z.lazy(() => StringFilterSchema), z.string()])
             .optional(),
@@ -1574,7 +1564,6 @@ export const CollectionOrderByWithAggregationInputSchema: z.ZodType<Prisma.Colle
       mint_info: z.lazy(() => SortOrderSchema).optional(),
       socials: z.lazy(() => SortOrderSchema).optional(),
       token_address: z.lazy(() => SortOrderSchema).optional(),
-      token_address_lowercase: z.lazy(() => SortOrderSchema).optional(),
       trait_counts: z.lazy(() => SortOrderSchema).optional(),
       avatar_uri: z.lazy(() => SortOrderSchema).optional(),
       banner_uri: z.lazy(() => SortOrderSchema).optional(),
@@ -1673,9 +1662,6 @@ export const CollectionScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.Co
         .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
         .optional(),
       token_address: z
-        .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
-        .optional(),
-      token_address_lowercase: z
         .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
         .optional(),
       trait_counts: z
@@ -5124,7 +5110,6 @@ export const CollectionCreateInputSchema: z.ZodType<Prisma.CollectionCreateInput
       mint_info: z.string(),
       socials: z.string(),
       token_address: z.string(),
-      token_address_lowercase: z.string(),
       trait_counts: z.string(),
       avatar_uri: z.string(),
       banner_uri: z.string(),
@@ -5170,7 +5155,6 @@ export const CollectionUncheckedCreateInputSchema: z.ZodType<Prisma.CollectionUn
       mint_info: z.string(),
       socials: z.string(),
       token_address: z.string(),
-      token_address_lowercase: z.string(),
       trait_counts: z.string(),
       avatar_uri: z.string(),
       banner_uri: z.string(),
@@ -5308,12 +5292,6 @@ export const CollectionUpdateInputSchema: z.ZodType<Prisma.CollectionUpdateInput
         ])
         .optional(),
       token_address: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      token_address_lowercase: z
         .union([
           z.string(),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
@@ -5521,12 +5499,6 @@ export const CollectionUncheckedUpdateInputSchema: z.ZodType<Prisma.CollectionUn
         ])
         .optional(),
       token_address: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      token_address_lowercase: z
         .union([
           z.string(),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
@@ -5744,12 +5716,6 @@ export const CollectionUpdateManyMutationInputSchema: z.ZodType<Prisma.Collectio
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
-      token_address_lowercase: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
       trait_counts: z
         .union([
           z.string(),
@@ -5943,12 +5909,6 @@ export const CollectionUncheckedUpdateManyInputSchema: z.ZodType<Prisma.Collecti
         ])
         .optional(),
       token_address: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      token_address_lowercase: z
         .union([
           z.string(),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
@@ -10245,7 +10205,6 @@ export const CollectionCountOrderByAggregateInputSchema: z.ZodType<Prisma.Collec
       mint_info: z.lazy(() => SortOrderSchema).optional(),
       socials: z.lazy(() => SortOrderSchema).optional(),
       token_address: z.lazy(() => SortOrderSchema).optional(),
-      token_address_lowercase: z.lazy(() => SortOrderSchema).optional(),
       trait_counts: z.lazy(() => SortOrderSchema).optional(),
       avatar_uri: z.lazy(() => SortOrderSchema).optional(),
       banner_uri: z.lazy(() => SortOrderSchema).optional(),
@@ -10297,7 +10256,6 @@ export const CollectionMaxOrderByAggregateInputSchema: z.ZodType<Prisma.Collecti
       mint_info: z.lazy(() => SortOrderSchema).optional(),
       socials: z.lazy(() => SortOrderSchema).optional(),
       token_address: z.lazy(() => SortOrderSchema).optional(),
-      token_address_lowercase: z.lazy(() => SortOrderSchema).optional(),
       trait_counts: z.lazy(() => SortOrderSchema).optional(),
       avatar_uri: z.lazy(() => SortOrderSchema).optional(),
       banner_uri: z.lazy(() => SortOrderSchema).optional(),
@@ -10337,7 +10295,6 @@ export const CollectionMinOrderByAggregateInputSchema: z.ZodType<Prisma.Collecti
       mint_info: z.lazy(() => SortOrderSchema).optional(),
       socials: z.lazy(() => SortOrderSchema).optional(),
       token_address: z.lazy(() => SortOrderSchema).optional(),
-      token_address_lowercase: z.lazy(() => SortOrderSchema).optional(),
       trait_counts: z.lazy(() => SortOrderSchema).optional(),
       avatar_uri: z.lazy(() => SortOrderSchema).optional(),
       banner_uri: z.lazy(() => SortOrderSchema).optional(),
@@ -15823,7 +15780,6 @@ export const CollectionCreateWithoutNftsInputSchema: z.ZodType<Prisma.Collection
       mint_info: z.string(),
       socials: z.string(),
       token_address: z.string(),
-      token_address_lowercase: z.string(),
       trait_counts: z.string(),
       avatar_uri: z.string(),
       banner_uri: z.string(),
@@ -15866,7 +15822,6 @@ export const CollectionUncheckedCreateWithoutNftsInputSchema: z.ZodType<Prisma.C
       mint_info: z.string(),
       socials: z.string(),
       token_address: z.string(),
-      token_address_lowercase: z.string(),
       trait_counts: z.string(),
       avatar_uri: z.string(),
       banner_uri: z.string(),
@@ -16153,12 +16108,6 @@ export const CollectionUpdateWithoutNftsInputSchema: z.ZodType<Prisma.Collection
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
-      token_address_lowercase: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
       trait_counts: z
         .union([
           z.string(),
@@ -16363,12 +16312,6 @@ export const CollectionUncheckedUpdateWithoutNftsInputSchema: z.ZodType<Prisma.C
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
-      token_address_lowercase: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
       trait_counts: z
         .union([
           z.string(),
@@ -16483,7 +16426,6 @@ export const CollectionCreateWithoutMint_dataInputSchema: z.ZodType<Prisma.Colle
       mint_info: z.string(),
       socials: z.string(),
       token_address: z.string(),
-      token_address_lowercase: z.string(),
       trait_counts: z.string(),
       avatar_uri: z.string(),
       banner_uri: z.string(),
@@ -16526,7 +16468,6 @@ export const CollectionUncheckedCreateWithoutMint_dataInputSchema: z.ZodType<Pri
       mint_info: z.string(),
       socials: z.string(),
       token_address: z.string(),
-      token_address_lowercase: z.string(),
       trait_counts: z.string(),
       avatar_uri: z.string(),
       banner_uri: z.string(),
@@ -16696,12 +16637,6 @@ export const CollectionUpdateWithoutMint_dataInputSchema: z.ZodType<Prisma.Colle
         ])
         .optional(),
       token_address: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      token_address_lowercase: z
         .union([
           z.string(),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
@@ -16906,12 +16841,6 @@ export const CollectionUncheckedUpdateWithoutMint_dataInputSchema: z.ZodType<Pri
         ])
         .optional(),
       token_address: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      token_address_lowercase: z
         .union([
           z.string(),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
@@ -17409,7 +17338,6 @@ export const CollectionCreateWithoutCreatorInputSchema: z.ZodType<Prisma.Collect
       mint_info: z.string(),
       socials: z.string(),
       token_address: z.string(),
-      token_address_lowercase: z.string(),
       trait_counts: z.string(),
       avatar_uri: z.string(),
       banner_uri: z.string(),
@@ -17454,7 +17382,6 @@ export const CollectionUncheckedCreateWithoutCreatorInputSchema: z.ZodType<Prism
       mint_info: z.string(),
       socials: z.string(),
       token_address: z.string(),
-      token_address_lowercase: z.string(),
       trait_counts: z.string(),
       avatar_uri: z.string(),
       banner_uri: z.string(),
@@ -17772,9 +17699,6 @@ export const CollectionScalarWhereInputSchema: z.ZodType<Prisma.CollectionScalar
         .union([z.lazy(() => StringFilterSchema), z.string()])
         .optional(),
       token_address: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
-      token_address_lowercase: z
         .union([z.lazy(() => StringFilterSchema), z.string()])
         .optional(),
       trait_counts: z
@@ -20940,12 +20864,6 @@ export const CollectionUpdateWithoutCreatorInputSchema: z.ZodType<Prisma.Collect
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
-      token_address_lowercase: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
       trait_counts: z
         .union([
           z.string(),
@@ -21145,12 +21063,6 @@ export const CollectionUncheckedUpdateWithoutCreatorInputSchema: z.ZodType<Prism
         ])
         .optional(),
       token_address: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      token_address_lowercase: z
         .union([
           z.string(),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
@@ -21357,12 +21269,6 @@ export const CollectionUncheckedUpdateManyWithoutCreatorInputSchema: z.ZodType<P
         ])
         .optional(),
       token_address: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      token_address_lowercase: z
         .union([
           z.string(),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
