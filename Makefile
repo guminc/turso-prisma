@@ -41,7 +41,7 @@ seed-prod:
 	turso db shell --location iad $$REMOTE_DB_NAME < ./dump.sql
 
 seed-prod-rust:
-	npx ts-node ./scripts/migrate.ts --source=$(source) --write=rust
+	npx ts-node ./scripts/migrate.ts --source=$(source) --write=prod
 
 reset-local:
 	$(MAKE) wipe-local
@@ -59,11 +59,12 @@ migrate-users-to-prod:
 		$(MAKE) dump-mongo-users; \
 		$(MAKE) dump-mongo-collections; \
 	fi
-	@if [ "$(write)" = "rust" ]; then \
-		$(MAKE) build-rust-binary; \
-		$(MAKE) wipe-prod; \
-		$(MAKE) migrate-prod; \
-		$(MAKE) seed-prod-rust; \
+	@if [ "$(write)" = "prod" ]; then \
+		echo "use local method" \
+		# $(MAKE) build-rust-binary; \
+		# $(MAKE) wipe-prod; \
+		# $(MAKE) migrate-prod; \
+		# $(MAKE) seed-prod-rust; \
 	else \
 		$(MAKE) reset-local; \
 		$(MAKE) seed-local-tables; \
