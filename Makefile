@@ -45,7 +45,7 @@ reset-local:
 	$(MAKE) create-migration
 
 seed-local-tables:
-	npx ts-node ./scripts/migrate.ts --source=$(source)
+	npx ts-node ./scripts/migrate.ts --source=$(source) --write=local
 
 build-rust-binary:
 	cargo build --release --manifest-path ./scripts/rust/Cargo.toml

@@ -43,8 +43,6 @@ CREATE TABLE "Nft" (
     "block_minted" INTEGER NOT NULL,
     "contract_type" TEXT NOT NULL,
     "description" TEXT NOT NULL,
-    "dna" TEXT NOT NULL,
-    "edition" INTEGER NOT NULL,
     "image" TEXT NOT NULL,
     "image_url" TEXT NOT NULL,
     "metadata" TEXT NOT NULL,
@@ -311,3 +309,4 @@ CREATE UNIQUE INDEX "_RoleToUser_AB_unique" ON "_RoleToUser"("A", "B");
 
 -- CreateIndex
 CREATE INDEX "_RoleToUser_B_index" ON "_RoleToUser"("B");
+

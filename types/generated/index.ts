@@ -54,8 +54,6 @@ export const NftScalarFieldEnumSchema = z.enum([
   "block_minted",
   "contract_type",
   "description",
-  "dna",
-  "edition",
   "image",
   "image_url",
   "metadata",
@@ -278,8 +276,6 @@ export const NftSchema = z.object({
   block_minted: z.number().int(),
   contract_type: z.string(),
   description: z.string(),
-  dna: z.string(),
-  edition: z.number().int(),
   image: z.string(),
   image_url: z.string(),
   metadata: z.string(),
@@ -657,8 +653,6 @@ export const NftSelectSchema: z.ZodType<Prisma.NftSelect> = z
     block_minted: z.boolean().optional(),
     contract_type: z.boolean().optional(),
     description: z.boolean().optional(),
-    dna: z.boolean().optional(),
-    edition: z.boolean().optional(),
     image: z.boolean().optional(),
     image_url: z.boolean().optional(),
     metadata: z.boolean().optional(),
@@ -2171,8 +2165,6 @@ export const NftWhereInputSchema: z.ZodType<Prisma.NftWhereInput> = z
     description: z
       .union([z.lazy(() => StringFilterSchema), z.string()])
       .optional(),
-    dna: z.union([z.lazy(() => StringFilterSchema), z.string()]).optional(),
-    edition: z.union([z.lazy(() => IntFilterSchema), z.number()]).optional(),
     image: z.union([z.lazy(() => StringFilterSchema), z.string()]).optional(),
     image_url: z
       .union([z.lazy(() => StringFilterSchema), z.string()])
@@ -2232,8 +2224,6 @@ export const NftOrderByWithRelationInputSchema: z.ZodType<Prisma.NftOrderByWithR
       block_minted: z.lazy(() => SortOrderSchema).optional(),
       contract_type: z.lazy(() => SortOrderSchema).optional(),
       description: z.lazy(() => SortOrderSchema).optional(),
-      dna: z.lazy(() => SortOrderSchema).optional(),
-      edition: z.lazy(() => SortOrderSchema).optional(),
       image: z.lazy(() => SortOrderSchema).optional(),
       image_url: z.lazy(() => SortOrderSchema).optional(),
       metadata: z.lazy(() => SortOrderSchema).optional(),
@@ -2298,12 +2288,6 @@ export const NftWhereUniqueInputSchema: z.ZodType<Prisma.NftWhereUniqueInput> =
             .optional(),
           description: z
             .union([z.lazy(() => StringFilterSchema), z.string()])
-            .optional(),
-          dna: z
-            .union([z.lazy(() => StringFilterSchema), z.string()])
-            .optional(),
-          edition: z
-            .union([z.lazy(() => IntFilterSchema), z.number().int()])
             .optional(),
           image: z
             .union([z.lazy(() => StringFilterSchema), z.string()])
@@ -2371,8 +2355,6 @@ export const NftOrderByWithAggregationInputSchema: z.ZodType<Prisma.NftOrderByWi
       block_minted: z.lazy(() => SortOrderSchema).optional(),
       contract_type: z.lazy(() => SortOrderSchema).optional(),
       description: z.lazy(() => SortOrderSchema).optional(),
-      dna: z.lazy(() => SortOrderSchema).optional(),
-      edition: z.lazy(() => SortOrderSchema).optional(),
       image: z.lazy(() => SortOrderSchema).optional(),
       image_url: z.lazy(() => SortOrderSchema).optional(),
       metadata: z.lazy(() => SortOrderSchema).optional(),
@@ -2433,12 +2415,6 @@ export const NftScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.NftScalar
         .optional(),
       description: z
         .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
-        .optional(),
-      dna: z
-        .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
-        .optional(),
-      edition: z
-        .union([z.lazy(() => IntWithAggregatesFilterSchema), z.number()])
         .optional(),
       image: z
         .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
@@ -6459,8 +6435,6 @@ export const NftCreateInputSchema: z.ZodType<Prisma.NftCreateInput> = z
     block_minted: z.number().int(),
     contract_type: z.string(),
     description: z.string(),
-    dna: z.string(),
-    edition: z.number().int(),
     image: z.string(),
     image_url: z.string(),
     metadata: z.string(),
@@ -6490,8 +6464,6 @@ export const NftUncheckedCreateInputSchema: z.ZodType<Prisma.NftUncheckedCreateI
       block_minted: z.number().int(),
       contract_type: z.string(),
       description: z.string(),
-      dna: z.string(),
-      edition: z.number().int(),
       image: z.string(),
       image_url: z.string(),
       metadata: z.string(),
@@ -6539,15 +6511,6 @@ export const NftUpdateInputSchema: z.ZodType<Prisma.NftUpdateInput> = z
       .optional(),
     description: z
       .union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
-      .optional(),
-    dna: z
-      .union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
-      .optional(),
-    edition: z
-      .union([
-        z.number().int(),
-        z.lazy(() => IntFieldUpdateOperationsInputSchema),
-      ])
       .optional(),
     image: z
       .union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
@@ -6646,18 +6609,6 @@ export const NftUncheckedUpdateInputSchema: z.ZodType<Prisma.NftUncheckedUpdateI
         .union([
           z.string(),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      dna: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      edition: z
-        .union([
-          z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       image: z
@@ -6789,18 +6740,6 @@ export const NftUpdateManyMutationInputSchema: z.ZodType<Prisma.NftUpdateManyMut
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
-      dna: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      edition: z
-        .union([
-          z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
       image: z
         .union([
           z.string(),
@@ -6919,18 +6858,6 @@ export const NftUncheckedUpdateManyInputSchema: z.ZodType<Prisma.NftUncheckedUpd
         .union([
           z.string(),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      dna: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      edition: z
-        .union([
-          z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       image: z
@@ -10979,8 +10906,6 @@ export const NftCountOrderByAggregateInputSchema: z.ZodType<Prisma.NftCountOrder
       block_minted: z.lazy(() => SortOrderSchema).optional(),
       contract_type: z.lazy(() => SortOrderSchema).optional(),
       description: z.lazy(() => SortOrderSchema).optional(),
-      dna: z.lazy(() => SortOrderSchema).optional(),
-      edition: z.lazy(() => SortOrderSchema).optional(),
       image: z.lazy(() => SortOrderSchema).optional(),
       image_url: z.lazy(() => SortOrderSchema).optional(),
       metadata: z.lazy(() => SortOrderSchema).optional(),
@@ -11001,7 +10926,6 @@ export const NftAvgOrderByAggregateInputSchema: z.ZodType<Prisma.NftAvgOrderByAg
   z
     .object({
       block_minted: z.lazy(() => SortOrderSchema).optional(),
-      edition: z.lazy(() => SortOrderSchema).optional(),
       token_id_int: z.lazy(() => SortOrderSchema).optional(),
     })
     .strict();
@@ -11016,8 +10940,6 @@ export const NftMaxOrderByAggregateInputSchema: z.ZodType<Prisma.NftMaxOrderByAg
       block_minted: z.lazy(() => SortOrderSchema).optional(),
       contract_type: z.lazy(() => SortOrderSchema).optional(),
       description: z.lazy(() => SortOrderSchema).optional(),
-      dna: z.lazy(() => SortOrderSchema).optional(),
-      edition: z.lazy(() => SortOrderSchema).optional(),
       image: z.lazy(() => SortOrderSchema).optional(),
       image_url: z.lazy(() => SortOrderSchema).optional(),
       metadata: z.lazy(() => SortOrderSchema).optional(),
@@ -11044,8 +10966,6 @@ export const NftMinOrderByAggregateInputSchema: z.ZodType<Prisma.NftMinOrderByAg
       block_minted: z.lazy(() => SortOrderSchema).optional(),
       contract_type: z.lazy(() => SortOrderSchema).optional(),
       description: z.lazy(() => SortOrderSchema).optional(),
-      dna: z.lazy(() => SortOrderSchema).optional(),
-      edition: z.lazy(() => SortOrderSchema).optional(),
       image: z.lazy(() => SortOrderSchema).optional(),
       image_url: z.lazy(() => SortOrderSchema).optional(),
       metadata: z.lazy(() => SortOrderSchema).optional(),
@@ -11066,7 +10986,6 @@ export const NftSumOrderByAggregateInputSchema: z.ZodType<Prisma.NftSumOrderByAg
   z
     .object({
       block_minted: z.lazy(() => SortOrderSchema).optional(),
-      edition: z.lazy(() => SortOrderSchema).optional(),
       token_id_int: z.lazy(() => SortOrderSchema).optional(),
     })
     .strict();
@@ -15605,8 +15524,6 @@ export const NftCreateWithoutCollectionInputSchema: z.ZodType<Prisma.NftCreateWi
       block_minted: z.number().int(),
       contract_type: z.string(),
       description: z.string(),
-      dna: z.string(),
-      edition: z.number().int(),
       image: z.string(),
       image_url: z.string(),
       metadata: z.string(),
@@ -15635,8 +15552,6 @@ export const NftUncheckedCreateWithoutCollectionInputSchema: z.ZodType<Prisma.Nf
       block_minted: z.number().int(),
       contract_type: z.string(),
       description: z.string(),
-      dna: z.string(),
-      edition: z.number().int(),
       image: z.string(),
       image_url: z.string(),
       metadata: z.string(),
@@ -16263,8 +16178,6 @@ export const NftScalarWhereInputSchema: z.ZodType<Prisma.NftScalarWhereInput> =
       description: z
         .union([z.lazy(() => StringFilterSchema), z.string()])
         .optional(),
-      dna: z.union([z.lazy(() => StringFilterSchema), z.string()]).optional(),
-      edition: z.union([z.lazy(() => IntFilterSchema), z.number()]).optional(),
       image: z.union([z.lazy(() => StringFilterSchema), z.string()]).optional(),
       image_url: z
         .union([z.lazy(() => StringFilterSchema), z.string()])
@@ -17584,8 +17497,6 @@ export const NftCreateWithoutOpen_rarityInputSchema: z.ZodType<Prisma.NftCreateW
       block_minted: z.number().int(),
       contract_type: z.string(),
       description: z.string(),
-      dna: z.string(),
-      edition: z.number().int(),
       image: z.string(),
       image_url: z.string(),
       metadata: z.string(),
@@ -17612,8 +17523,6 @@ export const NftUncheckedCreateWithoutOpen_rarityInputSchema: z.ZodType<Prisma.N
       block_minted: z.number().int(),
       contract_type: z.string(),
       description: z.string(),
-      dna: z.string(),
-      edition: z.number().int(),
       image: z.string(),
       image_url: z.string(),
       metadata: z.string(),
@@ -17710,18 +17619,6 @@ export const NftUpdateWithoutOpen_rarityInputSchema: z.ZodType<Prisma.NftUpdateW
         .union([
           z.string(),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      dna: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      edition: z
-        .union([
-          z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       image: z
@@ -17845,18 +17742,6 @@ export const NftUncheckedUpdateWithoutOpen_rarityInputSchema: z.ZodType<Prisma.N
         .union([
           z.string(),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      dna: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      edition: z
-        .union([
-          z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       image: z
@@ -21009,18 +20894,6 @@ export const NftUpdateWithoutCollectionInputSchema: z.ZodType<Prisma.NftUpdateWi
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
-      dna: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      edition: z
-        .union([
-          z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
       image: z
         .union([
           z.string(),
@@ -21144,18 +21017,6 @@ export const NftUncheckedUpdateWithoutCollectionInputSchema: z.ZodType<Prisma.Nf
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
-      dna: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      edition: z
-        .union([
-          z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
       image: z
         .union([
           z.string(),
@@ -21277,18 +21138,6 @@ export const NftUncheckedUpdateManyWithoutCollectionInputSchema: z.ZodType<Prism
         .union([
           z.string(),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      dna: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      edition: z
-        .union([
-          z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       image: z

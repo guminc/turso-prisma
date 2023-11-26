@@ -62,8 +62,6 @@ model Nft {
   block_minted  Int
   contract_type String
   description   String
-  dna           String
-  edition       Int
   image         String
   image_url     String
   metadata      String // JSON serialized as a string

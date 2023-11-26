@@ -113,7 +113,7 @@ export function getBatchSqlStatements(
   tableName: string
 ): string {
   let statements: string[] = [];
-  objects.map((cleanedObj) => {
+  objects.forEach((cleanedObj) => {
     const keys = Object.keys(cleanedObj);
     const columns = keys.join(", ");
     const values = Object.values(cleanedObj).map((value) => {
@@ -163,5 +163,3 @@ export async function writeWithRustClient(
     });
   }
 }
-
-export function writeWithPrismaClient() {}
