@@ -58,10 +58,10 @@ migrate-users-to-prod:
 	fi
 	@if [ "$(write)" = "prod" ]; then \
 	    echo "use local method"; \
-	    $(MAKE) build-rust-binary; \
-	    $(MAKE) wipe-prod; \
-	    $(MAKE) migrate-prod; \
-	    $(MAKE) seed-prod-rust; \
+	    # $(MAKE) build-rust-binary; \
+	    # $(MAKE) wipe-prod; \
+	    # $(MAKE) migrate-prod; \
+	    # $(MAKE) seed-prod-rust; \
 	else \
 	    $(MAKE) reset-local; \
 	    $(MAKE) seed-local-tables; \
