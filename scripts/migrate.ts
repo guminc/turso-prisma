@@ -1,95 +1,94 @@
 import { createClient } from "@libsql/client";
 import { PrismaLibSQL } from "@prisma/adapter-libsql";
 import { PrismaClient } from "@prisma/client";
-import { spawn } from "child_process";
 import cuid from "cuid";
 import { ethers } from "ethers";
-import fs from "fs";
-import os from "os";
-import path from "path";
-import { UserSchema } from "../types/generated";
+import { CollectionSchema, UserSchema } from "../types/generated";
 import {
   getBatchSqlStatements,
   getMongoTablesFromFile,
   getMongoTablesFromNetwork,
   parseArgs,
+  writeWithRustClient,
 } from "./lib/utils";
-
 require("dotenv-safe").config();
 
 const localClient = createClient({
   url: "file:prisma/dev.db",
-  syncUrl: process.env.TURSO_DATABASE_URL,
-  authToken: process.env.TURSO_AUTH_TOKEN,
+  // syncUrl: process.env.TURSO_DATABASE_URL,
+  // authToken: process.env.TURSO_AUTH_TOKEN,
 });
 
 const adapter = new PrismaLibSQL(localClient);
 const prisma = new PrismaClient({ adapter });
 
 function cleanCollectionForSqlite(collectionMongo: any) {
-  if (!collectionMongo.token_address) {
-    return null;
-  }
-  return {
+  // revist forced empty and stringify fields
+  const input = {
+    ...collectionMongo,
     id: cuid(),
-    name: collectionMongo.name || "",
     max_items: 0, //collectionMongo.max_items || 0,
-    max_batch_size: collectionMongo.max_batch_size || 0,
-    symbol: collectionMongo.symbol || "",
-    creator_address:
-      ethers.getAddress(collectionMongo.creator) || ethers.ZeroAddress,
-    is_hidden: collectionMongo.is_hidden || false,
-    sort_order: collectionMongo.sort_order || 0,
-    is_mint_active: collectionMongo.is_mint_active || false,
-    is_archetype: collectionMongo.is_archetype || false,
-    is_pending: collectionMongo.is_pending || false,
+    creator_address: ethers.isAddress(collectionMongo.creator)
+      ? ethers.getAddress(collectionMongo.creator)
+      : null,
     discounts: JSON.stringify(collectionMongo.discounts) || "", // JSON serialized as a string
-    owner_alt_payout: collectionMongo.owner_alt_payout || "",
-    super_affiliate_payout: collectionMongo.super_affiliate_payout || "",
-    contract_version: collectionMongo.contract_version || 0,
-    slug: collectionMongo.slug || "",
     mint_info: JSON.stringify(collectionMongo.mint_info) || "", // JSON serialized as a string
     socials: JSON.stringify(collectionMongo.socials) || "", // JSON serialized as a string
-    token_address:
-      ethers.getAddress(collectionMongo.token_address) || ethers.ZeroAddress,
+    token_address: ethers.isAddress(collectionMongo.token_address)
+      ? ethers.getAddress(collectionMongo.token_address)
+      : null,
     trait_counts: "", //JSON.stringify(collectionMongo.trait_counts) || '', // JSON serialized as a string
-    avatar_uri: collectionMongo.avatar_uri || "",
-    banner_uri: collectionMongo.banner_uri || "",
-    description: "", //collectionMongo.description || '',
-    hero_uri: collectionMongo.hero_uri || "",
-    twitter: collectionMongo.twitter || "",
-    website: collectionMongo.website || "",
-    discord: collectionMongo.discord || "",
-    num_items: collectionMongo.num_items || 0,
-    num_owners: collectionMongo.num_owners || 0,
+    description: "",
     last_refreshed: collectionMongo.last_refreshed
-      ? new Date(collectionMongo.last_refreshed).toISOString()
-      : new Date().toISOString(),
-    creator: collectionMongo.creator,
+      ? new Date(collectionMongo.last_refreshed)
+      : null,
     created_at: collectionMongo.created_at
-      ? new Date(collectionMongo.created_at).toISOString()
-      : new Date().toISOString(),
-    updated_at: new Date().toISOString(),
+      ? new Date(collectionMongo.created_at)
+      : new Date(),
+    updated_at: new Date(),
   };
+
+  const result = CollectionSchema.safeParse(input);
+
+  if (!result.success) {
+    console.error({ error: result.error });
+    throw new Error("Invalid collection", result.error);
+  }
+
+  return result.data;
 }
 
 function cleanUserForSqlite(userMongo: any) {
   const input = {
     ...userMongo,
     id: cuid(),
-    created_at: userMongo.joined_time,
     status: "active",
+    created_at: userMongo.joined_time
+      ? new Date(userMongo.joined_time)
+      : new Date(),
+    updated_at: new Date(),
   };
 
   const result = UserSchema.safeParse(input);
 
   if (!result.success) {
     console.error({ error: result.error });
-    // handle error then return
     throw new Error("Invalid user", result.error);
   }
 
   return result.data;
+}
+
+async function writeToDb(batchStatements: string[], write: string) {
+  if (write == "prod") {
+    console.time("Inserting docs into prod with Rust");
+    await writeWithRustClient(batchStatements, "prod");
+    console.timeEnd("Inserting docs into prod with Rust");
+  } else {
+    console.time("Inserting docs into local with Rust");
+    await writeWithRustClient(batchStatements, "local");
+    console.timeEnd("Inserting docs into local with Rust");
+  }
 }
 
 async function main() {
@@ -97,84 +96,57 @@ async function main() {
 
   const args = parseArgs();
   const source = args.source === "file" ? "file" : "network";
-  const write = args.write === "rust" ? "rust" : "prisma";
+  const write = args.write === "prod" ? "prod" : "local";
 
   console.log("\nInitiating migration from:", source);
 
   try {
-    console.time(`Fetching users from ${source}`);
+    console.time(`Fetching tables from ${source}`);
 
     const { usersMongo, collectionsMongo } =
       source === "network"
         ? await getMongoTablesFromNetwork()
         : getMongoTablesFromFile();
 
-    console.timeEnd(`Fetching users from ${source}`);
+    console.timeEnd(`Fetching tables from ${source}`);
 
-    if (write == "rust") {
-      console.time("Inserting docs into prod with Rust");
+    const batchStatements = [];
+    const cleanedUsers = usersMongo.map((user) => cleanUserForSqlite(user));
+    batchStatements.push(getBatchSqlStatements(cleanedUsers, "User"));
 
-      const batchStatements: string[] = [];
-      batchStatements.push(
-        getBatchSqlStatements(usersMongo, "User", cleanUserForSqlite)
-      );
+    await writeToDb(batchStatements, write);
+    batchStatements.length = 0;
 
-      batchStatements.push(
-        getBatchSqlStatements(
-          collectionsMongo,
-          "Collection",
-          cleanCollectionForSqlite
-        )
-      );
-
-      for (let i = 0; i < batchStatements.length; i++) {
-        const tempFilePath = path.join(os.tmpdir(), "batch.sql");
-        fs.writeFileSync(tempFilePath, batchStatements[i]);
-        await new Promise((resolve, reject) => {
-          const rustProcess = spawn("./scripts/rust/target/release/upload", [
-            tempFilePath,
-          ]);
-
-          rustProcess.stdout.on("data", (data) => {
-            console.log(`stdout: ${data}`);
-          });
-
-          rustProcess.stderr.on("data", (data) => {
-            console.error(`stderr: ${data}`);
-            reject(new Error(`Rust process error: ${data}`));
-          });
-
-          rustProcess.on("close", (code) => {
-            console.log(`Rust process exited with code ${code}`);
-            // fs.unlinkSync(tempFilePath);
-            resolve(0);
-          });
+    const cleanedCollections: any[] = [];
+    for (const collection of collectionsMongo) {
+      const cleaned = cleanCollectionForSqlite(collection);
+      if (cleaned != null && cleaned.creator_address) {
+        const user = await prisma.user.findFirst({
+          where: { address: cleaned.creator_address },
         });
-        console.timeEnd("Inserting docs into prod with Rust");
-      }
-    } else {
-      console.time("Inserting docs into Prisma");
-      const userInserts = usersMongo.map((user: any) => {
-        const cleanedUser = cleanUserForSqlite(user);
-        return prisma.user.create({ data: cleanedUser });
-      });
-      await prisma.$transaction(userInserts);
-      let collectionInserts: any[] = [];
-      collectionsMongo.map((collection: any) => {
-        const cleanedCollection = cleanCollectionForSqlite(collection);
-        if (cleanedCollection != null) {
-          collectionInserts.push(
-            prisma.collection.create({ data: cleanedCollection })
+        if (!user) {
+          console.log(
+            "User",
+            cleaned.creator_address,
+            "does not exist, creating User ..."
           );
+          await prisma.user.create({
+            data: cleanUserForSqlite({
+              address: cleaned.creator_address,
+            }),
+          });
         }
-      });
-      await prisma.$transaction(collectionInserts);
-      console.timeEnd("Inserting docs into Prisma");
+      }
+      cleanedCollections.push(cleaned);
     }
+    batchStatements.push(
+      getBatchSqlStatements(cleanedCollections, "Collection")
+    );
+
+    await writeToDb(batchStatements, write);
   } catch (error) {
     console.error(error);
   }
-
   console.timeEnd("Total Migration Duration");
 }
 
