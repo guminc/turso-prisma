@@ -1,9 +1,6 @@
 import { createClient } from "@libsql/client";
-import { PrismaLibSQL } from "@prisma/adapter-libsql";
-import { PrismaClient } from "@prisma/client";
 import cuid from "cuid";
 import { ethers } from "ethers";
-import { CollectionSchema, UserSchema } from "../types/generated";
 import {
   getBatchSqlStatements,
   getMongoTablesFromFile,
@@ -11,6 +8,15 @@ import {
   parseArgs,
   writeWithRustClient,
 } from "./lib/utils";
+
+import { PrismaLibSQL } from "@prisma/adapter-libsql";
+import { PrismaClient } from "@prisma/client";
+import {
+  Collection,
+  CollectionSchema,
+  User,
+  UserSchema,
+} from "../types/generated";
 require("dotenv-safe").config();
 
 const localClient = createClient({
@@ -22,7 +28,7 @@ const localClient = createClient({
 const adapter = new PrismaLibSQL(localClient);
 const prisma = new PrismaClient({ adapter });
 
-function cleanCollectionForSqlite(collectionMongo: any) {
+function cleanCollectionForSqlite(collectionMongo: any): Collection {
   // revist forced empty and stringify fields
   const input = {
     ...collectionMongo,
@@ -52,13 +58,13 @@ function cleanCollectionForSqlite(collectionMongo: any) {
 
   if (!result.success) {
     console.error({ error: result.error });
-    throw new Error("Invalid collection", result.error);
+    throw new Error(`Invalid collection: ${result.error}`);
   }
 
   return result.data;
 }
 
-function cleanUserForSqlite(userMongo: any) {
+function cleanUserForSqlite(userMongo: any): User {
   const input = {
     ...userMongo,
     id: cuid(),
@@ -73,7 +79,7 @@ function cleanUserForSqlite(userMongo: any) {
 
   if (!result.success) {
     console.error({ error: result.error });
-    throw new Error("Invalid user", result.error);
+    throw new Error(`Invalid user: ${result.error}`);
   }
 
   return result.data;
@@ -110,14 +116,14 @@ async function main() {
 
     console.timeEnd(`Fetching tables from ${source}`);
 
-    const batchStatements = [];
+    const batchStatements: string[] = [];
     const cleanedUsers = usersMongo.map((user) => cleanUserForSqlite(user));
     batchStatements.push(getBatchSqlStatements(cleanedUsers, "User"));
 
     await writeToDb(batchStatements, write);
     batchStatements.length = 0;
 
-    const cleanedCollections: any[] = [];
+    const cleanedCollections: Collection[] = [];
     for (const collection of collectionsMongo) {
       const cleaned = cleanCollectionForSqlite(collection);
       if (cleaned != null && cleaned.creator_address) {
