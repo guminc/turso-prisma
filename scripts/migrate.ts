@@ -1,18 +1,22 @@
-import { PrismaClient } from "@prisma/client";
-import { PrismaLibSQL } from "@prisma/adapter-libsql";
 import { createClient } from "@libsql/client";
-import {
-  getMongoTablesFromNetwork,
-  getMongoTablesFromFile,
-  parseArgs,
-  getBatchSqlStatements,
-  writeWithRustClient,
-} from "./lib/utils";
 import cuid from "cuid";
 import { ethers } from "ethers";
-import { UserSchema, CollectionSchema, User } from "./types/generated";
-import { Collection } from "./types/generated";
+import {
+  getBatchSqlStatements,
+  getMongoTablesFromFile,
+  getMongoTablesFromNetwork,
+  parseArgs,
+  writeWithRustClient,
+} from "./lib/utils";
 
+import { PrismaLibSQL } from "@prisma/adapter-libsql";
+import { PrismaClient } from "@prisma/client";
+import {
+  Collection,
+  CollectionSchema,
+  User,
+  UserSchema,
+} from "../types/generated";
 require("dotenv-safe").config();
 
 const localClient = createClient({
@@ -54,7 +58,7 @@ function cleanCollectionForSqlite(collectionMongo: any): Collection {
 
   if (!result.success) {
     console.error({ error: result.error });
-    throw new Error("Invalid collection", result.error);
+    throw new Error(`Invalid collection: ${result.error}`);
   }
 
   return result.data;
@@ -121,7 +125,7 @@ async function main() {
 
     const cleanedCollections: Collection[] = [];
     for (const collection of collectionsMongo) {
-      const cleaned: Collection = cleanCollectionForSqlite(collection);
+      const cleaned = cleanCollectionForSqlite(collection);
       if (cleaned != null && cleaned.creator_address) {
         const user = await prisma.user.findFirst({
           where: { address: cleaned.creator_address },

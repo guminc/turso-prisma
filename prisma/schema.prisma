@@ -7,7 +7,7 @@ generator client {
 
 generator zod {
   provider                 = "zod-prisma-types"
-  output                   = "../scripts/types/generated"
+  output                   = "../types/generated"
   writeNullishInModelTypes = true
 }
 
