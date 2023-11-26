@@ -56,21 +56,21 @@ build-rust-binary:
 migrate-users-to-prod:
 	./scripts/echo.sh
 	@if [ "$(source)" = "file" ]; then \
-		$(MAKE) dump-mongo-users; \
-		$(MAKE) dump-mongo-collections; \
+	    $(MAKE) dump-mongo-users; \
+	    $(MAKE) dump-mongo-collections; \
 	fi
 	@if [ "$(write)" = "prod" ]; then \
-		echo "use local method" \
-		# $(MAKE) build-rust-binary; \
-		# $(MAKE) wipe-prod; \
-		# $(MAKE) migrate-prod; \
-		# $(MAKE) seed-prod-rust; \
+	    echo "use local method"; \
+	    $(MAKE) build-rust-binary; \
+	    $(MAKE) wipe-prod; \
+	    $(MAKE) migrate-prod; \
+	    $(MAKE) seed-prod-rust; \
 	else \
-		$(MAKE) reset-local; \
-		$(MAKE) seed-local-tables; \
-		$(MAKE) dump-local; \
-		$(MAKE) wipe-prod; \
-		$(MAKE) seed-prod ;\
+	    $(MAKE) reset-local; \
+	    $(MAKE) seed-local-tables; \
+	    $(MAKE) dump-local; \
+	    $(MAKE) wipe-prod; \
+	    $(MAKE) seed-prod; \
 	fi
 
 dump-local:
