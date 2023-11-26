@@ -21,8 +21,8 @@ export function parseArgs() {
 }
 
 export function getMongoTablesFromFile() {
-  let usersMongo = [];
-  let collectionsMongo = [];
+  let usersMongo: BSON.Document[] = [];
+  let collectionsMongo: BSON.Document[] = [];
 
   const pathToUsersBson = path.join(__dirname, "../../dump/Scatter/Users.bson");
   const pathToCollectionsBson = path.join(
@@ -110,7 +110,7 @@ export async function getMongoTablesFromNetwork() {
 
 export function getBatchSqlStatements(
   objects: Object[],
-  tableName: string,
+  tableName: string
 ): string {
   let statements: string[] = [];
   objects.map((cleanedObj) => {
@@ -121,28 +121,29 @@ export function getBatchSqlStatements(
         return `'${value.toISOString()}'`;
       }
       if (value === null || value === undefined) {
-        return 'NULL';
+        return "NULL";
       }
       return typeof value === "string"
         ? `'${value.replace(/'/g, "''")}'`
         : value;
     });
-    statements.push(
-      `INSERT INTO ${tableName} (${columns}) VALUES (${values})`
-    );
+    statements.push(`INSERT INTO ${tableName} (${columns}) VALUES (${values})`);
   });
   return statements.join(";\n");
 }
 
-export async function writeWithRustClient(batchStatements: string[], db: string) {
-  let arg = db == 'local' ? '--local-db' : ''
+export async function writeWithRustClient(
+  batchStatements: string[],
+  db: string
+) {
+  let arg = db == "local" ? "--local-db" : "";
   for (let i = 0; i < batchStatements.length; i++) {
     const tempFilePath = path.join(os.tmpdir(), "batch.sql");
     fs.writeFileSync(tempFilePath, batchStatements[i]);
     await new Promise((resolve, reject) => {
       const rustProcess = spawn("./scripts/rust/target/release/upload", [
         tempFilePath,
-        arg
+        arg,
       ]);
 
       rustProcess.stdout.on("data", (data) => {
@@ -163,6 +164,4 @@ export async function writeWithRustClient(batchStatements: string[], db: string)
   }
 }
 
-export function writeWithPrismaClient() {
-
-}
+export function writeWithPrismaClient() {}

@@ -4,9 +4,10 @@
     "outDir": "dist",
     "strict": true,
     "strictNullChecks": true,
-    "lib": [
-      "esnext"
-    ],
-    "esModuleInterop": true
-  }
+    "lib": ["esnext", "dom"],
+    "esModuleInterop": true,
+    "target": "ES2015",
+    "moduleResolution": "node"
+  },
+  "exclude": ["node_modules"]
 }

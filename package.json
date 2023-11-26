@@ -6,6 +6,7 @@
     "createMigration": "prisma migrate dev",
     "migrate": "ts-node ./scripts/migrate.ts",
     "studio": "prisma studio",
+    "typecheck": "tsc",
     "updateTypes": "prisma generate",
     "prettier": "prettier --write .",
     "pushToTurso": "turso db shell turso-prisma-1 < ",

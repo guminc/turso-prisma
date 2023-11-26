@@ -9,18 +9,15 @@ all: migrate-users-to-prod
 
 create-migration:
 	npx prisma migrate dev
-	npx prettier --write ./scripts/types/generated/index.ts
+	npx prettier --write ./types/generated/index.ts
 
 dump-mongo-everything:
-	./scripts/echo.sh
 	mongodump --forceTableScan --uri $$MONGO_URI
 
 dump-mongo-users:
-	./scripts/echo.sh
 	mongodump --collection=Users --forceTableScan --uri $$MONGO_URI
 
 dump-mongo-collections:
-	./scripts/echo.sh
 	mongodump --collection=Collections --forceTableScan --uri $$MONGO_URI
 
 migrate-prod:
@@ -56,21 +53,21 @@ build-rust-binary:
 migrate-users-to-prod:
 	./scripts/echo.sh
 	@if [ "$(source)" = "file" ]; then \
-		$(MAKE) dump-mongo-users; \
-		$(MAKE) dump-mongo-collections; \
+	    $(MAKE) dump-mongo-users; \
+	    $(MAKE) dump-mongo-collections; \
 	fi
 	@if [ "$(write)" = "prod" ]; then \
-		echo "use local method" \
-		# $(MAKE) build-rust-binary; \
-		# $(MAKE) wipe-prod; \
-		# $(MAKE) migrate-prod; \
-		# $(MAKE) seed-prod-rust; \
+	    echo "use local method"; \
+	    # $(MAKE) build-rust-binary; \
+	    # $(MAKE) wipe-prod; \
+	    # $(MAKE) migrate-prod; \
+	    # $(MAKE) seed-prod-rust; \
 	else \
-		$(MAKE) reset-local; \
-		$(MAKE) seed-local-tables; \
-		$(MAKE) dump-local; \
-		$(MAKE) wipe-prod; \
-		$(MAKE) seed-prod ;\
+	    $(MAKE) reset-local; \
+	    $(MAKE) seed-local-tables; \
+	    $(MAKE) dump-local; \
+	    $(MAKE) wipe-prod; \
+	    $(MAKE) seed-prod; \
 	fi
 
 dump-local:
