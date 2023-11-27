@@ -9,7 +9,7 @@ import {
   writeWithRustClient,
 } from "./lib/utils";
 import { PrismaLibSQL } from "@prisma/adapter-libsql";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../prisma/client";
 import {
   Collection,
   CollectionSchema,
@@ -17,6 +17,8 @@ import {
   UserSchema,
 } from "../types/generated";
 require("dotenv-safe").config();
+
+console.log({ PrismaClient });
 
 const localClient = createClient({
   url: "file:prisma/dev.db",
