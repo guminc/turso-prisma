@@ -1,6 +1,6 @@
 import { createClient } from "@libsql/client";
-import cuid from "cuid";
 import { ethers } from "ethers";
+import cuid from "cuid";
 import {
   getBatchSqlStatements,
   getMongoTablesFromFile,
@@ -8,7 +8,6 @@ import {
   parseArgs,
   writeWithRustClient,
 } from "./lib/utils";
-
 import { PrismaLibSQL } from "@prisma/adapter-libsql";
 import { PrismaClient } from "@prisma/client";
 import {
