@@ -1,8 +1,6 @@
 node_modules/
 dist/
 *.env
-prisma/dev.db
+prisma/dev.db*
 dump.sql
 dump/
-
-scripts/rust/target/

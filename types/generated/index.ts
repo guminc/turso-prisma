@@ -16,7 +16,6 @@ export const CollectionScalarFieldEnumSchema = z.enum([
   "id",
   "name",
   "max_items",
-  "max_batch_size",
   "symbol",
   "creator_address",
   "is_hidden",
@@ -32,7 +31,6 @@ export const CollectionScalarFieldEnumSchema = z.enum([
   "mint_info",
   "socials",
   "token_address",
-  "token_address_lowercase",
   "trait_counts",
   "avatar_uri",
   "banner_uri",
@@ -44,7 +42,6 @@ export const CollectionScalarFieldEnumSchema = z.enum([
   "num_items",
   "num_owners",
   "last_refreshed",
-  "user_id",
   "created_at",
   "updated_at",
 ]);
@@ -52,14 +49,11 @@ export const CollectionScalarFieldEnumSchema = z.enum([
 export const NftScalarFieldEnumSchema = z.enum([
   "id",
   "token_address",
-  "token_address_lowercase",
   "token_id",
   "attributes",
   "block_minted",
   "contract_type",
   "description",
-  "dna",
-  "edition",
   "image",
   "image_url",
   "metadata",
@@ -236,37 +230,34 @@ export const NullsOrderSchema = z.enum(["first", "last"]);
 
 export const CollectionSchema = z.object({
   id: z.string().cuid(),
-  name: z.string(),
-  max_items: z.number().int(),
-  max_batch_size: z.number().int(),
-  symbol: z.string(),
-  creator_address: z.string(),
-  is_hidden: z.boolean(),
-  sort_order: z.number().int(),
-  is_mint_active: z.boolean(),
-  is_archetype: z.boolean(),
-  is_pending: z.boolean(),
-  discounts: z.string(),
-  owner_alt_payout: z.string(),
-  super_affiliate_payout: z.string(),
-  contract_version: z.number().int(),
-  slug: z.string(),
-  mint_info: z.string(),
-  socials: z.string(),
-  token_address: z.string(),
-  token_address_lowercase: z.string(),
-  trait_counts: z.string(),
-  avatar_uri: z.string(),
-  banner_uri: z.string(),
-  description: z.string(),
-  hero_uri: z.string(),
-  twitter: z.string(),
-  website: z.string(),
-  discord: z.string(),
-  num_items: z.number().int(),
-  num_owners: z.number().int(),
-  last_refreshed: z.coerce.date(),
-  user_id: z.string(),
+  name: z.string().nullish(),
+  max_items: z.number().int().nullish(),
+  symbol: z.string().nullish(),
+  creator_address: z.string().nullish(),
+  is_hidden: z.boolean().nullish(),
+  sort_order: z.number().int().nullish(),
+  is_mint_active: z.boolean().nullish(),
+  is_archetype: z.boolean().nullish(),
+  is_pending: z.boolean().nullish(),
+  discounts: z.string().nullish(),
+  owner_alt_payout: z.string().nullish(),
+  super_affiliate_payout: z.string().nullish(),
+  contract_version: z.number().int().nullish(),
+  slug: z.string().nullish(),
+  mint_info: z.string().nullish(),
+  socials: z.string().nullish(),
+  token_address: z.string().nullish(),
+  trait_counts: z.string().nullish(),
+  avatar_uri: z.string().nullish(),
+  banner_uri: z.string().nullish(),
+  description: z.string().nullish(),
+  hero_uri: z.string().nullish(),
+  twitter: z.string().nullish(),
+  website: z.string().nullish(),
+  discord: z.string().nullish(),
+  num_items: z.number().int().nullish(),
+  num_owners: z.number().int().nullish(),
+  last_refreshed: z.coerce.date().nullish(),
   created_at: z.coerce.date(),
   updated_at: z.coerce.date(),
 });
@@ -280,14 +271,11 @@ export type Collection = z.infer<typeof CollectionSchema>;
 export const NftSchema = z.object({
   id: z.string().cuid(),
   token_address: z.string(),
-  token_address_lowercase: z.string(),
   token_id: z.string(),
   attributes: z.string(),
   block_minted: z.number().int(),
   contract_type: z.string(),
   description: z.string(),
-  dna: z.string(),
-  edition: z.number().int(),
   image: z.string(),
   image_url: z.string(),
   metadata: z.string(),
@@ -359,11 +347,9 @@ export type OpenRarity = z.infer<typeof OpenRaritySchema>;
 
 export const UserSchema = z.object({
   id: z.string().cuid(),
-  address: z
-    .string()
-    .refine((val) => getAddress(val), {
-      message: "is not a valid Ethereum address",
-    }),
+  address: z.string().refine((val) => getAddress(val), {
+    message: "is not a valid Ethereum address",
+  }),
   avatar_uri: z.string().url({ message: "Invalid url" }).nullish(),
   banner_uri: z.string().url({ message: "Invalid url" }).nullish(),
   username: z.string().max(64, { message: "too lengthy" }).nullish(),
@@ -372,7 +358,7 @@ export const UserSchema = z.object({
   status: z.string(),
   email: z.string().nullish(),
   created_at: z.coerce.date(),
-  updated_at: z.coerce.date().nullish(),
+  updated_at: z.coerce.date(),
 });
 
 export type User = z.infer<typeof UserSchema>;
@@ -594,7 +580,6 @@ export const CollectionSelectSchema: z.ZodType<Prisma.CollectionSelect> = z
     id: z.boolean().optional(),
     name: z.boolean().optional(),
     max_items: z.boolean().optional(),
-    max_batch_size: z.boolean().optional(),
     symbol: z.boolean().optional(),
     creator_address: z.boolean().optional(),
     is_hidden: z.boolean().optional(),
@@ -610,7 +595,6 @@ export const CollectionSelectSchema: z.ZodType<Prisma.CollectionSelect> = z
     mint_info: z.boolean().optional(),
     socials: z.boolean().optional(),
     token_address: z.boolean().optional(),
-    token_address_lowercase: z.boolean().optional(),
     trait_counts: z.boolean().optional(),
     avatar_uri: z.boolean().optional(),
     banner_uri: z.boolean().optional(),
@@ -622,7 +606,6 @@ export const CollectionSelectSchema: z.ZodType<Prisma.CollectionSelect> = z
     num_items: z.boolean().optional(),
     num_owners: z.boolean().optional(),
     last_refreshed: z.boolean().optional(),
-    user_id: z.boolean().optional(),
     created_at: z.boolean().optional(),
     updated_at: z.boolean().optional(),
     mint_data: z
@@ -663,14 +646,11 @@ export const NftSelectSchema: z.ZodType<Prisma.NftSelect> = z
   .object({
     id: z.boolean().optional(),
     token_address: z.boolean().optional(),
-    token_address_lowercase: z.boolean().optional(),
     token_id: z.boolean().optional(),
     attributes: z.boolean().optional(),
     block_minted: z.boolean().optional(),
     contract_type: z.boolean().optional(),
     description: z.boolean().optional(),
-    dna: z.boolean().optional(),
-    edition: z.boolean().optional(),
     image: z.boolean().optional(),
     image_url: z.boolean().optional(),
     metadata: z.boolean().optional(),
@@ -1246,95 +1226,118 @@ export const CollectionWhereInputSchema: z.ZodType<Prisma.CollectionWhereInput> 
         ])
         .optional(),
       id: z.union([z.lazy(() => StringFilterSchema), z.string()]).optional(),
-      name: z.union([z.lazy(() => StringFilterSchema), z.string()]).optional(),
+      name: z
+        .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+        .optional()
+        .nullable(),
       max_items: z
-        .union([z.lazy(() => IntFilterSchema), z.number()])
-        .optional(),
-      max_batch_size: z
-        .union([z.lazy(() => IntFilterSchema), z.number()])
-        .optional(),
+        .union([z.lazy(() => IntNullableFilterSchema), z.number()])
+        .optional()
+        .nullable(),
       symbol: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
+        .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+        .optional()
+        .nullable(),
       creator_address: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
+        .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+        .optional()
+        .nullable(),
       is_hidden: z
-        .union([z.lazy(() => BoolFilterSchema), z.boolean()])
-        .optional(),
+        .union([z.lazy(() => BoolNullableFilterSchema), z.boolean()])
+        .optional()
+        .nullable(),
       sort_order: z
-        .union([z.lazy(() => IntFilterSchema), z.number()])
-        .optional(),
+        .union([z.lazy(() => IntNullableFilterSchema), z.number()])
+        .optional()
+        .nullable(),
       is_mint_active: z
-        .union([z.lazy(() => BoolFilterSchema), z.boolean()])
-        .optional(),
+        .union([z.lazy(() => BoolNullableFilterSchema), z.boolean()])
+        .optional()
+        .nullable(),
       is_archetype: z
-        .union([z.lazy(() => BoolFilterSchema), z.boolean()])
-        .optional(),
+        .union([z.lazy(() => BoolNullableFilterSchema), z.boolean()])
+        .optional()
+        .nullable(),
       is_pending: z
-        .union([z.lazy(() => BoolFilterSchema), z.boolean()])
-        .optional(),
+        .union([z.lazy(() => BoolNullableFilterSchema), z.boolean()])
+        .optional()
+        .nullable(),
       discounts: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
+        .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+        .optional()
+        .nullable(),
       owner_alt_payout: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
+        .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+        .optional()
+        .nullable(),
       super_affiliate_payout: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
+        .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+        .optional()
+        .nullable(),
       contract_version: z
-        .union([z.lazy(() => IntFilterSchema), z.number()])
-        .optional(),
-      slug: z.union([z.lazy(() => StringFilterSchema), z.string()]).optional(),
+        .union([z.lazy(() => IntNullableFilterSchema), z.number()])
+        .optional()
+        .nullable(),
+      slug: z
+        .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+        .optional()
+        .nullable(),
       mint_info: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
+        .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+        .optional()
+        .nullable(),
       socials: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
+        .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+        .optional()
+        .nullable(),
       token_address: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
-      token_address_lowercase: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
+        .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+        .optional()
+        .nullable(),
       trait_counts: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
+        .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+        .optional()
+        .nullable(),
       avatar_uri: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
+        .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+        .optional()
+        .nullable(),
       banner_uri: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
+        .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+        .optional()
+        .nullable(),
       description: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
+        .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+        .optional()
+        .nullable(),
       hero_uri: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
+        .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+        .optional()
+        .nullable(),
       twitter: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
+        .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+        .optional()
+        .nullable(),
       website: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
+        .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+        .optional()
+        .nullable(),
       discord: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
+        .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+        .optional()
+        .nullable(),
       num_items: z
-        .union([z.lazy(() => IntFilterSchema), z.number()])
-        .optional(),
+        .union([z.lazy(() => IntNullableFilterSchema), z.number()])
+        .optional()
+        .nullable(),
       num_owners: z
-        .union([z.lazy(() => IntFilterSchema), z.number()])
-        .optional(),
+        .union([z.lazy(() => IntNullableFilterSchema), z.number()])
+        .optional()
+        .nullable(),
       last_refreshed: z
-        .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
-        .optional(),
-      user_id: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
+        .union([z.lazy(() => DateTimeNullableFilterSchema), z.coerce.date()])
+        .optional()
+        .nullable(),
       created_at: z
         .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
         .optional(),
@@ -1350,10 +1353,11 @@ export const CollectionWhereInputSchema: z.ZodType<Prisma.CollectionWhereInput> 
         .nullable(),
       creator: z
         .union([
-          z.lazy(() => UserRelationFilterSchema),
+          z.lazy(() => UserNullableRelationFilterSchema),
           z.lazy(() => UserWhereInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       nfts: z.lazy(() => NftListRelationFilterSchema).optional(),
     })
     .strict();
@@ -1362,37 +1366,174 @@ export const CollectionOrderByWithRelationInputSchema: z.ZodType<Prisma.Collecti
   z
     .object({
       id: z.lazy(() => SortOrderSchema).optional(),
-      name: z.lazy(() => SortOrderSchema).optional(),
-      max_items: z.lazy(() => SortOrderSchema).optional(),
-      max_batch_size: z.lazy(() => SortOrderSchema).optional(),
-      symbol: z.lazy(() => SortOrderSchema).optional(),
-      creator_address: z.lazy(() => SortOrderSchema).optional(),
-      is_hidden: z.lazy(() => SortOrderSchema).optional(),
-      sort_order: z.lazy(() => SortOrderSchema).optional(),
-      is_mint_active: z.lazy(() => SortOrderSchema).optional(),
-      is_archetype: z.lazy(() => SortOrderSchema).optional(),
-      is_pending: z.lazy(() => SortOrderSchema).optional(),
-      discounts: z.lazy(() => SortOrderSchema).optional(),
-      owner_alt_payout: z.lazy(() => SortOrderSchema).optional(),
-      super_affiliate_payout: z.lazy(() => SortOrderSchema).optional(),
-      contract_version: z.lazy(() => SortOrderSchema).optional(),
-      slug: z.lazy(() => SortOrderSchema).optional(),
-      mint_info: z.lazy(() => SortOrderSchema).optional(),
-      socials: z.lazy(() => SortOrderSchema).optional(),
-      token_address: z.lazy(() => SortOrderSchema).optional(),
-      token_address_lowercase: z.lazy(() => SortOrderSchema).optional(),
-      trait_counts: z.lazy(() => SortOrderSchema).optional(),
-      avatar_uri: z.lazy(() => SortOrderSchema).optional(),
-      banner_uri: z.lazy(() => SortOrderSchema).optional(),
-      description: z.lazy(() => SortOrderSchema).optional(),
-      hero_uri: z.lazy(() => SortOrderSchema).optional(),
-      twitter: z.lazy(() => SortOrderSchema).optional(),
-      website: z.lazy(() => SortOrderSchema).optional(),
-      discord: z.lazy(() => SortOrderSchema).optional(),
-      num_items: z.lazy(() => SortOrderSchema).optional(),
-      num_owners: z.lazy(() => SortOrderSchema).optional(),
-      last_refreshed: z.lazy(() => SortOrderSchema).optional(),
-      user_id: z.lazy(() => SortOrderSchema).optional(),
+      name: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      max_items: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      symbol: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      creator_address: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      is_hidden: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      sort_order: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      is_mint_active: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      is_archetype: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      is_pending: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      discounts: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      owner_alt_payout: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      super_affiliate_payout: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      contract_version: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      slug: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      mint_info: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      socials: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      token_address: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      trait_counts: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      avatar_uri: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      banner_uri: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      description: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      hero_uri: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      twitter: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      website: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      discord: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      num_items: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      num_owners: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      last_refreshed: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
       created_at: z.lazy(() => SortOrderSchema).optional(),
       updated_at: z.lazy(() => SortOrderSchema).optional(),
       mint_data: z
@@ -1405,23 +1546,13 @@ export const CollectionOrderByWithRelationInputSchema: z.ZodType<Prisma.Collecti
 
 export const CollectionWhereUniqueInputSchema: z.ZodType<Prisma.CollectionWhereUniqueInput> =
   z
-    .union([
-      z.object({
-        id: z.string().cuid(),
-        user_id: z.string(),
-      }),
-      z.object({
-        id: z.string().cuid(),
-      }),
-      z.object({
-        user_id: z.string(),
-      }),
-    ])
+    .object({
+      id: z.string().cuid(),
+    })
     .and(
       z
         .object({
           id: z.string().cuid().optional(),
-          user_id: z.string().optional(),
           AND: z
             .union([
               z.lazy(() => CollectionWhereInputSchema),
@@ -1439,95 +1570,120 @@ export const CollectionWhereUniqueInputSchema: z.ZodType<Prisma.CollectionWhereU
             ])
             .optional(),
           name: z
-            .union([z.lazy(() => StringFilterSchema), z.string()])
-            .optional(),
+            .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+            .optional()
+            .nullable(),
           max_items: z
-            .union([z.lazy(() => IntFilterSchema), z.number().int()])
-            .optional(),
-          max_batch_size: z
-            .union([z.lazy(() => IntFilterSchema), z.number().int()])
-            .optional(),
+            .union([z.lazy(() => IntNullableFilterSchema), z.number().int()])
+            .optional()
+            .nullable(),
           symbol: z
-            .union([z.lazy(() => StringFilterSchema), z.string()])
-            .optional(),
+            .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+            .optional()
+            .nullable(),
           creator_address: z
-            .union([z.lazy(() => StringFilterSchema), z.string()])
-            .optional(),
+            .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+            .optional()
+            .nullable(),
           is_hidden: z
-            .union([z.lazy(() => BoolFilterSchema), z.boolean()])
-            .optional(),
+            .union([z.lazy(() => BoolNullableFilterSchema), z.boolean()])
+            .optional()
+            .nullable(),
           sort_order: z
-            .union([z.lazy(() => IntFilterSchema), z.number().int()])
-            .optional(),
+            .union([z.lazy(() => IntNullableFilterSchema), z.number().int()])
+            .optional()
+            .nullable(),
           is_mint_active: z
-            .union([z.lazy(() => BoolFilterSchema), z.boolean()])
-            .optional(),
+            .union([z.lazy(() => BoolNullableFilterSchema), z.boolean()])
+            .optional()
+            .nullable(),
           is_archetype: z
-            .union([z.lazy(() => BoolFilterSchema), z.boolean()])
-            .optional(),
+            .union([z.lazy(() => BoolNullableFilterSchema), z.boolean()])
+            .optional()
+            .nullable(),
           is_pending: z
-            .union([z.lazy(() => BoolFilterSchema), z.boolean()])
-            .optional(),
+            .union([z.lazy(() => BoolNullableFilterSchema), z.boolean()])
+            .optional()
+            .nullable(),
           discounts: z
-            .union([z.lazy(() => StringFilterSchema), z.string()])
-            .optional(),
+            .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+            .optional()
+            .nullable(),
           owner_alt_payout: z
-            .union([z.lazy(() => StringFilterSchema), z.string()])
-            .optional(),
+            .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+            .optional()
+            .nullable(),
           super_affiliate_payout: z
-            .union([z.lazy(() => StringFilterSchema), z.string()])
-            .optional(),
+            .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+            .optional()
+            .nullable(),
           contract_version: z
-            .union([z.lazy(() => IntFilterSchema), z.number().int()])
-            .optional(),
+            .union([z.lazy(() => IntNullableFilterSchema), z.number().int()])
+            .optional()
+            .nullable(),
           slug: z
-            .union([z.lazy(() => StringFilterSchema), z.string()])
-            .optional(),
+            .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+            .optional()
+            .nullable(),
           mint_info: z
-            .union([z.lazy(() => StringFilterSchema), z.string()])
-            .optional(),
+            .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+            .optional()
+            .nullable(),
           socials: z
-            .union([z.lazy(() => StringFilterSchema), z.string()])
-            .optional(),
+            .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+            .optional()
+            .nullable(),
           token_address: z
-            .union([z.lazy(() => StringFilterSchema), z.string()])
-            .optional(),
-          token_address_lowercase: z
-            .union([z.lazy(() => StringFilterSchema), z.string()])
-            .optional(),
+            .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+            .optional()
+            .nullable(),
           trait_counts: z
-            .union([z.lazy(() => StringFilterSchema), z.string()])
-            .optional(),
+            .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+            .optional()
+            .nullable(),
           avatar_uri: z
-            .union([z.lazy(() => StringFilterSchema), z.string()])
-            .optional(),
+            .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+            .optional()
+            .nullable(),
           banner_uri: z
-            .union([z.lazy(() => StringFilterSchema), z.string()])
-            .optional(),
+            .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+            .optional()
+            .nullable(),
           description: z
-            .union([z.lazy(() => StringFilterSchema), z.string()])
-            .optional(),
+            .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+            .optional()
+            .nullable(),
           hero_uri: z
-            .union([z.lazy(() => StringFilterSchema), z.string()])
-            .optional(),
+            .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+            .optional()
+            .nullable(),
           twitter: z
-            .union([z.lazy(() => StringFilterSchema), z.string()])
-            .optional(),
+            .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+            .optional()
+            .nullable(),
           website: z
-            .union([z.lazy(() => StringFilterSchema), z.string()])
-            .optional(),
+            .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+            .optional()
+            .nullable(),
           discord: z
-            .union([z.lazy(() => StringFilterSchema), z.string()])
-            .optional(),
+            .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+            .optional()
+            .nullable(),
           num_items: z
-            .union([z.lazy(() => IntFilterSchema), z.number().int()])
-            .optional(),
+            .union([z.lazy(() => IntNullableFilterSchema), z.number().int()])
+            .optional()
+            .nullable(),
           num_owners: z
-            .union([z.lazy(() => IntFilterSchema), z.number().int()])
-            .optional(),
+            .union([z.lazy(() => IntNullableFilterSchema), z.number().int()])
+            .optional()
+            .nullable(),
           last_refreshed: z
-            .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
-            .optional(),
+            .union([
+              z.lazy(() => DateTimeNullableFilterSchema),
+              z.coerce.date(),
+            ])
+            .optional()
+            .nullable(),
           created_at: z
             .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
             .optional(),
@@ -1543,10 +1699,11 @@ export const CollectionWhereUniqueInputSchema: z.ZodType<Prisma.CollectionWhereU
             .nullable(),
           creator: z
             .union([
-              z.lazy(() => UserRelationFilterSchema),
+              z.lazy(() => UserNullableRelationFilterSchema),
               z.lazy(() => UserWhereInputSchema),
             ])
-            .optional(),
+            .optional()
+            .nullable(),
           nfts: z.lazy(() => NftListRelationFilterSchema).optional(),
         })
         .strict()
@@ -1556,37 +1713,174 @@ export const CollectionOrderByWithAggregationInputSchema: z.ZodType<Prisma.Colle
   z
     .object({
       id: z.lazy(() => SortOrderSchema).optional(),
-      name: z.lazy(() => SortOrderSchema).optional(),
-      max_items: z.lazy(() => SortOrderSchema).optional(),
-      max_batch_size: z.lazy(() => SortOrderSchema).optional(),
-      symbol: z.lazy(() => SortOrderSchema).optional(),
-      creator_address: z.lazy(() => SortOrderSchema).optional(),
-      is_hidden: z.lazy(() => SortOrderSchema).optional(),
-      sort_order: z.lazy(() => SortOrderSchema).optional(),
-      is_mint_active: z.lazy(() => SortOrderSchema).optional(),
-      is_archetype: z.lazy(() => SortOrderSchema).optional(),
-      is_pending: z.lazy(() => SortOrderSchema).optional(),
-      discounts: z.lazy(() => SortOrderSchema).optional(),
-      owner_alt_payout: z.lazy(() => SortOrderSchema).optional(),
-      super_affiliate_payout: z.lazy(() => SortOrderSchema).optional(),
-      contract_version: z.lazy(() => SortOrderSchema).optional(),
-      slug: z.lazy(() => SortOrderSchema).optional(),
-      mint_info: z.lazy(() => SortOrderSchema).optional(),
-      socials: z.lazy(() => SortOrderSchema).optional(),
-      token_address: z.lazy(() => SortOrderSchema).optional(),
-      token_address_lowercase: z.lazy(() => SortOrderSchema).optional(),
-      trait_counts: z.lazy(() => SortOrderSchema).optional(),
-      avatar_uri: z.lazy(() => SortOrderSchema).optional(),
-      banner_uri: z.lazy(() => SortOrderSchema).optional(),
-      description: z.lazy(() => SortOrderSchema).optional(),
-      hero_uri: z.lazy(() => SortOrderSchema).optional(),
-      twitter: z.lazy(() => SortOrderSchema).optional(),
-      website: z.lazy(() => SortOrderSchema).optional(),
-      discord: z.lazy(() => SortOrderSchema).optional(),
-      num_items: z.lazy(() => SortOrderSchema).optional(),
-      num_owners: z.lazy(() => SortOrderSchema).optional(),
-      last_refreshed: z.lazy(() => SortOrderSchema).optional(),
-      user_id: z.lazy(() => SortOrderSchema).optional(),
+      name: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      max_items: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      symbol: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      creator_address: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      is_hidden: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      sort_order: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      is_mint_active: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      is_archetype: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      is_pending: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      discounts: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      owner_alt_payout: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      super_affiliate_payout: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      contract_version: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      slug: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      mint_info: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      socials: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      token_address: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      trait_counts: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      avatar_uri: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      banner_uri: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      description: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      hero_uri: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      twitter: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      website: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      discord: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      num_items: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      num_owners: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      last_refreshed: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
       created_at: z.lazy(() => SortOrderSchema).optional(),
       updated_at: z.lazy(() => SortOrderSchema).optional(),
       _count: z
@@ -1622,101 +1916,201 @@ export const CollectionScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.Co
         .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
         .optional(),
       name: z
-        .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
-        .optional(),
+        .union([
+          z.lazy(() => StringNullableWithAggregatesFilterSchema),
+          z.string(),
+        ])
+        .optional()
+        .nullable(),
       max_items: z
-        .union([z.lazy(() => IntWithAggregatesFilterSchema), z.number()])
-        .optional(),
-      max_batch_size: z
-        .union([z.lazy(() => IntWithAggregatesFilterSchema), z.number()])
-        .optional(),
+        .union([
+          z.lazy(() => IntNullableWithAggregatesFilterSchema),
+          z.number(),
+        ])
+        .optional()
+        .nullable(),
       symbol: z
-        .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
-        .optional(),
+        .union([
+          z.lazy(() => StringNullableWithAggregatesFilterSchema),
+          z.string(),
+        ])
+        .optional()
+        .nullable(),
       creator_address: z
-        .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
-        .optional(),
+        .union([
+          z.lazy(() => StringNullableWithAggregatesFilterSchema),
+          z.string(),
+        ])
+        .optional()
+        .nullable(),
       is_hidden: z
-        .union([z.lazy(() => BoolWithAggregatesFilterSchema), z.boolean()])
-        .optional(),
+        .union([
+          z.lazy(() => BoolNullableWithAggregatesFilterSchema),
+          z.boolean(),
+        ])
+        .optional()
+        .nullable(),
       sort_order: z
-        .union([z.lazy(() => IntWithAggregatesFilterSchema), z.number()])
-        .optional(),
+        .union([
+          z.lazy(() => IntNullableWithAggregatesFilterSchema),
+          z.number(),
+        ])
+        .optional()
+        .nullable(),
       is_mint_active: z
-        .union([z.lazy(() => BoolWithAggregatesFilterSchema), z.boolean()])
-        .optional(),
+        .union([
+          z.lazy(() => BoolNullableWithAggregatesFilterSchema),
+          z.boolean(),
+        ])
+        .optional()
+        .nullable(),
       is_archetype: z
-        .union([z.lazy(() => BoolWithAggregatesFilterSchema), z.boolean()])
-        .optional(),
+        .union([
+          z.lazy(() => BoolNullableWithAggregatesFilterSchema),
+          z.boolean(),
+        ])
+        .optional()
+        .nullable(),
       is_pending: z
-        .union([z.lazy(() => BoolWithAggregatesFilterSchema), z.boolean()])
-        .optional(),
+        .union([
+          z.lazy(() => BoolNullableWithAggregatesFilterSchema),
+          z.boolean(),
+        ])
+        .optional()
+        .nullable(),
       discounts: z
-        .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
-        .optional(),
+        .union([
+          z.lazy(() => StringNullableWithAggregatesFilterSchema),
+          z.string(),
+        ])
+        .optional()
+        .nullable(),
       owner_alt_payout: z
-        .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
-        .optional(),
+        .union([
+          z.lazy(() => StringNullableWithAggregatesFilterSchema),
+          z.string(),
+        ])
+        .optional()
+        .nullable(),
       super_affiliate_payout: z
-        .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
-        .optional(),
+        .union([
+          z.lazy(() => StringNullableWithAggregatesFilterSchema),
+          z.string(),
+        ])
+        .optional()
+        .nullable(),
       contract_version: z
-        .union([z.lazy(() => IntWithAggregatesFilterSchema), z.number()])
-        .optional(),
+        .union([
+          z.lazy(() => IntNullableWithAggregatesFilterSchema),
+          z.number(),
+        ])
+        .optional()
+        .nullable(),
       slug: z
-        .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
-        .optional(),
+        .union([
+          z.lazy(() => StringNullableWithAggregatesFilterSchema),
+          z.string(),
+        ])
+        .optional()
+        .nullable(),
       mint_info: z
-        .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
-        .optional(),
+        .union([
+          z.lazy(() => StringNullableWithAggregatesFilterSchema),
+          z.string(),
+        ])
+        .optional()
+        .nullable(),
       socials: z
-        .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
-        .optional(),
+        .union([
+          z.lazy(() => StringNullableWithAggregatesFilterSchema),
+          z.string(),
+        ])
+        .optional()
+        .nullable(),
       token_address: z
-        .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
-        .optional(),
-      token_address_lowercase: z
-        .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
-        .optional(),
+        .union([
+          z.lazy(() => StringNullableWithAggregatesFilterSchema),
+          z.string(),
+        ])
+        .optional()
+        .nullable(),
       trait_counts: z
-        .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
-        .optional(),
+        .union([
+          z.lazy(() => StringNullableWithAggregatesFilterSchema),
+          z.string(),
+        ])
+        .optional()
+        .nullable(),
       avatar_uri: z
-        .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
-        .optional(),
+        .union([
+          z.lazy(() => StringNullableWithAggregatesFilterSchema),
+          z.string(),
+        ])
+        .optional()
+        .nullable(),
       banner_uri: z
-        .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
-        .optional(),
+        .union([
+          z.lazy(() => StringNullableWithAggregatesFilterSchema),
+          z.string(),
+        ])
+        .optional()
+        .nullable(),
       description: z
-        .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
-        .optional(),
+        .union([
+          z.lazy(() => StringNullableWithAggregatesFilterSchema),
+          z.string(),
+        ])
+        .optional()
+        .nullable(),
       hero_uri: z
-        .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
-        .optional(),
+        .union([
+          z.lazy(() => StringNullableWithAggregatesFilterSchema),
+          z.string(),
+        ])
+        .optional()
+        .nullable(),
       twitter: z
-        .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
-        .optional(),
+        .union([
+          z.lazy(() => StringNullableWithAggregatesFilterSchema),
+          z.string(),
+        ])
+        .optional()
+        .nullable(),
       website: z
-        .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
-        .optional(),
+        .union([
+          z.lazy(() => StringNullableWithAggregatesFilterSchema),
+          z.string(),
+        ])
+        .optional()
+        .nullable(),
       discord: z
-        .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
-        .optional(),
+        .union([
+          z.lazy(() => StringNullableWithAggregatesFilterSchema),
+          z.string(),
+        ])
+        .optional()
+        .nullable(),
       num_items: z
-        .union([z.lazy(() => IntWithAggregatesFilterSchema), z.number()])
-        .optional(),
+        .union([
+          z.lazy(() => IntNullableWithAggregatesFilterSchema),
+          z.number(),
+        ])
+        .optional()
+        .nullable(),
       num_owners: z
-        .union([z.lazy(() => IntWithAggregatesFilterSchema), z.number()])
-        .optional(),
+        .union([
+          z.lazy(() => IntNullableWithAggregatesFilterSchema),
+          z.number(),
+        ])
+        .optional()
+        .nullable(),
       last_refreshed: z
         .union([
-          z.lazy(() => DateTimeWithAggregatesFilterSchema),
+          z.lazy(() => DateTimeNullableWithAggregatesFilterSchema),
           z.coerce.date(),
         ])
-        .optional(),
-      user_id: z
-        .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
-        .optional(),
+        .optional()
+        .nullable(),
       created_at: z
         .union([
           z.lazy(() => DateTimeWithAggregatesFilterSchema),
@@ -1754,9 +2148,6 @@ export const NftWhereInputSchema: z.ZodType<Prisma.NftWhereInput> = z
     token_address: z
       .union([z.lazy(() => StringFilterSchema), z.string()])
       .optional(),
-    token_address_lowercase: z
-      .union([z.lazy(() => StringFilterSchema), z.string()])
-      .optional(),
     token_id: z
       .union([z.lazy(() => StringFilterSchema), z.string()])
       .optional(),
@@ -1772,8 +2163,6 @@ export const NftWhereInputSchema: z.ZodType<Prisma.NftWhereInput> = z
     description: z
       .union([z.lazy(() => StringFilterSchema), z.string()])
       .optional(),
-    dna: z.union([z.lazy(() => StringFilterSchema), z.string()]).optional(),
-    edition: z.union([z.lazy(() => IntFilterSchema), z.number()]).optional(),
     image: z.union([z.lazy(() => StringFilterSchema), z.string()]).optional(),
     image_url: z
       .union([z.lazy(() => StringFilterSchema), z.string()])
@@ -1828,14 +2217,11 @@ export const NftOrderByWithRelationInputSchema: z.ZodType<Prisma.NftOrderByWithR
     .object({
       id: z.lazy(() => SortOrderSchema).optional(),
       token_address: z.lazy(() => SortOrderSchema).optional(),
-      token_address_lowercase: z.lazy(() => SortOrderSchema).optional(),
       token_id: z.lazy(() => SortOrderSchema).optional(),
       attributes: z.lazy(() => SortOrderSchema).optional(),
       block_minted: z.lazy(() => SortOrderSchema).optional(),
       contract_type: z.lazy(() => SortOrderSchema).optional(),
       description: z.lazy(() => SortOrderSchema).optional(),
-      dna: z.lazy(() => SortOrderSchema).optional(),
-      edition: z.lazy(() => SortOrderSchema).optional(),
       image: z.lazy(() => SortOrderSchema).optional(),
       image_url: z.lazy(() => SortOrderSchema).optional(),
       metadata: z.lazy(() => SortOrderSchema).optional(),
@@ -1886,9 +2272,6 @@ export const NftWhereUniqueInputSchema: z.ZodType<Prisma.NftWhereUniqueInput> =
           token_address: z
             .union([z.lazy(() => StringFilterSchema), z.string()])
             .optional(),
-          token_address_lowercase: z
-            .union([z.lazy(() => StringFilterSchema), z.string()])
-            .optional(),
           token_id: z
             .union([z.lazy(() => StringFilterSchema), z.string()])
             .optional(),
@@ -1903,12 +2286,6 @@ export const NftWhereUniqueInputSchema: z.ZodType<Prisma.NftWhereUniqueInput> =
             .optional(),
           description: z
             .union([z.lazy(() => StringFilterSchema), z.string()])
-            .optional(),
-          dna: z
-            .union([z.lazy(() => StringFilterSchema), z.string()])
-            .optional(),
-          edition: z
-            .union([z.lazy(() => IntFilterSchema), z.number().int()])
             .optional(),
           image: z
             .union([z.lazy(() => StringFilterSchema), z.string()])
@@ -1971,14 +2348,11 @@ export const NftOrderByWithAggregationInputSchema: z.ZodType<Prisma.NftOrderByWi
     .object({
       id: z.lazy(() => SortOrderSchema).optional(),
       token_address: z.lazy(() => SortOrderSchema).optional(),
-      token_address_lowercase: z.lazy(() => SortOrderSchema).optional(),
       token_id: z.lazy(() => SortOrderSchema).optional(),
       attributes: z.lazy(() => SortOrderSchema).optional(),
       block_minted: z.lazy(() => SortOrderSchema).optional(),
       contract_type: z.lazy(() => SortOrderSchema).optional(),
       description: z.lazy(() => SortOrderSchema).optional(),
-      dna: z.lazy(() => SortOrderSchema).optional(),
-      edition: z.lazy(() => SortOrderSchema).optional(),
       image: z.lazy(() => SortOrderSchema).optional(),
       image_url: z.lazy(() => SortOrderSchema).optional(),
       metadata: z.lazy(() => SortOrderSchema).optional(),
@@ -2025,9 +2399,6 @@ export const NftScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.NftScalar
       token_address: z
         .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
         .optional(),
-      token_address_lowercase: z
-        .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
-        .optional(),
       token_id: z
         .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
         .optional(),
@@ -2042,12 +2413,6 @@ export const NftScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.NftScalar
         .optional(),
       description: z
         .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
-        .optional(),
-      dna: z
-        .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
-        .optional(),
-      edition: z
-        .union([z.lazy(() => IntWithAggregatesFilterSchema), z.number()])
         .optional(),
       image: z
         .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
@@ -2703,9 +3068,8 @@ export const UserWhereInputSchema: z.ZodType<Prisma.UserWhereInput> = z
       .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
       .optional(),
     updated_at: z
-      .union([z.lazy(() => DateTimeNullableFilterSchema), z.coerce.date()])
-      .optional()
-      .nullable(),
+      .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
+      .optional(),
     collections: z.lazy(() => CollectionListRelationFilterSchema).optional(),
     wallets: z.lazy(() => WalletListRelationFilterSchema).optional(),
     sessions: z.lazy(() => SessionListRelationFilterSchema).optional(),
@@ -2764,12 +3128,7 @@ export const UserOrderByWithRelationInputSchema: z.ZodType<Prisma.UserOrderByWit
         ])
         .optional(),
       created_at: z.lazy(() => SortOrderSchema).optional(),
-      updated_at: z
-        .union([
-          z.lazy(() => SortOrderSchema),
-          z.lazy(() => SortOrderInputSchema),
-        ])
-        .optional(),
+      updated_at: z.lazy(() => SortOrderSchema).optional(),
       collections: z
         .lazy(() => CollectionOrderByRelationAggregateInputSchema)
         .optional(),
@@ -2792,21 +3151,17 @@ export const UserWhereUniqueInputSchema: z.ZodType<Prisma.UserWhereUniqueInput> 
     .union([
       z.object({
         id: z.string().cuid(),
-        address: z
-          .string()
-          .refine((val) => getAddress(val), {
-            message: "is not a valid Ethereum address",
-          }),
+        address: z.string().refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        }),
       }),
       z.object({
         id: z.string().cuid(),
       }),
       z.object({
-        address: z
-          .string()
-          .refine((val) => getAddress(val), {
-            message: "is not a valid Ethereum address",
-          }),
+        address: z.string().refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        }),
       }),
     ])
     .and(
@@ -2878,12 +3233,8 @@ export const UserWhereUniqueInputSchema: z.ZodType<Prisma.UserWhereUniqueInput> 
             .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
             .optional(),
           updated_at: z
-            .union([
-              z.lazy(() => DateTimeNullableFilterSchema),
-              z.coerce.date(),
-            ])
-            .optional()
-            .nullable(),
+            .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
+            .optional(),
           collections: z
             .lazy(() => CollectionListRelationFilterSchema)
             .optional(),
@@ -2947,12 +3298,7 @@ export const UserOrderByWithAggregationInputSchema: z.ZodType<Prisma.UserOrderBy
         ])
         .optional(),
       created_at: z.lazy(() => SortOrderSchema).optional(),
-      updated_at: z
-        .union([
-          z.lazy(() => SortOrderSchema),
-          z.lazy(() => SortOrderInputSchema),
-        ])
-        .optional(),
+      updated_at: z.lazy(() => SortOrderSchema).optional(),
       _count: z.lazy(() => UserCountOrderByAggregateInputSchema).optional(),
       _max: z.lazy(() => UserMaxOrderByAggregateInputSchema).optional(),
       _min: z.lazy(() => UserMinOrderByAggregateInputSchema).optional(),
@@ -3037,11 +3383,10 @@ export const UserScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.UserScal
         .optional(),
       updated_at: z
         .union([
-          z.lazy(() => DateTimeNullableWithAggregatesFilterSchema),
+          z.lazy(() => DateTimeWithAggregatesFilterSchema),
           z.coerce.date(),
         ])
-        .optional()
-        .nullable(),
+        .optional(),
     })
     .strict();
 
@@ -5106,42 +5451,41 @@ export const CollectionCreateInputSchema: z.ZodType<Prisma.CollectionCreateInput
   z
     .object({
       id: z.string().cuid().optional(),
-      name: z.string(),
-      max_items: z.number().int(),
-      max_batch_size: z.number().int(),
-      symbol: z.string(),
-      creator_address: z.string(),
-      is_hidden: z.boolean(),
-      sort_order: z.number().int(),
-      is_mint_active: z.boolean(),
-      is_archetype: z.boolean(),
-      is_pending: z.boolean(),
-      discounts: z.string(),
-      owner_alt_payout: z.string(),
-      super_affiliate_payout: z.string(),
-      contract_version: z.number().int(),
-      slug: z.string(),
-      mint_info: z.string(),
-      socials: z.string(),
-      token_address: z.string(),
-      token_address_lowercase: z.string(),
-      trait_counts: z.string(),
-      avatar_uri: z.string(),
-      banner_uri: z.string(),
-      description: z.string(),
-      hero_uri: z.string(),
-      twitter: z.string(),
-      website: z.string(),
-      discord: z.string(),
-      num_items: z.number().int(),
-      num_owners: z.number().int(),
-      last_refreshed: z.coerce.date(),
+      name: z.string().optional().nullable(),
+      max_items: z.number().int().optional().nullable(),
+      symbol: z.string().optional().nullable(),
+      is_hidden: z.boolean().optional().nullable(),
+      sort_order: z.number().int().optional().nullable(),
+      is_mint_active: z.boolean().optional().nullable(),
+      is_archetype: z.boolean().optional().nullable(),
+      is_pending: z.boolean().optional().nullable(),
+      discounts: z.string().optional().nullable(),
+      owner_alt_payout: z.string().optional().nullable(),
+      super_affiliate_payout: z.string().optional().nullable(),
+      contract_version: z.number().int().optional().nullable(),
+      slug: z.string().optional().nullable(),
+      mint_info: z.string().optional().nullable(),
+      socials: z.string().optional().nullable(),
+      token_address: z.string().optional().nullable(),
+      trait_counts: z.string().optional().nullable(),
+      avatar_uri: z.string().optional().nullable(),
+      banner_uri: z.string().optional().nullable(),
+      description: z.string().optional().nullable(),
+      hero_uri: z.string().optional().nullable(),
+      twitter: z.string().optional().nullable(),
+      website: z.string().optional().nullable(),
+      discord: z.string().optional().nullable(),
+      num_items: z.number().int().optional().nullable(),
+      num_owners: z.number().int().optional().nullable(),
+      last_refreshed: z.coerce.date().optional().nullable(),
       created_at: z.coerce.date().optional(),
       updated_at: z.coerce.date().optional(),
       mint_data: z
         .lazy(() => MintDataCreateNestedOneWithoutCollectionInputSchema)
         .optional(),
-      creator: z.lazy(() => UserCreateNestedOneWithoutCollectionsInputSchema),
+      creator: z
+        .lazy(() => UserCreateNestedOneWithoutCollectionsInputSchema)
+        .optional(),
       nfts: z
         .lazy(() => NftCreateNestedManyWithoutCollectionInputSchema)
         .optional(),
@@ -5152,37 +5496,34 @@ export const CollectionUncheckedCreateInputSchema: z.ZodType<Prisma.CollectionUn
   z
     .object({
       id: z.string().cuid().optional(),
-      name: z.string(),
-      max_items: z.number().int(),
-      max_batch_size: z.number().int(),
-      symbol: z.string(),
-      creator_address: z.string(),
-      is_hidden: z.boolean(),
-      sort_order: z.number().int(),
-      is_mint_active: z.boolean(),
-      is_archetype: z.boolean(),
-      is_pending: z.boolean(),
-      discounts: z.string(),
-      owner_alt_payout: z.string(),
-      super_affiliate_payout: z.string(),
-      contract_version: z.number().int(),
-      slug: z.string(),
-      mint_info: z.string(),
-      socials: z.string(),
-      token_address: z.string(),
-      token_address_lowercase: z.string(),
-      trait_counts: z.string(),
-      avatar_uri: z.string(),
-      banner_uri: z.string(),
-      description: z.string(),
-      hero_uri: z.string(),
-      twitter: z.string(),
-      website: z.string(),
-      discord: z.string(),
-      num_items: z.number().int(),
-      num_owners: z.number().int(),
-      last_refreshed: z.coerce.date(),
-      user_id: z.string(),
+      name: z.string().optional().nullable(),
+      max_items: z.number().int().optional().nullable(),
+      symbol: z.string().optional().nullable(),
+      creator_address: z.string().optional().nullable(),
+      is_hidden: z.boolean().optional().nullable(),
+      sort_order: z.number().int().optional().nullable(),
+      is_mint_active: z.boolean().optional().nullable(),
+      is_archetype: z.boolean().optional().nullable(),
+      is_pending: z.boolean().optional().nullable(),
+      discounts: z.string().optional().nullable(),
+      owner_alt_payout: z.string().optional().nullable(),
+      super_affiliate_payout: z.string().optional().nullable(),
+      contract_version: z.number().int().optional().nullable(),
+      slug: z.string().optional().nullable(),
+      mint_info: z.string().optional().nullable(),
+      socials: z.string().optional().nullable(),
+      token_address: z.string().optional().nullable(),
+      trait_counts: z.string().optional().nullable(),
+      avatar_uri: z.string().optional().nullable(),
+      banner_uri: z.string().optional().nullable(),
+      description: z.string().optional().nullable(),
+      hero_uri: z.string().optional().nullable(),
+      twitter: z.string().optional().nullable(),
+      website: z.string().optional().nullable(),
+      discord: z.string().optional().nullable(),
+      num_items: z.number().int().optional().nullable(),
+      num_owners: z.number().int().optional().nullable(),
+      last_refreshed: z.coerce.date().optional().nullable(),
       created_at: z.coerce.date().optional(),
       updated_at: z.coerce.date().optional(),
       mint_data: z
@@ -5208,183 +5549,192 @@ export const CollectionUpdateInputSchema: z.ZodType<Prisma.CollectionUpdateInput
       name: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       max_items: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
-      max_batch_size: z
-        .union([
-          z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
+        .optional()
+        .nullable(),
       symbol: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
-      creator_address: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
+        .optional()
+        .nullable(),
       is_hidden: z
         .union([
           z.boolean(),
-          z.lazy(() => BoolFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableBoolFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       sort_order: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       is_mint_active: z
         .union([
           z.boolean(),
-          z.lazy(() => BoolFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableBoolFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       is_archetype: z
         .union([
           z.boolean(),
-          z.lazy(() => BoolFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableBoolFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       is_pending: z
         .union([
           z.boolean(),
-          z.lazy(() => BoolFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableBoolFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       discounts: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       owner_alt_payout: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       super_affiliate_payout: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       contract_version: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       slug: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       mint_info: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       socials: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       token_address: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
-      token_address_lowercase: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
+        .optional()
+        .nullable(),
       trait_counts: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       avatar_uri: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       banner_uri: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       description: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       hero_uri: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       twitter: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       website: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       discord: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       num_items: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       num_owners: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       last_refreshed: z
         .union([
           z.coerce.date(),
-          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       created_at: z
         .union([
           z.coerce.date(),
@@ -5401,7 +5751,7 @@ export const CollectionUpdateInputSchema: z.ZodType<Prisma.CollectionUpdateInput
         .lazy(() => MintDataUpdateOneWithoutCollectionNestedInputSchema)
         .optional(),
       creator: z
-        .lazy(() => UserUpdateOneRequiredWithoutCollectionsNestedInputSchema)
+        .lazy(() => UserUpdateOneWithoutCollectionsNestedInputSchema)
         .optional(),
       nfts: z
         .lazy(() => NftUpdateManyWithoutCollectionNestedInputSchema)
@@ -5421,189 +5771,199 @@ export const CollectionUncheckedUpdateInputSchema: z.ZodType<Prisma.CollectionUn
       name: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       max_items: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
-      max_batch_size: z
-        .union([
-          z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
+        .optional()
+        .nullable(),
       symbol: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       creator_address: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       is_hidden: z
         .union([
           z.boolean(),
-          z.lazy(() => BoolFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableBoolFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       sort_order: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       is_mint_active: z
         .union([
           z.boolean(),
-          z.lazy(() => BoolFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableBoolFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       is_archetype: z
         .union([
           z.boolean(),
-          z.lazy(() => BoolFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableBoolFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       is_pending: z
         .union([
           z.boolean(),
-          z.lazy(() => BoolFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableBoolFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       discounts: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       owner_alt_payout: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       super_affiliate_payout: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       contract_version: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       slug: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       mint_info: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       socials: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       token_address: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
-      token_address_lowercase: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
+        .optional()
+        .nullable(),
       trait_counts: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       avatar_uri: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       banner_uri: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       description: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       hero_uri: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       twitter: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       website: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       discord: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       num_items: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       num_owners: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       last_refreshed: z
         .union([
           z.coerce.date(),
-          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
-      user_id: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
+        .optional()
+        .nullable(),
       created_at: z
         .union([
           z.coerce.date(),
@@ -5639,183 +5999,192 @@ export const CollectionUpdateManyMutationInputSchema: z.ZodType<Prisma.Collectio
       name: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       max_items: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
-      max_batch_size: z
-        .union([
-          z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
+        .optional()
+        .nullable(),
       symbol: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
-      creator_address: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
+        .optional()
+        .nullable(),
       is_hidden: z
         .union([
           z.boolean(),
-          z.lazy(() => BoolFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableBoolFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       sort_order: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       is_mint_active: z
         .union([
           z.boolean(),
-          z.lazy(() => BoolFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableBoolFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       is_archetype: z
         .union([
           z.boolean(),
-          z.lazy(() => BoolFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableBoolFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       is_pending: z
         .union([
           z.boolean(),
-          z.lazy(() => BoolFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableBoolFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       discounts: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       owner_alt_payout: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       super_affiliate_payout: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       contract_version: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       slug: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       mint_info: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       socials: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       token_address: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
-      token_address_lowercase: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
+        .optional()
+        .nullable(),
       trait_counts: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       avatar_uri: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       banner_uri: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       description: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       hero_uri: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       twitter: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       website: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       discord: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       num_items: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       num_owners: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       last_refreshed: z
         .union([
           z.coerce.date(),
-          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       created_at: z
         .union([
           z.coerce.date(),
@@ -5843,189 +6212,199 @@ export const CollectionUncheckedUpdateManyInputSchema: z.ZodType<Prisma.Collecti
       name: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       max_items: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
-      max_batch_size: z
-        .union([
-          z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
+        .optional()
+        .nullable(),
       symbol: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       creator_address: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       is_hidden: z
         .union([
           z.boolean(),
-          z.lazy(() => BoolFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableBoolFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       sort_order: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       is_mint_active: z
         .union([
           z.boolean(),
-          z.lazy(() => BoolFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableBoolFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       is_archetype: z
         .union([
           z.boolean(),
-          z.lazy(() => BoolFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableBoolFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       is_pending: z
         .union([
           z.boolean(),
-          z.lazy(() => BoolFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableBoolFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       discounts: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       owner_alt_payout: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       super_affiliate_payout: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       contract_version: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       slug: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       mint_info: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       socials: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       token_address: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
-      token_address_lowercase: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
+        .optional()
+        .nullable(),
       trait_counts: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       avatar_uri: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       banner_uri: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       description: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       hero_uri: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       twitter: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       website: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       discord: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       num_items: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       num_owners: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       last_refreshed: z
         .union([
           z.coerce.date(),
-          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
-      user_id: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
+        .optional()
+        .nullable(),
       created_at: z
         .union([
           z.coerce.date(),
@@ -6045,14 +6424,11 @@ export const NftCreateInputSchema: z.ZodType<Prisma.NftCreateInput> = z
   .object({
     id: z.string().cuid().optional(),
     token_address: z.string(),
-    token_address_lowercase: z.string(),
     token_id: z.string(),
     attributes: z.string(),
     block_minted: z.number().int(),
     contract_type: z.string(),
     description: z.string(),
-    dna: z.string(),
-    edition: z.number().int(),
     image: z.string(),
     image_url: z.string(),
     metadata: z.string(),
@@ -6077,14 +6453,11 @@ export const NftUncheckedCreateInputSchema: z.ZodType<Prisma.NftUncheckedCreateI
     .object({
       id: z.string().cuid().optional(),
       token_address: z.string(),
-      token_address_lowercase: z.string(),
       token_id: z.string(),
       attributes: z.string(),
       block_minted: z.number().int(),
       contract_type: z.string(),
       description: z.string(),
-      dna: z.string(),
-      edition: z.number().int(),
       image: z.string(),
       image_url: z.string(),
       metadata: z.string(),
@@ -6115,9 +6488,6 @@ export const NftUpdateInputSchema: z.ZodType<Prisma.NftUpdateInput> = z
     token_address: z
       .union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
       .optional(),
-    token_address_lowercase: z
-      .union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
-      .optional(),
     token_id: z
       .union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
       .optional(),
@@ -6135,15 +6505,6 @@ export const NftUpdateInputSchema: z.ZodType<Prisma.NftUpdateInput> = z
       .optional(),
     description: z
       .union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
-      .optional(),
-    dna: z
-      .union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
-      .optional(),
-    edition: z
-      .union([
-        z.number().int(),
-        z.lazy(() => IntFieldUpdateOperationsInputSchema),
-      ])
       .optional(),
     image: z
       .union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
@@ -6214,12 +6575,6 @@ export const NftUncheckedUpdateInputSchema: z.ZodType<Prisma.NftUncheckedUpdateI
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
-      token_address_lowercase: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
       token_id: z
         .union([
           z.string(),
@@ -6248,18 +6603,6 @@ export const NftUncheckedUpdateInputSchema: z.ZodType<Prisma.NftUncheckedUpdateI
         .union([
           z.string(),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      dna: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      edition: z
-        .union([
-          z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       image: z
@@ -6361,12 +6704,6 @@ export const NftUpdateManyMutationInputSchema: z.ZodType<Prisma.NftUpdateManyMut
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
-      token_address_lowercase: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
       token_id: z
         .union([
           z.string(),
@@ -6395,18 +6732,6 @@ export const NftUpdateManyMutationInputSchema: z.ZodType<Prisma.NftUpdateManyMut
         .union([
           z.string(),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      dna: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      edition: z
-        .union([
-          z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       image: z
@@ -6499,12 +6824,6 @@ export const NftUncheckedUpdateManyInputSchema: z.ZodType<Prisma.NftUncheckedUpd
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
-      token_address_lowercase: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
       token_id: z
         .union([
           z.string(),
@@ -6533,18 +6852,6 @@ export const NftUncheckedUpdateManyInputSchema: z.ZodType<Prisma.NftUncheckedUpd
         .union([
           z.string(),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      dna: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      edition: z
-        .union([
-          z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       image: z
@@ -7469,11 +7776,9 @@ export const OpenRarityUncheckedUpdateManyInputSchema: z.ZodType<Prisma.OpenRari
 export const UserCreateInputSchema: z.ZodType<Prisma.UserCreateInput> = z
   .object({
     id: z.string().cuid().optional(),
-    address: z
-      .string()
-      .refine((val) => getAddress(val), {
-        message: "is not a valid Ethereum address",
-      }),
+    address: z.string().refine((val) => getAddress(val), {
+      message: "is not a valid Ethereum address",
+    }),
     avatar_uri: z
       .string()
       .url({ message: "Invalid url" })
@@ -7498,7 +7803,7 @@ export const UserCreateInputSchema: z.ZodType<Prisma.UserCreateInput> = z
     status: z.string().optional(),
     email: z.string().optional().nullable(),
     created_at: z.coerce.date().optional(),
-    updated_at: z.coerce.date().optional().nullable(),
+    updated_at: z.coerce.date().optional(),
     collections: z
       .lazy(() => CollectionCreateNestedManyWithoutCreatorInputSchema)
       .optional(),
@@ -7522,11 +7827,9 @@ export const UserUncheckedCreateInputSchema: z.ZodType<Prisma.UserUncheckedCreat
   z
     .object({
       id: z.string().cuid().optional(),
-      address: z
-        .string()
-        .refine((val) => getAddress(val), {
-          message: "is not a valid Ethereum address",
-        }),
+      address: z.string().refine((val) => getAddress(val), {
+        message: "is not a valid Ethereum address",
+      }),
       avatar_uri: z
         .string()
         .url({ message: "Invalid url" })
@@ -7551,7 +7854,7 @@ export const UserUncheckedCreateInputSchema: z.ZodType<Prisma.UserUncheckedCreat
       status: z.string().optional(),
       email: z.string().optional().nullable(),
       created_at: z.coerce.date().optional(),
-      updated_at: z.coerce.date().optional().nullable(),
+      updated_at: z.coerce.date().optional(),
       collections: z
         .lazy(
           () => CollectionUncheckedCreateNestedManyWithoutCreatorInputSchema
@@ -7585,11 +7888,9 @@ export const UserUpdateInputSchema: z.ZodType<Prisma.UserUpdateInput> = z
       .optional(),
     address: z
       .union([
-        z
-          .string()
-          .refine((val) => getAddress(val), {
-            message: "is not a valid Ethereum address",
-          }),
+        z.string().refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        }),
         z.lazy(() => StringFieldUpdateOperationsInputSchema),
       ])
       .optional(),
@@ -7647,10 +7948,9 @@ export const UserUpdateInputSchema: z.ZodType<Prisma.UserUpdateInput> = z
     updated_at: z
       .union([
         z.coerce.date(),
-        z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
+        z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
       ])
-      .optional()
-      .nullable(),
+      .optional(),
     collections: z
       .lazy(() => CollectionUpdateManyWithoutCreatorNestedInputSchema)
       .optional(),
@@ -7681,11 +7981,9 @@ export const UserUncheckedUpdateInputSchema: z.ZodType<Prisma.UserUncheckedUpdat
         .optional(),
       address: z
         .union([
-          z
-            .string()
-            .refine((val) => getAddress(val), {
-              message: "is not a valid Ethereum address",
-            }),
+          z.string().refine((val) => getAddress(val), {
+            message: "is not a valid Ethereum address",
+          }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -7746,10 +8044,9 @@ export const UserUncheckedUpdateInputSchema: z.ZodType<Prisma.UserUncheckedUpdat
       updated_at: z
         .union([
           z.coerce.date(),
-          z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
+          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
-        .optional()
-        .nullable(),
+        .optional(),
       collections: z
         .lazy(
           () => CollectionUncheckedUpdateManyWithoutCreatorNestedInputSchema
@@ -7784,11 +8081,9 @@ export const UserUpdateManyMutationInputSchema: z.ZodType<Prisma.UserUpdateManyM
         .optional(),
       address: z
         .union([
-          z
-            .string()
-            .refine((val) => getAddress(val), {
-              message: "is not a valid Ethereum address",
-            }),
+          z.string().refine((val) => getAddress(val), {
+            message: "is not a valid Ethereum address",
+          }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -7849,10 +8144,9 @@ export const UserUpdateManyMutationInputSchema: z.ZodType<Prisma.UserUpdateManyM
       updated_at: z
         .union([
           z.coerce.date(),
-          z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
+          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
-        .optional()
-        .nullable(),
+        .optional(),
     })
     .strict();
 
@@ -7867,11 +8161,9 @@ export const UserUncheckedUpdateManyInputSchema: z.ZodType<Prisma.UserUncheckedU
         .optional(),
       address: z
         .union([
-          z
-            .string()
-            .refine((val) => getAddress(val), {
-              message: "is not a valid Ethereum address",
-            }),
+          z.string().refine((val) => getAddress(val), {
+            message: "is not a valid Ethereum address",
+          }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -7932,10 +8224,9 @@ export const UserUncheckedUpdateManyInputSchema: z.ZodType<Prisma.UserUncheckedU
       updated_at: z
         .union([
           z.coerce.date(),
-          z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
+          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
-        .optional()
-        .nullable(),
+        .optional(),
     })
     .strict();
 
@@ -10149,27 +10440,71 @@ export const StringFilterSchema: z.ZodType<Prisma.StringFilter> = z
   })
   .strict();
 
-export const IntFilterSchema: z.ZodType<Prisma.IntFilter> = z
+export const StringNullableFilterSchema: z.ZodType<Prisma.StringNullableFilter> =
+  z
+    .object({
+      equals: z.string().optional().nullable(),
+      in: z.string().array().optional().nullable(),
+      notIn: z.string().array().optional().nullable(),
+      lt: z.string().optional(),
+      lte: z.string().optional(),
+      gt: z.string().optional(),
+      gte: z.string().optional(),
+      contains: z.string().optional(),
+      startsWith: z.string().optional(),
+      endsWith: z.string().optional(),
+      not: z
+        .union([z.string(), z.lazy(() => NestedStringNullableFilterSchema)])
+        .optional()
+        .nullable(),
+    })
+    .strict();
+
+export const IntNullableFilterSchema: z.ZodType<Prisma.IntNullableFilter> = z
   .object({
-    equals: z.number().optional(),
-    in: z.number().array().optional(),
-    notIn: z.number().array().optional(),
+    equals: z.number().optional().nullable(),
+    in: z.number().array().optional().nullable(),
+    notIn: z.number().array().optional().nullable(),
     lt: z.number().optional(),
     lte: z.number().optional(),
     gt: z.number().optional(),
     gte: z.number().optional(),
-    not: z.union([z.number(), z.lazy(() => NestedIntFilterSchema)]).optional(),
+    not: z
+      .union([z.number(), z.lazy(() => NestedIntNullableFilterSchema)])
+      .optional()
+      .nullable(),
   })
   .strict();
 
-export const BoolFilterSchema: z.ZodType<Prisma.BoolFilter> = z
+export const BoolNullableFilterSchema: z.ZodType<Prisma.BoolNullableFilter> = z
   .object({
-    equals: z.boolean().optional(),
+    equals: z.boolean().optional().nullable(),
     not: z
-      .union([z.boolean(), z.lazy(() => NestedBoolFilterSchema)])
-      .optional(),
+      .union([z.boolean(), z.lazy(() => NestedBoolNullableFilterSchema)])
+      .optional()
+      .nullable(),
   })
   .strict();
+
+export const DateTimeNullableFilterSchema: z.ZodType<Prisma.DateTimeNullableFilter> =
+  z
+    .object({
+      equals: z.coerce.date().optional().nullable(),
+      in: z.coerce.date().array().optional().nullable(),
+      notIn: z.coerce.date().array().optional().nullable(),
+      lt: z.coerce.date().optional(),
+      lte: z.coerce.date().optional(),
+      gt: z.coerce.date().optional(),
+      gte: z.coerce.date().optional(),
+      not: z
+        .union([
+          z.coerce.date(),
+          z.lazy(() => NestedDateTimeNullableFilterSchema),
+        ])
+        .optional()
+        .nullable(),
+    })
+    .strict();
 
 export const DateTimeFilterSchema: z.ZodType<Prisma.DateTimeFilter> = z
   .object({
@@ -10200,12 +10535,19 @@ export const MintDataNullableRelationFilterSchema: z.ZodType<Prisma.MintDataNull
     })
     .strict();
 
-export const UserRelationFilterSchema: z.ZodType<Prisma.UserRelationFilter> = z
-  .object({
-    is: z.lazy(() => UserWhereInputSchema).optional(),
-    isNot: z.lazy(() => UserWhereInputSchema).optional(),
-  })
-  .strict();
+export const UserNullableRelationFilterSchema: z.ZodType<Prisma.UserNullableRelationFilter> =
+  z
+    .object({
+      is: z
+        .lazy(() => UserWhereInputSchema)
+        .optional()
+        .nullable(),
+      isNot: z
+        .lazy(() => UserWhereInputSchema)
+        .optional()
+        .nullable(),
+    })
+    .strict();
 
 export const NftListRelationFilterSchema: z.ZodType<Prisma.NftListRelationFilter> =
   z
@@ -10215,6 +10557,13 @@ export const NftListRelationFilterSchema: z.ZodType<Prisma.NftListRelationFilter
       none: z.lazy(() => NftWhereInputSchema).optional(),
     })
     .strict();
+
+export const SortOrderInputSchema: z.ZodType<Prisma.SortOrderInput> = z
+  .object({
+    sort: z.lazy(() => SortOrderSchema),
+    nulls: z.lazy(() => NullsOrderSchema).optional(),
+  })
+  .strict();
 
 export const NftOrderByRelationAggregateInputSchema: z.ZodType<Prisma.NftOrderByRelationAggregateInput> =
   z
@@ -10229,7 +10578,6 @@ export const CollectionCountOrderByAggregateInputSchema: z.ZodType<Prisma.Collec
       id: z.lazy(() => SortOrderSchema).optional(),
       name: z.lazy(() => SortOrderSchema).optional(),
       max_items: z.lazy(() => SortOrderSchema).optional(),
-      max_batch_size: z.lazy(() => SortOrderSchema).optional(),
       symbol: z.lazy(() => SortOrderSchema).optional(),
       creator_address: z.lazy(() => SortOrderSchema).optional(),
       is_hidden: z.lazy(() => SortOrderSchema).optional(),
@@ -10245,7 +10593,6 @@ export const CollectionCountOrderByAggregateInputSchema: z.ZodType<Prisma.Collec
       mint_info: z.lazy(() => SortOrderSchema).optional(),
       socials: z.lazy(() => SortOrderSchema).optional(),
       token_address: z.lazy(() => SortOrderSchema).optional(),
-      token_address_lowercase: z.lazy(() => SortOrderSchema).optional(),
       trait_counts: z.lazy(() => SortOrderSchema).optional(),
       avatar_uri: z.lazy(() => SortOrderSchema).optional(),
       banner_uri: z.lazy(() => SortOrderSchema).optional(),
@@ -10257,7 +10604,6 @@ export const CollectionCountOrderByAggregateInputSchema: z.ZodType<Prisma.Collec
       num_items: z.lazy(() => SortOrderSchema).optional(),
       num_owners: z.lazy(() => SortOrderSchema).optional(),
       last_refreshed: z.lazy(() => SortOrderSchema).optional(),
-      user_id: z.lazy(() => SortOrderSchema).optional(),
       created_at: z.lazy(() => SortOrderSchema).optional(),
       updated_at: z.lazy(() => SortOrderSchema).optional(),
     })
@@ -10267,7 +10613,6 @@ export const CollectionAvgOrderByAggregateInputSchema: z.ZodType<Prisma.Collecti
   z
     .object({
       max_items: z.lazy(() => SortOrderSchema).optional(),
-      max_batch_size: z.lazy(() => SortOrderSchema).optional(),
       sort_order: z.lazy(() => SortOrderSchema).optional(),
       contract_version: z.lazy(() => SortOrderSchema).optional(),
       num_items: z.lazy(() => SortOrderSchema).optional(),
@@ -10281,7 +10626,6 @@ export const CollectionMaxOrderByAggregateInputSchema: z.ZodType<Prisma.Collecti
       id: z.lazy(() => SortOrderSchema).optional(),
       name: z.lazy(() => SortOrderSchema).optional(),
       max_items: z.lazy(() => SortOrderSchema).optional(),
-      max_batch_size: z.lazy(() => SortOrderSchema).optional(),
       symbol: z.lazy(() => SortOrderSchema).optional(),
       creator_address: z.lazy(() => SortOrderSchema).optional(),
       is_hidden: z.lazy(() => SortOrderSchema).optional(),
@@ -10297,7 +10641,6 @@ export const CollectionMaxOrderByAggregateInputSchema: z.ZodType<Prisma.Collecti
       mint_info: z.lazy(() => SortOrderSchema).optional(),
       socials: z.lazy(() => SortOrderSchema).optional(),
       token_address: z.lazy(() => SortOrderSchema).optional(),
-      token_address_lowercase: z.lazy(() => SortOrderSchema).optional(),
       trait_counts: z.lazy(() => SortOrderSchema).optional(),
       avatar_uri: z.lazy(() => SortOrderSchema).optional(),
       banner_uri: z.lazy(() => SortOrderSchema).optional(),
@@ -10309,7 +10652,6 @@ export const CollectionMaxOrderByAggregateInputSchema: z.ZodType<Prisma.Collecti
       num_items: z.lazy(() => SortOrderSchema).optional(),
       num_owners: z.lazy(() => SortOrderSchema).optional(),
       last_refreshed: z.lazy(() => SortOrderSchema).optional(),
-      user_id: z.lazy(() => SortOrderSchema).optional(),
       created_at: z.lazy(() => SortOrderSchema).optional(),
       updated_at: z.lazy(() => SortOrderSchema).optional(),
     })
@@ -10321,7 +10663,6 @@ export const CollectionMinOrderByAggregateInputSchema: z.ZodType<Prisma.Collecti
       id: z.lazy(() => SortOrderSchema).optional(),
       name: z.lazy(() => SortOrderSchema).optional(),
       max_items: z.lazy(() => SortOrderSchema).optional(),
-      max_batch_size: z.lazy(() => SortOrderSchema).optional(),
       symbol: z.lazy(() => SortOrderSchema).optional(),
       creator_address: z.lazy(() => SortOrderSchema).optional(),
       is_hidden: z.lazy(() => SortOrderSchema).optional(),
@@ -10337,7 +10678,6 @@ export const CollectionMinOrderByAggregateInputSchema: z.ZodType<Prisma.Collecti
       mint_info: z.lazy(() => SortOrderSchema).optional(),
       socials: z.lazy(() => SortOrderSchema).optional(),
       token_address: z.lazy(() => SortOrderSchema).optional(),
-      token_address_lowercase: z.lazy(() => SortOrderSchema).optional(),
       trait_counts: z.lazy(() => SortOrderSchema).optional(),
       avatar_uri: z.lazy(() => SortOrderSchema).optional(),
       banner_uri: z.lazy(() => SortOrderSchema).optional(),
@@ -10349,7 +10689,6 @@ export const CollectionMinOrderByAggregateInputSchema: z.ZodType<Prisma.Collecti
       num_items: z.lazy(() => SortOrderSchema).optional(),
       num_owners: z.lazy(() => SortOrderSchema).optional(),
       last_refreshed: z.lazy(() => SortOrderSchema).optional(),
-      user_id: z.lazy(() => SortOrderSchema).optional(),
       created_at: z.lazy(() => SortOrderSchema).optional(),
       updated_at: z.lazy(() => SortOrderSchema).optional(),
     })
@@ -10359,7 +10698,6 @@ export const CollectionSumOrderByAggregateInputSchema: z.ZodType<Prisma.Collecti
   z
     .object({
       max_items: z.lazy(() => SortOrderSchema).optional(),
-      max_batch_size: z.lazy(() => SortOrderSchema).optional(),
       sort_order: z.lazy(() => SortOrderSchema).optional(),
       contract_version: z.lazy(() => SortOrderSchema).optional(),
       num_items: z.lazy(() => SortOrderSchema).optional(),
@@ -10392,40 +10730,94 @@ export const StringWithAggregatesFilterSchema: z.ZodType<Prisma.StringWithAggreg
     })
     .strict();
 
-export const IntWithAggregatesFilterSchema: z.ZodType<Prisma.IntWithAggregatesFilter> =
+export const StringNullableWithAggregatesFilterSchema: z.ZodType<Prisma.StringNullableWithAggregatesFilter> =
   z
     .object({
-      equals: z.number().optional(),
-      in: z.number().array().optional(),
-      notIn: z.number().array().optional(),
+      equals: z.string().optional().nullable(),
+      in: z.string().array().optional().nullable(),
+      notIn: z.string().array().optional().nullable(),
+      lt: z.string().optional(),
+      lte: z.string().optional(),
+      gt: z.string().optional(),
+      gte: z.string().optional(),
+      contains: z.string().optional(),
+      startsWith: z.string().optional(),
+      endsWith: z.string().optional(),
+      not: z
+        .union([
+          z.string(),
+          z.lazy(() => NestedStringNullableWithAggregatesFilterSchema),
+        ])
+        .optional()
+        .nullable(),
+      _count: z.lazy(() => NestedIntNullableFilterSchema).optional(),
+      _min: z.lazy(() => NestedStringNullableFilterSchema).optional(),
+      _max: z.lazy(() => NestedStringNullableFilterSchema).optional(),
+    })
+    .strict();
+
+export const IntNullableWithAggregatesFilterSchema: z.ZodType<Prisma.IntNullableWithAggregatesFilter> =
+  z
+    .object({
+      equals: z.number().optional().nullable(),
+      in: z.number().array().optional().nullable(),
+      notIn: z.number().array().optional().nullable(),
       lt: z.number().optional(),
       lte: z.number().optional(),
       gt: z.number().optional(),
       gte: z.number().optional(),
       not: z
-        .union([z.number(), z.lazy(() => NestedIntWithAggregatesFilterSchema)])
-        .optional(),
-      _count: z.lazy(() => NestedIntFilterSchema).optional(),
-      _avg: z.lazy(() => NestedFloatFilterSchema).optional(),
-      _sum: z.lazy(() => NestedIntFilterSchema).optional(),
-      _min: z.lazy(() => NestedIntFilterSchema).optional(),
-      _max: z.lazy(() => NestedIntFilterSchema).optional(),
+        .union([
+          z.number(),
+          z.lazy(() => NestedIntNullableWithAggregatesFilterSchema),
+        ])
+        .optional()
+        .nullable(),
+      _count: z.lazy(() => NestedIntNullableFilterSchema).optional(),
+      _avg: z.lazy(() => NestedFloatNullableFilterSchema).optional(),
+      _sum: z.lazy(() => NestedIntNullableFilterSchema).optional(),
+      _min: z.lazy(() => NestedIntNullableFilterSchema).optional(),
+      _max: z.lazy(() => NestedIntNullableFilterSchema).optional(),
     })
     .strict();
 
-export const BoolWithAggregatesFilterSchema: z.ZodType<Prisma.BoolWithAggregatesFilter> =
+export const BoolNullableWithAggregatesFilterSchema: z.ZodType<Prisma.BoolNullableWithAggregatesFilter> =
   z
     .object({
-      equals: z.boolean().optional(),
+      equals: z.boolean().optional().nullable(),
       not: z
         .union([
           z.boolean(),
-          z.lazy(() => NestedBoolWithAggregatesFilterSchema),
+          z.lazy(() => NestedBoolNullableWithAggregatesFilterSchema),
         ])
-        .optional(),
-      _count: z.lazy(() => NestedIntFilterSchema).optional(),
-      _min: z.lazy(() => NestedBoolFilterSchema).optional(),
-      _max: z.lazy(() => NestedBoolFilterSchema).optional(),
+        .optional()
+        .nullable(),
+      _count: z.lazy(() => NestedIntNullableFilterSchema).optional(),
+      _min: z.lazy(() => NestedBoolNullableFilterSchema).optional(),
+      _max: z.lazy(() => NestedBoolNullableFilterSchema).optional(),
+    })
+    .strict();
+
+export const DateTimeNullableWithAggregatesFilterSchema: z.ZodType<Prisma.DateTimeNullableWithAggregatesFilter> =
+  z
+    .object({
+      equals: z.coerce.date().optional().nullable(),
+      in: z.coerce.date().array().optional().nullable(),
+      notIn: z.coerce.date().array().optional().nullable(),
+      lt: z.coerce.date().optional(),
+      lte: z.coerce.date().optional(),
+      gt: z.coerce.date().optional(),
+      gte: z.coerce.date().optional(),
+      not: z
+        .union([
+          z.coerce.date(),
+          z.lazy(() => NestedDateTimeNullableWithAggregatesFilterSchema),
+        ])
+        .optional()
+        .nullable(),
+      _count: z.lazy(() => NestedIntNullableFilterSchema).optional(),
+      _min: z.lazy(() => NestedDateTimeNullableFilterSchema).optional(),
+      _max: z.lazy(() => NestedDateTimeNullableFilterSchema).optional(),
     })
     .strict();
 
@@ -10450,6 +10842,19 @@ export const DateTimeWithAggregatesFilterSchema: z.ZodType<Prisma.DateTimeWithAg
       _max: z.lazy(() => NestedDateTimeFilterSchema).optional(),
     })
     .strict();
+
+export const IntFilterSchema: z.ZodType<Prisma.IntFilter> = z
+  .object({
+    equals: z.number().optional(),
+    in: z.number().array().optional(),
+    notIn: z.number().array().optional(),
+    lt: z.number().optional(),
+    lte: z.number().optional(),
+    gt: z.number().optional(),
+    gte: z.number().optional(),
+    not: z.union([z.number(), z.lazy(() => NestedIntFilterSchema)]).optional(),
+  })
+  .strict();
 
 export const OpenRarityNullableRelationFilterSchema: z.ZodType<Prisma.OpenRarityNullableRelationFilter> =
   z
@@ -10478,14 +10883,11 @@ export const NftCountOrderByAggregateInputSchema: z.ZodType<Prisma.NftCountOrder
     .object({
       id: z.lazy(() => SortOrderSchema).optional(),
       token_address: z.lazy(() => SortOrderSchema).optional(),
-      token_address_lowercase: z.lazy(() => SortOrderSchema).optional(),
       token_id: z.lazy(() => SortOrderSchema).optional(),
       attributes: z.lazy(() => SortOrderSchema).optional(),
       block_minted: z.lazy(() => SortOrderSchema).optional(),
       contract_type: z.lazy(() => SortOrderSchema).optional(),
       description: z.lazy(() => SortOrderSchema).optional(),
-      dna: z.lazy(() => SortOrderSchema).optional(),
-      edition: z.lazy(() => SortOrderSchema).optional(),
       image: z.lazy(() => SortOrderSchema).optional(),
       image_url: z.lazy(() => SortOrderSchema).optional(),
       metadata: z.lazy(() => SortOrderSchema).optional(),
@@ -10506,7 +10908,6 @@ export const NftAvgOrderByAggregateInputSchema: z.ZodType<Prisma.NftAvgOrderByAg
   z
     .object({
       block_minted: z.lazy(() => SortOrderSchema).optional(),
-      edition: z.lazy(() => SortOrderSchema).optional(),
       token_id_int: z.lazy(() => SortOrderSchema).optional(),
     })
     .strict();
@@ -10516,14 +10917,11 @@ export const NftMaxOrderByAggregateInputSchema: z.ZodType<Prisma.NftMaxOrderByAg
     .object({
       id: z.lazy(() => SortOrderSchema).optional(),
       token_address: z.lazy(() => SortOrderSchema).optional(),
-      token_address_lowercase: z.lazy(() => SortOrderSchema).optional(),
       token_id: z.lazy(() => SortOrderSchema).optional(),
       attributes: z.lazy(() => SortOrderSchema).optional(),
       block_minted: z.lazy(() => SortOrderSchema).optional(),
       contract_type: z.lazy(() => SortOrderSchema).optional(),
       description: z.lazy(() => SortOrderSchema).optional(),
-      dna: z.lazy(() => SortOrderSchema).optional(),
-      edition: z.lazy(() => SortOrderSchema).optional(),
       image: z.lazy(() => SortOrderSchema).optional(),
       image_url: z.lazy(() => SortOrderSchema).optional(),
       metadata: z.lazy(() => SortOrderSchema).optional(),
@@ -10545,14 +10943,11 @@ export const NftMinOrderByAggregateInputSchema: z.ZodType<Prisma.NftMinOrderByAg
     .object({
       id: z.lazy(() => SortOrderSchema).optional(),
       token_address: z.lazy(() => SortOrderSchema).optional(),
-      token_address_lowercase: z.lazy(() => SortOrderSchema).optional(),
       token_id: z.lazy(() => SortOrderSchema).optional(),
       attributes: z.lazy(() => SortOrderSchema).optional(),
       block_minted: z.lazy(() => SortOrderSchema).optional(),
       contract_type: z.lazy(() => SortOrderSchema).optional(),
       description: z.lazy(() => SortOrderSchema).optional(),
-      dna: z.lazy(() => SortOrderSchema).optional(),
-      edition: z.lazy(() => SortOrderSchema).optional(),
       image: z.lazy(() => SortOrderSchema).optional(),
       image_url: z.lazy(() => SortOrderSchema).optional(),
       metadata: z.lazy(() => SortOrderSchema).optional(),
@@ -10573,8 +10968,28 @@ export const NftSumOrderByAggregateInputSchema: z.ZodType<Prisma.NftSumOrderByAg
   z
     .object({
       block_minted: z.lazy(() => SortOrderSchema).optional(),
-      edition: z.lazy(() => SortOrderSchema).optional(),
       token_id_int: z.lazy(() => SortOrderSchema).optional(),
+    })
+    .strict();
+
+export const IntWithAggregatesFilterSchema: z.ZodType<Prisma.IntWithAggregatesFilter> =
+  z
+    .object({
+      equals: z.number().optional(),
+      in: z.number().array().optional(),
+      notIn: z.number().array().optional(),
+      lt: z.number().optional(),
+      lte: z.number().optional(),
+      gt: z.number().optional(),
+      gte: z.number().optional(),
+      not: z
+        .union([z.number(), z.lazy(() => NestedIntWithAggregatesFilterSchema)])
+        .optional(),
+      _count: z.lazy(() => NestedIntFilterSchema).optional(),
+      _avg: z.lazy(() => NestedFloatFilterSchema).optional(),
+      _sum: z.lazy(() => NestedIntFilterSchema).optional(),
+      _min: z.lazy(() => NestedIntFilterSchema).optional(),
+      _max: z.lazy(() => NestedIntFilterSchema).optional(),
     })
     .strict();
 
@@ -10810,46 +11225,6 @@ export const OpenRaritySumOrderByAggregateInputSchema: z.ZodType<Prisma.OpenRari
     })
     .strict();
 
-export const StringNullableFilterSchema: z.ZodType<Prisma.StringNullableFilter> =
-  z
-    .object({
-      equals: z.string().optional().nullable(),
-      in: z.string().array().optional().nullable(),
-      notIn: z.string().array().optional().nullable(),
-      lt: z.string().optional(),
-      lte: z.string().optional(),
-      gt: z.string().optional(),
-      gte: z.string().optional(),
-      contains: z.string().optional(),
-      startsWith: z.string().optional(),
-      endsWith: z.string().optional(),
-      not: z
-        .union([z.string(), z.lazy(() => NestedStringNullableFilterSchema)])
-        .optional()
-        .nullable(),
-    })
-    .strict();
-
-export const DateTimeNullableFilterSchema: z.ZodType<Prisma.DateTimeNullableFilter> =
-  z
-    .object({
-      equals: z.coerce.date().optional().nullable(),
-      in: z.coerce.date().array().optional().nullable(),
-      notIn: z.coerce.date().array().optional().nullable(),
-      lt: z.coerce.date().optional(),
-      lte: z.coerce.date().optional(),
-      gt: z.coerce.date().optional(),
-      gte: z.coerce.date().optional(),
-      not: z
-        .union([
-          z.coerce.date(),
-          z.lazy(() => NestedDateTimeNullableFilterSchema),
-        ])
-        .optional()
-        .nullable(),
-    })
-    .strict();
-
 export const CollectionListRelationFilterSchema: z.ZodType<Prisma.CollectionListRelationFilter> =
   z
     .object({
@@ -10908,13 +11283,6 @@ export const PasswordNullableRelationFilterSchema: z.ZodType<Prisma.PasswordNull
         .nullable(),
     })
     .strict();
-
-export const SortOrderInputSchema: z.ZodType<Prisma.SortOrderInput> = z
-  .object({
-    sort: z.lazy(() => SortOrderSchema),
-    nulls: z.lazy(() => NullsOrderSchema).optional(),
-  })
-  .strict();
 
 export const CollectionOrderByRelationAggregateInputSchema: z.ZodType<Prisma.CollectionOrderByRelationAggregateInput> =
   z
@@ -11002,54 +11370,12 @@ export const UserMinOrderByAggregateInputSchema: z.ZodType<Prisma.UserMinOrderBy
     })
     .strict();
 
-export const StringNullableWithAggregatesFilterSchema: z.ZodType<Prisma.StringNullableWithAggregatesFilter> =
-  z
-    .object({
-      equals: z.string().optional().nullable(),
-      in: z.string().array().optional().nullable(),
-      notIn: z.string().array().optional().nullable(),
-      lt: z.string().optional(),
-      lte: z.string().optional(),
-      gt: z.string().optional(),
-      gte: z.string().optional(),
-      contains: z.string().optional(),
-      startsWith: z.string().optional(),
-      endsWith: z.string().optional(),
-      not: z
-        .union([
-          z.string(),
-          z.lazy(() => NestedStringNullableWithAggregatesFilterSchema),
-        ])
-        .optional()
-        .nullable(),
-      _count: z.lazy(() => NestedIntNullableFilterSchema).optional(),
-      _min: z.lazy(() => NestedStringNullableFilterSchema).optional(),
-      _max: z.lazy(() => NestedStringNullableFilterSchema).optional(),
-    })
-    .strict();
-
-export const DateTimeNullableWithAggregatesFilterSchema: z.ZodType<Prisma.DateTimeNullableWithAggregatesFilter> =
-  z
-    .object({
-      equals: z.coerce.date().optional().nullable(),
-      in: z.coerce.date().array().optional().nullable(),
-      notIn: z.coerce.date().array().optional().nullable(),
-      lt: z.coerce.date().optional(),
-      lte: z.coerce.date().optional(),
-      gt: z.coerce.date().optional(),
-      gte: z.coerce.date().optional(),
-      not: z
-        .union([
-          z.coerce.date(),
-          z.lazy(() => NestedDateTimeNullableWithAggregatesFilterSchema),
-        ])
-        .optional()
-        .nullable(),
-      _count: z.lazy(() => NestedIntNullableFilterSchema).optional(),
-      _min: z.lazy(() => NestedDateTimeNullableFilterSchema).optional(),
-      _max: z.lazy(() => NestedDateTimeNullableFilterSchema).optional(),
-    })
-    .strict();
+export const UserRelationFilterSchema: z.ZodType<Prisma.UserRelationFilter> = z
+  .object({
+    is: z.lazy(() => UserWhereInputSchema).optional(),
+    isNot: z.lazy(() => UserWhereInputSchema).optional(),
+  })
+  .strict();
 
 export const ConnectionProvider_nameProvider_idCompoundUniqueInputSchema: z.ZodType<Prisma.ConnectionProvider_nameProvider_idCompoundUniqueInput> =
   z
@@ -11127,6 +11453,15 @@ export const PasswordMinOrderByAggregateInputSchema: z.ZodType<Prisma.PasswordMi
     })
     .strict();
 
+export const BoolFilterSchema: z.ZodType<Prisma.BoolFilter> = z
+  .object({
+    equals: z.boolean().optional(),
+    not: z
+      .union([z.boolean(), z.lazy(() => NestedBoolFilterSchema)])
+      .optional(),
+  })
+  .strict();
+
 export const ChainCountOrderByAggregateInputSchema: z.ZodType<Prisma.ChainCountOrderByAggregateInput> =
   z
     .object({
@@ -11177,6 +11512,22 @@ export const ChainSumOrderByAggregateInputSchema: z.ZodType<Prisma.ChainSumOrder
   z
     .object({
       id: z.lazy(() => SortOrderSchema).optional(),
+    })
+    .strict();
+
+export const BoolWithAggregatesFilterSchema: z.ZodType<Prisma.BoolWithAggregatesFilter> =
+  z
+    .object({
+      equals: z.boolean().optional(),
+      not: z
+        .union([
+          z.boolean(),
+          z.lazy(() => NestedBoolWithAggregatesFilterSchema),
+        ])
+        .optional(),
+      _count: z.lazy(() => NestedIntFilterSchema).optional(),
+      _min: z.lazy(() => NestedBoolFilterSchema).optional(),
+      _max: z.lazy(() => NestedBoolFilterSchema).optional(),
     })
     .strict();
 
@@ -11690,10 +12041,17 @@ export const StringFieldUpdateOperationsInputSchema: z.ZodType<Prisma.StringFiel
     })
     .strict();
 
-export const IntFieldUpdateOperationsInputSchema: z.ZodType<Prisma.IntFieldUpdateOperationsInput> =
+export const NullableStringFieldUpdateOperationsInputSchema: z.ZodType<Prisma.NullableStringFieldUpdateOperationsInput> =
   z
     .object({
-      set: z.number().optional(),
+      set: z.string().optional().nullable(),
+    })
+    .strict();
+
+export const NullableIntFieldUpdateOperationsInputSchema: z.ZodType<Prisma.NullableIntFieldUpdateOperationsInput> =
+  z
+    .object({
+      set: z.number().optional().nullable(),
       increment: z.number().optional(),
       decrement: z.number().optional(),
       multiply: z.number().optional(),
@@ -11701,10 +12059,17 @@ export const IntFieldUpdateOperationsInputSchema: z.ZodType<Prisma.IntFieldUpdat
     })
     .strict();
 
-export const BoolFieldUpdateOperationsInputSchema: z.ZodType<Prisma.BoolFieldUpdateOperationsInput> =
+export const NullableBoolFieldUpdateOperationsInputSchema: z.ZodType<Prisma.NullableBoolFieldUpdateOperationsInput> =
   z
     .object({
-      set: z.boolean().optional(),
+      set: z.boolean().optional().nullable(),
+    })
+    .strict();
+
+export const NullableDateTimeFieldUpdateOperationsInputSchema: z.ZodType<Prisma.NullableDateTimeFieldUpdateOperationsInput> =
+  z
+    .object({
+      set: z.coerce.date().optional().nullable(),
     })
     .strict();
 
@@ -11749,7 +12114,7 @@ export const MintDataUpdateOneWithoutCollectionNestedInputSchema: z.ZodType<Pris
     })
     .strict();
 
-export const UserUpdateOneRequiredWithoutCollectionsNestedInputSchema: z.ZodType<Prisma.UserUpdateOneRequiredWithoutCollectionsNestedInput> =
+export const UserUpdateOneWithoutCollectionsNestedInputSchema: z.ZodType<Prisma.UserUpdateOneWithoutCollectionsNestedInput> =
   z
     .object({
       create: z
@@ -11762,6 +12127,12 @@ export const UserUpdateOneRequiredWithoutCollectionsNestedInputSchema: z.ZodType
         .lazy(() => UserCreateOrConnectWithoutCollectionsInputSchema)
         .optional(),
       upsert: z.lazy(() => UserUpsertWithoutCollectionsInputSchema).optional(),
+      disconnect: z
+        .union([z.boolean(), z.lazy(() => UserWhereInputSchema)])
+        .optional(),
+      delete: z
+        .union([z.boolean(), z.lazy(() => UserWhereInputSchema)])
+        .optional(),
       connect: z.lazy(() => UserWhereUniqueInputSchema).optional(),
       update: z
         .union([
@@ -12000,6 +12371,17 @@ export const OpenRarityUncheckedCreateNestedOneWithoutNftInputSchema: z.ZodType<
         .lazy(() => OpenRarityCreateOrConnectWithoutNftInputSchema)
         .optional(),
       connect: z.lazy(() => OpenRarityWhereUniqueInputSchema).optional(),
+    })
+    .strict();
+
+export const IntFieldUpdateOperationsInputSchema: z.ZodType<Prisma.IntFieldUpdateOperationsInput> =
+  z
+    .object({
+      set: z.number().optional(),
+      increment: z.number().optional(),
+      decrement: z.number().optional(),
+      multiply: z.number().optional(),
+      divide: z.number().optional(),
     })
     .strict();
 
@@ -12479,20 +12861,6 @@ export const PasswordUncheckedCreateNestedOneWithoutUserInputSchema: z.ZodType<P
         .lazy(() => PasswordCreateOrConnectWithoutUserInputSchema)
         .optional(),
       connect: z.lazy(() => PasswordWhereUniqueInputSchema).optional(),
-    })
-    .strict();
-
-export const NullableStringFieldUpdateOperationsInputSchema: z.ZodType<Prisma.NullableStringFieldUpdateOperationsInput> =
-  z
-    .object({
-      set: z.string().optional().nullable(),
-    })
-    .strict();
-
-export const NullableDateTimeFieldUpdateOperationsInputSchema: z.ZodType<Prisma.NullableDateTimeFieldUpdateOperationsInput> =
-  z
-    .object({
-      set: z.coerce.date().optional().nullable(),
     })
     .strict();
 
@@ -13445,6 +13813,13 @@ export const WalletUncheckedCreateNestedManyWithoutChainInputSchema: z.ZodType<P
           z.lazy(() => WalletWhereUniqueInputSchema).array(),
         ])
         .optional(),
+    })
+    .strict();
+
+export const BoolFieldUpdateOperationsInputSchema: z.ZodType<Prisma.BoolFieldUpdateOperationsInput> =
+  z
+    .object({
+      set: z.boolean().optional(),
     })
     .strict();
 
@@ -14602,27 +14977,73 @@ export const NestedStringFilterSchema: z.ZodType<Prisma.NestedStringFilter> = z
   })
   .strict();
 
-export const NestedIntFilterSchema: z.ZodType<Prisma.NestedIntFilter> = z
-  .object({
-    equals: z.number().optional(),
-    in: z.number().array().optional(),
-    notIn: z.number().array().optional(),
-    lt: z.number().optional(),
-    lte: z.number().optional(),
-    gt: z.number().optional(),
-    gte: z.number().optional(),
-    not: z.union([z.number(), z.lazy(() => NestedIntFilterSchema)]).optional(),
-  })
-  .strict();
+export const NestedStringNullableFilterSchema: z.ZodType<Prisma.NestedStringNullableFilter> =
+  z
+    .object({
+      equals: z.string().optional().nullable(),
+      in: z.string().array().optional().nullable(),
+      notIn: z.string().array().optional().nullable(),
+      lt: z.string().optional(),
+      lte: z.string().optional(),
+      gt: z.string().optional(),
+      gte: z.string().optional(),
+      contains: z.string().optional(),
+      startsWith: z.string().optional(),
+      endsWith: z.string().optional(),
+      not: z
+        .union([z.string(), z.lazy(() => NestedStringNullableFilterSchema)])
+        .optional()
+        .nullable(),
+    })
+    .strict();
 
-export const NestedBoolFilterSchema: z.ZodType<Prisma.NestedBoolFilter> = z
-  .object({
-    equals: z.boolean().optional(),
-    not: z
-      .union([z.boolean(), z.lazy(() => NestedBoolFilterSchema)])
-      .optional(),
-  })
-  .strict();
+export const NestedIntNullableFilterSchema: z.ZodType<Prisma.NestedIntNullableFilter> =
+  z
+    .object({
+      equals: z.number().optional().nullable(),
+      in: z.number().array().optional().nullable(),
+      notIn: z.number().array().optional().nullable(),
+      lt: z.number().optional(),
+      lte: z.number().optional(),
+      gt: z.number().optional(),
+      gte: z.number().optional(),
+      not: z
+        .union([z.number(), z.lazy(() => NestedIntNullableFilterSchema)])
+        .optional()
+        .nullable(),
+    })
+    .strict();
+
+export const NestedBoolNullableFilterSchema: z.ZodType<Prisma.NestedBoolNullableFilter> =
+  z
+    .object({
+      equals: z.boolean().optional().nullable(),
+      not: z
+        .union([z.boolean(), z.lazy(() => NestedBoolNullableFilterSchema)])
+        .optional()
+        .nullable(),
+    })
+    .strict();
+
+export const NestedDateTimeNullableFilterSchema: z.ZodType<Prisma.NestedDateTimeNullableFilter> =
+  z
+    .object({
+      equals: z.coerce.date().optional().nullable(),
+      in: z.coerce.date().array().optional().nullable(),
+      notIn: z.coerce.date().array().optional().nullable(),
+      lt: z.coerce.date().optional(),
+      lte: z.coerce.date().optional(),
+      gt: z.coerce.date().optional(),
+      gte: z.coerce.date().optional(),
+      not: z
+        .union([
+          z.coerce.date(),
+          z.lazy(() => NestedDateTimeNullableFilterSchema),
+        ])
+        .optional()
+        .nullable(),
+    })
+    .strict();
 
 export const NestedDateTimeFilterSchema: z.ZodType<Prisma.NestedDateTimeFilter> =
   z
@@ -14665,6 +15086,149 @@ export const NestedStringWithAggregatesFilterSchema: z.ZodType<Prisma.NestedStri
     })
     .strict();
 
+export const NestedIntFilterSchema: z.ZodType<Prisma.NestedIntFilter> = z
+  .object({
+    equals: z.number().optional(),
+    in: z.number().array().optional(),
+    notIn: z.number().array().optional(),
+    lt: z.number().optional(),
+    lte: z.number().optional(),
+    gt: z.number().optional(),
+    gte: z.number().optional(),
+    not: z.union([z.number(), z.lazy(() => NestedIntFilterSchema)]).optional(),
+  })
+  .strict();
+
+export const NestedStringNullableWithAggregatesFilterSchema: z.ZodType<Prisma.NestedStringNullableWithAggregatesFilter> =
+  z
+    .object({
+      equals: z.string().optional().nullable(),
+      in: z.string().array().optional().nullable(),
+      notIn: z.string().array().optional().nullable(),
+      lt: z.string().optional(),
+      lte: z.string().optional(),
+      gt: z.string().optional(),
+      gte: z.string().optional(),
+      contains: z.string().optional(),
+      startsWith: z.string().optional(),
+      endsWith: z.string().optional(),
+      not: z
+        .union([
+          z.string(),
+          z.lazy(() => NestedStringNullableWithAggregatesFilterSchema),
+        ])
+        .optional()
+        .nullable(),
+      _count: z.lazy(() => NestedIntNullableFilterSchema).optional(),
+      _min: z.lazy(() => NestedStringNullableFilterSchema).optional(),
+      _max: z.lazy(() => NestedStringNullableFilterSchema).optional(),
+    })
+    .strict();
+
+export const NestedIntNullableWithAggregatesFilterSchema: z.ZodType<Prisma.NestedIntNullableWithAggregatesFilter> =
+  z
+    .object({
+      equals: z.number().optional().nullable(),
+      in: z.number().array().optional().nullable(),
+      notIn: z.number().array().optional().nullable(),
+      lt: z.number().optional(),
+      lte: z.number().optional(),
+      gt: z.number().optional(),
+      gte: z.number().optional(),
+      not: z
+        .union([
+          z.number(),
+          z.lazy(() => NestedIntNullableWithAggregatesFilterSchema),
+        ])
+        .optional()
+        .nullable(),
+      _count: z.lazy(() => NestedIntNullableFilterSchema).optional(),
+      _avg: z.lazy(() => NestedFloatNullableFilterSchema).optional(),
+      _sum: z.lazy(() => NestedIntNullableFilterSchema).optional(),
+      _min: z.lazy(() => NestedIntNullableFilterSchema).optional(),
+      _max: z.lazy(() => NestedIntNullableFilterSchema).optional(),
+    })
+    .strict();
+
+export const NestedFloatNullableFilterSchema: z.ZodType<Prisma.NestedFloatNullableFilter> =
+  z
+    .object({
+      equals: z.number().optional().nullable(),
+      in: z.number().array().optional().nullable(),
+      notIn: z.number().array().optional().nullable(),
+      lt: z.number().optional(),
+      lte: z.number().optional(),
+      gt: z.number().optional(),
+      gte: z.number().optional(),
+      not: z
+        .union([z.number(), z.lazy(() => NestedFloatNullableFilterSchema)])
+        .optional()
+        .nullable(),
+    })
+    .strict();
+
+export const NestedBoolNullableWithAggregatesFilterSchema: z.ZodType<Prisma.NestedBoolNullableWithAggregatesFilter> =
+  z
+    .object({
+      equals: z.boolean().optional().nullable(),
+      not: z
+        .union([
+          z.boolean(),
+          z.lazy(() => NestedBoolNullableWithAggregatesFilterSchema),
+        ])
+        .optional()
+        .nullable(),
+      _count: z.lazy(() => NestedIntNullableFilterSchema).optional(),
+      _min: z.lazy(() => NestedBoolNullableFilterSchema).optional(),
+      _max: z.lazy(() => NestedBoolNullableFilterSchema).optional(),
+    })
+    .strict();
+
+export const NestedDateTimeNullableWithAggregatesFilterSchema: z.ZodType<Prisma.NestedDateTimeNullableWithAggregatesFilter> =
+  z
+    .object({
+      equals: z.coerce.date().optional().nullable(),
+      in: z.coerce.date().array().optional().nullable(),
+      notIn: z.coerce.date().array().optional().nullable(),
+      lt: z.coerce.date().optional(),
+      lte: z.coerce.date().optional(),
+      gt: z.coerce.date().optional(),
+      gte: z.coerce.date().optional(),
+      not: z
+        .union([
+          z.coerce.date(),
+          z.lazy(() => NestedDateTimeNullableWithAggregatesFilterSchema),
+        ])
+        .optional()
+        .nullable(),
+      _count: z.lazy(() => NestedIntNullableFilterSchema).optional(),
+      _min: z.lazy(() => NestedDateTimeNullableFilterSchema).optional(),
+      _max: z.lazy(() => NestedDateTimeNullableFilterSchema).optional(),
+    })
+    .strict();
+
+export const NestedDateTimeWithAggregatesFilterSchema: z.ZodType<Prisma.NestedDateTimeWithAggregatesFilter> =
+  z
+    .object({
+      equals: z.coerce.date().optional(),
+      in: z.coerce.date().array().optional(),
+      notIn: z.coerce.date().array().optional(),
+      lt: z.coerce.date().optional(),
+      lte: z.coerce.date().optional(),
+      gt: z.coerce.date().optional(),
+      gte: z.coerce.date().optional(),
+      not: z
+        .union([
+          z.coerce.date(),
+          z.lazy(() => NestedDateTimeWithAggregatesFilterSchema),
+        ])
+        .optional(),
+      _count: z.lazy(() => NestedIntFilterSchema).optional(),
+      _min: z.lazy(() => NestedDateTimeFilterSchema).optional(),
+      _max: z.lazy(() => NestedDateTimeFilterSchema).optional(),
+    })
+    .strict();
+
 export const NestedIntWithAggregatesFilterSchema: z.ZodType<Prisma.NestedIntWithAggregatesFilter> =
   z
     .object({
@@ -14701,44 +15265,6 @@ export const NestedFloatFilterSchema: z.ZodType<Prisma.NestedFloatFilter> = z
   })
   .strict();
 
-export const NestedBoolWithAggregatesFilterSchema: z.ZodType<Prisma.NestedBoolWithAggregatesFilter> =
-  z
-    .object({
-      equals: z.boolean().optional(),
-      not: z
-        .union([
-          z.boolean(),
-          z.lazy(() => NestedBoolWithAggregatesFilterSchema),
-        ])
-        .optional(),
-      _count: z.lazy(() => NestedIntFilterSchema).optional(),
-      _min: z.lazy(() => NestedBoolFilterSchema).optional(),
-      _max: z.lazy(() => NestedBoolFilterSchema).optional(),
-    })
-    .strict();
-
-export const NestedDateTimeWithAggregatesFilterSchema: z.ZodType<Prisma.NestedDateTimeWithAggregatesFilter> =
-  z
-    .object({
-      equals: z.coerce.date().optional(),
-      in: z.coerce.date().array().optional(),
-      notIn: z.coerce.date().array().optional(),
-      lt: z.coerce.date().optional(),
-      lte: z.coerce.date().optional(),
-      gt: z.coerce.date().optional(),
-      gte: z.coerce.date().optional(),
-      not: z
-        .union([
-          z.coerce.date(),
-          z.lazy(() => NestedDateTimeWithAggregatesFilterSchema),
-        ])
-        .optional(),
-      _count: z.lazy(() => NestedIntFilterSchema).optional(),
-      _min: z.lazy(() => NestedDateTimeFilterSchema).optional(),
-      _max: z.lazy(() => NestedDateTimeFilterSchema).optional(),
-    })
-    .strict();
-
 export const NestedFloatWithAggregatesFilterSchema: z.ZodType<Prisma.NestedFloatWithAggregatesFilter> =
   z
     .object({
@@ -14763,109 +15289,28 @@ export const NestedFloatWithAggregatesFilterSchema: z.ZodType<Prisma.NestedFloat
     })
     .strict();
 
-export const NestedStringNullableFilterSchema: z.ZodType<Prisma.NestedStringNullableFilter> =
-  z
-    .object({
-      equals: z.string().optional().nullable(),
-      in: z.string().array().optional().nullable(),
-      notIn: z.string().array().optional().nullable(),
-      lt: z.string().optional(),
-      lte: z.string().optional(),
-      gt: z.string().optional(),
-      gte: z.string().optional(),
-      contains: z.string().optional(),
-      startsWith: z.string().optional(),
-      endsWith: z.string().optional(),
-      not: z
-        .union([z.string(), z.lazy(() => NestedStringNullableFilterSchema)])
-        .optional()
-        .nullable(),
-    })
-    .strict();
+export const NestedBoolFilterSchema: z.ZodType<Prisma.NestedBoolFilter> = z
+  .object({
+    equals: z.boolean().optional(),
+    not: z
+      .union([z.boolean(), z.lazy(() => NestedBoolFilterSchema)])
+      .optional(),
+  })
+  .strict();
 
-export const NestedDateTimeNullableFilterSchema: z.ZodType<Prisma.NestedDateTimeNullableFilter> =
+export const NestedBoolWithAggregatesFilterSchema: z.ZodType<Prisma.NestedBoolWithAggregatesFilter> =
   z
     .object({
-      equals: z.coerce.date().optional().nullable(),
-      in: z.coerce.date().array().optional().nullable(),
-      notIn: z.coerce.date().array().optional().nullable(),
-      lt: z.coerce.date().optional(),
-      lte: z.coerce.date().optional(),
-      gt: z.coerce.date().optional(),
-      gte: z.coerce.date().optional(),
+      equals: z.boolean().optional(),
       not: z
         .union([
-          z.coerce.date(),
-          z.lazy(() => NestedDateTimeNullableFilterSchema),
+          z.boolean(),
+          z.lazy(() => NestedBoolWithAggregatesFilterSchema),
         ])
-        .optional()
-        .nullable(),
-    })
-    .strict();
-
-export const NestedStringNullableWithAggregatesFilterSchema: z.ZodType<Prisma.NestedStringNullableWithAggregatesFilter> =
-  z
-    .object({
-      equals: z.string().optional().nullable(),
-      in: z.string().array().optional().nullable(),
-      notIn: z.string().array().optional().nullable(),
-      lt: z.string().optional(),
-      lte: z.string().optional(),
-      gt: z.string().optional(),
-      gte: z.string().optional(),
-      contains: z.string().optional(),
-      startsWith: z.string().optional(),
-      endsWith: z.string().optional(),
-      not: z
-        .union([
-          z.string(),
-          z.lazy(() => NestedStringNullableWithAggregatesFilterSchema),
-        ])
-        .optional()
-        .nullable(),
-      _count: z.lazy(() => NestedIntNullableFilterSchema).optional(),
-      _min: z.lazy(() => NestedStringNullableFilterSchema).optional(),
-      _max: z.lazy(() => NestedStringNullableFilterSchema).optional(),
-    })
-    .strict();
-
-export const NestedIntNullableFilterSchema: z.ZodType<Prisma.NestedIntNullableFilter> =
-  z
-    .object({
-      equals: z.number().optional().nullable(),
-      in: z.number().array().optional().nullable(),
-      notIn: z.number().array().optional().nullable(),
-      lt: z.number().optional(),
-      lte: z.number().optional(),
-      gt: z.number().optional(),
-      gte: z.number().optional(),
-      not: z
-        .union([z.number(), z.lazy(() => NestedIntNullableFilterSchema)])
-        .optional()
-        .nullable(),
-    })
-    .strict();
-
-export const NestedDateTimeNullableWithAggregatesFilterSchema: z.ZodType<Prisma.NestedDateTimeNullableWithAggregatesFilter> =
-  z
-    .object({
-      equals: z.coerce.date().optional().nullable(),
-      in: z.coerce.date().array().optional().nullable(),
-      notIn: z.coerce.date().array().optional().nullable(),
-      lt: z.coerce.date().optional(),
-      lte: z.coerce.date().optional(),
-      gt: z.coerce.date().optional(),
-      gte: z.coerce.date().optional(),
-      not: z
-        .union([
-          z.coerce.date(),
-          z.lazy(() => NestedDateTimeNullableWithAggregatesFilterSchema),
-        ])
-        .optional()
-        .nullable(),
-      _count: z.lazy(() => NestedIntNullableFilterSchema).optional(),
-      _min: z.lazy(() => NestedDateTimeNullableFilterSchema).optional(),
-      _max: z.lazy(() => NestedDateTimeNullableFilterSchema).optional(),
+        .optional(),
+      _count: z.lazy(() => NestedIntFilterSchema).optional(),
+      _min: z.lazy(() => NestedBoolFilterSchema).optional(),
+      _max: z.lazy(() => NestedBoolFilterSchema).optional(),
     })
     .strict();
 
@@ -14940,11 +15385,9 @@ export const UserCreateWithoutCollectionsInputSchema: z.ZodType<Prisma.UserCreat
   z
     .object({
       id: z.string().cuid().optional(),
-      address: z
-        .string()
-        .refine((val) => getAddress(val), {
-          message: "is not a valid Ethereum address",
-        }),
+      address: z.string().refine((val) => getAddress(val), {
+        message: "is not a valid Ethereum address",
+      }),
       avatar_uri: z
         .string()
         .url({ message: "Invalid url" })
@@ -14969,7 +15412,7 @@ export const UserCreateWithoutCollectionsInputSchema: z.ZodType<Prisma.UserCreat
       status: z.string().optional(),
       email: z.string().optional().nullable(),
       created_at: z.coerce.date().optional(),
-      updated_at: z.coerce.date().optional().nullable(),
+      updated_at: z.coerce.date().optional(),
       wallets: z
         .lazy(() => WalletCreateNestedManyWithoutOwnerInputSchema)
         .optional(),
@@ -14992,11 +15435,9 @@ export const UserUncheckedCreateWithoutCollectionsInputSchema: z.ZodType<Prisma.
   z
     .object({
       id: z.string().cuid().optional(),
-      address: z
-        .string()
-        .refine((val) => getAddress(val), {
-          message: "is not a valid Ethereum address",
-        }),
+      address: z.string().refine((val) => getAddress(val), {
+        message: "is not a valid Ethereum address",
+      }),
       avatar_uri: z
         .string()
         .url({ message: "Invalid url" })
@@ -15021,7 +15462,7 @@ export const UserUncheckedCreateWithoutCollectionsInputSchema: z.ZodType<Prisma.
       status: z.string().optional(),
       email: z.string().optional().nullable(),
       created_at: z.coerce.date().optional(),
-      updated_at: z.coerce.date().optional().nullable(),
+      updated_at: z.coerce.date().optional(),
       wallets: z
         .lazy(() => WalletUncheckedCreateNestedManyWithoutOwnerInputSchema)
         .optional(),
@@ -15056,14 +15497,11 @@ export const NftCreateWithoutCollectionInputSchema: z.ZodType<Prisma.NftCreateWi
     .object({
       id: z.string().cuid().optional(),
       token_address: z.string(),
-      token_address_lowercase: z.string(),
       token_id: z.string(),
       attributes: z.string(),
       block_minted: z.number().int(),
       contract_type: z.string(),
       description: z.string(),
-      dna: z.string(),
-      edition: z.number().int(),
       image: z.string(),
       image_url: z.string(),
       metadata: z.string(),
@@ -15087,14 +15525,11 @@ export const NftUncheckedCreateWithoutCollectionInputSchema: z.ZodType<Prisma.Nf
     .object({
       id: z.string().cuid().optional(),
       token_address: z.string(),
-      token_address_lowercase: z.string(),
       token_id: z.string(),
       attributes: z.string(),
       block_minted: z.number().int(),
       contract_type: z.string(),
       description: z.string(),
-      dna: z.string(),
-      edition: z.number().int(),
       image: z.string(),
       image_url: z.string(),
       metadata: z.string(),
@@ -15463,11 +15898,9 @@ export const UserUpdateWithoutCollectionsInputSchema: z.ZodType<Prisma.UserUpdat
         .optional(),
       address: z
         .union([
-          z
-            .string()
-            .refine((val) => getAddress(val), {
-              message: "is not a valid Ethereum address",
-            }),
+          z.string().refine((val) => getAddress(val), {
+            message: "is not a valid Ethereum address",
+          }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -15528,10 +15961,9 @@ export const UserUpdateWithoutCollectionsInputSchema: z.ZodType<Prisma.UserUpdat
       updated_at: z
         .union([
           z.coerce.date(),
-          z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
+          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
-        .optional()
-        .nullable(),
+        .optional(),
       wallets: z
         .lazy(() => WalletUpdateManyWithoutOwnerNestedInputSchema)
         .optional(),
@@ -15561,11 +15993,9 @@ export const UserUncheckedUpdateWithoutCollectionsInputSchema: z.ZodType<Prisma.
         .optional(),
       address: z
         .union([
-          z
-            .string()
-            .refine((val) => getAddress(val), {
-              message: "is not a valid Ethereum address",
-            }),
+          z.string().refine((val) => getAddress(val), {
+            message: "is not a valid Ethereum address",
+          }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -15626,10 +16056,9 @@ export const UserUncheckedUpdateWithoutCollectionsInputSchema: z.ZodType<Prisma.
       updated_at: z
         .union([
           z.coerce.date(),
-          z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
+          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
-        .optional()
-        .nullable(),
+        .optional(),
       wallets: z
         .lazy(() => WalletUncheckedUpdateManyWithoutOwnerNestedInputSchema)
         .optional(),
@@ -15708,9 +16137,6 @@ export const NftScalarWhereInputSchema: z.ZodType<Prisma.NftScalarWhereInput> =
       token_address: z
         .union([z.lazy(() => StringFilterSchema), z.string()])
         .optional(),
-      token_address_lowercase: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
       token_id: z
         .union([z.lazy(() => StringFilterSchema), z.string()])
         .optional(),
@@ -15726,8 +16152,6 @@ export const NftScalarWhereInputSchema: z.ZodType<Prisma.NftScalarWhereInput> =
       description: z
         .union([z.lazy(() => StringFilterSchema), z.string()])
         .optional(),
-      dna: z.union([z.lazy(() => StringFilterSchema), z.string()]).optional(),
-      edition: z.union([z.lazy(() => IntFilterSchema), z.number()]).optional(),
       image: z.union([z.lazy(() => StringFilterSchema), z.string()]).optional(),
       image_url: z
         .union([z.lazy(() => StringFilterSchema), z.string()])
@@ -15805,42 +16229,41 @@ export const CollectionCreateWithoutNftsInputSchema: z.ZodType<Prisma.Collection
   z
     .object({
       id: z.string().cuid().optional(),
-      name: z.string(),
-      max_items: z.number().int(),
-      max_batch_size: z.number().int(),
-      symbol: z.string(),
-      creator_address: z.string(),
-      is_hidden: z.boolean(),
-      sort_order: z.number().int(),
-      is_mint_active: z.boolean(),
-      is_archetype: z.boolean(),
-      is_pending: z.boolean(),
-      discounts: z.string(),
-      owner_alt_payout: z.string(),
-      super_affiliate_payout: z.string(),
-      contract_version: z.number().int(),
-      slug: z.string(),
-      mint_info: z.string(),
-      socials: z.string(),
-      token_address: z.string(),
-      token_address_lowercase: z.string(),
-      trait_counts: z.string(),
-      avatar_uri: z.string(),
-      banner_uri: z.string(),
-      description: z.string(),
-      hero_uri: z.string(),
-      twitter: z.string(),
-      website: z.string(),
-      discord: z.string(),
-      num_items: z.number().int(),
-      num_owners: z.number().int(),
-      last_refreshed: z.coerce.date(),
+      name: z.string().optional().nullable(),
+      max_items: z.number().int().optional().nullable(),
+      symbol: z.string().optional().nullable(),
+      is_hidden: z.boolean().optional().nullable(),
+      sort_order: z.number().int().optional().nullable(),
+      is_mint_active: z.boolean().optional().nullable(),
+      is_archetype: z.boolean().optional().nullable(),
+      is_pending: z.boolean().optional().nullable(),
+      discounts: z.string().optional().nullable(),
+      owner_alt_payout: z.string().optional().nullable(),
+      super_affiliate_payout: z.string().optional().nullable(),
+      contract_version: z.number().int().optional().nullable(),
+      slug: z.string().optional().nullable(),
+      mint_info: z.string().optional().nullable(),
+      socials: z.string().optional().nullable(),
+      token_address: z.string().optional().nullable(),
+      trait_counts: z.string().optional().nullable(),
+      avatar_uri: z.string().optional().nullable(),
+      banner_uri: z.string().optional().nullable(),
+      description: z.string().optional().nullable(),
+      hero_uri: z.string().optional().nullable(),
+      twitter: z.string().optional().nullable(),
+      website: z.string().optional().nullable(),
+      discord: z.string().optional().nullable(),
+      num_items: z.number().int().optional().nullable(),
+      num_owners: z.number().int().optional().nullable(),
+      last_refreshed: z.coerce.date().optional().nullable(),
       created_at: z.coerce.date().optional(),
       updated_at: z.coerce.date().optional(),
       mint_data: z
         .lazy(() => MintDataCreateNestedOneWithoutCollectionInputSchema)
         .optional(),
-      creator: z.lazy(() => UserCreateNestedOneWithoutCollectionsInputSchema),
+      creator: z
+        .lazy(() => UserCreateNestedOneWithoutCollectionsInputSchema)
+        .optional(),
     })
     .strict();
 
@@ -15848,37 +16271,34 @@ export const CollectionUncheckedCreateWithoutNftsInputSchema: z.ZodType<Prisma.C
   z
     .object({
       id: z.string().cuid().optional(),
-      name: z.string(),
-      max_items: z.number().int(),
-      max_batch_size: z.number().int(),
-      symbol: z.string(),
-      creator_address: z.string(),
-      is_hidden: z.boolean(),
-      sort_order: z.number().int(),
-      is_mint_active: z.boolean(),
-      is_archetype: z.boolean(),
-      is_pending: z.boolean(),
-      discounts: z.string(),
-      owner_alt_payout: z.string(),
-      super_affiliate_payout: z.string(),
-      contract_version: z.number().int(),
-      slug: z.string(),
-      mint_info: z.string(),
-      socials: z.string(),
-      token_address: z.string(),
-      token_address_lowercase: z.string(),
-      trait_counts: z.string(),
-      avatar_uri: z.string(),
-      banner_uri: z.string(),
-      description: z.string(),
-      hero_uri: z.string(),
-      twitter: z.string(),
-      website: z.string(),
-      discord: z.string(),
-      num_items: z.number().int(),
-      num_owners: z.number().int(),
-      last_refreshed: z.coerce.date(),
-      user_id: z.string(),
+      name: z.string().optional().nullable(),
+      max_items: z.number().int().optional().nullable(),
+      symbol: z.string().optional().nullable(),
+      creator_address: z.string().optional().nullable(),
+      is_hidden: z.boolean().optional().nullable(),
+      sort_order: z.number().int().optional().nullable(),
+      is_mint_active: z.boolean().optional().nullable(),
+      is_archetype: z.boolean().optional().nullable(),
+      is_pending: z.boolean().optional().nullable(),
+      discounts: z.string().optional().nullable(),
+      owner_alt_payout: z.string().optional().nullable(),
+      super_affiliate_payout: z.string().optional().nullable(),
+      contract_version: z.number().int().optional().nullable(),
+      slug: z.string().optional().nullable(),
+      mint_info: z.string().optional().nullable(),
+      socials: z.string().optional().nullable(),
+      token_address: z.string().optional().nullable(),
+      trait_counts: z.string().optional().nullable(),
+      avatar_uri: z.string().optional().nullable(),
+      banner_uri: z.string().optional().nullable(),
+      description: z.string().optional().nullable(),
+      hero_uri: z.string().optional().nullable(),
+      twitter: z.string().optional().nullable(),
+      website: z.string().optional().nullable(),
+      discord: z.string().optional().nullable(),
+      num_items: z.number().int().optional().nullable(),
+      num_owners: z.number().int().optional().nullable(),
+      last_refreshed: z.coerce.date().optional().nullable(),
       created_at: z.coerce.date().optional(),
       updated_at: z.coerce.date().optional(),
       mint_data: z
@@ -16048,183 +16468,192 @@ export const CollectionUpdateWithoutNftsInputSchema: z.ZodType<Prisma.Collection
       name: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       max_items: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
-      max_batch_size: z
-        .union([
-          z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
+        .optional()
+        .nullable(),
       symbol: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
-      creator_address: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
+        .optional()
+        .nullable(),
       is_hidden: z
         .union([
           z.boolean(),
-          z.lazy(() => BoolFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableBoolFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       sort_order: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       is_mint_active: z
         .union([
           z.boolean(),
-          z.lazy(() => BoolFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableBoolFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       is_archetype: z
         .union([
           z.boolean(),
-          z.lazy(() => BoolFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableBoolFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       is_pending: z
         .union([
           z.boolean(),
-          z.lazy(() => BoolFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableBoolFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       discounts: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       owner_alt_payout: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       super_affiliate_payout: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       contract_version: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       slug: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       mint_info: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       socials: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       token_address: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
-      token_address_lowercase: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
+        .optional()
+        .nullable(),
       trait_counts: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       avatar_uri: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       banner_uri: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       description: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       hero_uri: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       twitter: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       website: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       discord: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       num_items: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       num_owners: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       last_refreshed: z
         .union([
           z.coerce.date(),
-          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       created_at: z
         .union([
           z.coerce.date(),
@@ -16241,7 +16670,7 @@ export const CollectionUpdateWithoutNftsInputSchema: z.ZodType<Prisma.Collection
         .lazy(() => MintDataUpdateOneWithoutCollectionNestedInputSchema)
         .optional(),
       creator: z
-        .lazy(() => UserUpdateOneRequiredWithoutCollectionsNestedInputSchema)
+        .lazy(() => UserUpdateOneWithoutCollectionsNestedInputSchema)
         .optional(),
     })
     .strict();
@@ -16258,189 +16687,199 @@ export const CollectionUncheckedUpdateWithoutNftsInputSchema: z.ZodType<Prisma.C
       name: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       max_items: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
-      max_batch_size: z
-        .union([
-          z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
+        .optional()
+        .nullable(),
       symbol: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       creator_address: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       is_hidden: z
         .union([
           z.boolean(),
-          z.lazy(() => BoolFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableBoolFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       sort_order: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       is_mint_active: z
         .union([
           z.boolean(),
-          z.lazy(() => BoolFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableBoolFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       is_archetype: z
         .union([
           z.boolean(),
-          z.lazy(() => BoolFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableBoolFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       is_pending: z
         .union([
           z.boolean(),
-          z.lazy(() => BoolFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableBoolFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       discounts: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       owner_alt_payout: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       super_affiliate_payout: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       contract_version: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       slug: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       mint_info: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       socials: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       token_address: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
-      token_address_lowercase: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
+        .optional()
+        .nullable(),
       trait_counts: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       avatar_uri: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       banner_uri: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       description: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       hero_uri: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       twitter: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       website: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       discord: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       num_items: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       num_owners: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       last_refreshed: z
         .union([
           z.coerce.date(),
-          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
-      user_id: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
+        .optional()
+        .nullable(),
       created_at: z
         .union([
           z.coerce.date(),
@@ -16465,39 +16904,38 @@ export const CollectionCreateWithoutMint_dataInputSchema: z.ZodType<Prisma.Colle
   z
     .object({
       id: z.string().cuid().optional(),
-      name: z.string(),
-      max_items: z.number().int(),
-      max_batch_size: z.number().int(),
-      symbol: z.string(),
-      creator_address: z.string(),
-      is_hidden: z.boolean(),
-      sort_order: z.number().int(),
-      is_mint_active: z.boolean(),
-      is_archetype: z.boolean(),
-      is_pending: z.boolean(),
-      discounts: z.string(),
-      owner_alt_payout: z.string(),
-      super_affiliate_payout: z.string(),
-      contract_version: z.number().int(),
-      slug: z.string(),
-      mint_info: z.string(),
-      socials: z.string(),
-      token_address: z.string(),
-      token_address_lowercase: z.string(),
-      trait_counts: z.string(),
-      avatar_uri: z.string(),
-      banner_uri: z.string(),
-      description: z.string(),
-      hero_uri: z.string(),
-      twitter: z.string(),
-      website: z.string(),
-      discord: z.string(),
-      num_items: z.number().int(),
-      num_owners: z.number().int(),
-      last_refreshed: z.coerce.date(),
+      name: z.string().optional().nullable(),
+      max_items: z.number().int().optional().nullable(),
+      symbol: z.string().optional().nullable(),
+      is_hidden: z.boolean().optional().nullable(),
+      sort_order: z.number().int().optional().nullable(),
+      is_mint_active: z.boolean().optional().nullable(),
+      is_archetype: z.boolean().optional().nullable(),
+      is_pending: z.boolean().optional().nullable(),
+      discounts: z.string().optional().nullable(),
+      owner_alt_payout: z.string().optional().nullable(),
+      super_affiliate_payout: z.string().optional().nullable(),
+      contract_version: z.number().int().optional().nullable(),
+      slug: z.string().optional().nullable(),
+      mint_info: z.string().optional().nullable(),
+      socials: z.string().optional().nullable(),
+      token_address: z.string().optional().nullable(),
+      trait_counts: z.string().optional().nullable(),
+      avatar_uri: z.string().optional().nullable(),
+      banner_uri: z.string().optional().nullable(),
+      description: z.string().optional().nullable(),
+      hero_uri: z.string().optional().nullable(),
+      twitter: z.string().optional().nullable(),
+      website: z.string().optional().nullable(),
+      discord: z.string().optional().nullable(),
+      num_items: z.number().int().optional().nullable(),
+      num_owners: z.number().int().optional().nullable(),
+      last_refreshed: z.coerce.date().optional().nullable(),
       created_at: z.coerce.date().optional(),
       updated_at: z.coerce.date().optional(),
-      creator: z.lazy(() => UserCreateNestedOneWithoutCollectionsInputSchema),
+      creator: z
+        .lazy(() => UserCreateNestedOneWithoutCollectionsInputSchema)
+        .optional(),
       nfts: z
         .lazy(() => NftCreateNestedManyWithoutCollectionInputSchema)
         .optional(),
@@ -16508,37 +16946,34 @@ export const CollectionUncheckedCreateWithoutMint_dataInputSchema: z.ZodType<Pri
   z
     .object({
       id: z.string().cuid().optional(),
-      name: z.string(),
-      max_items: z.number().int(),
-      max_batch_size: z.number().int(),
-      symbol: z.string(),
-      creator_address: z.string(),
-      is_hidden: z.boolean(),
-      sort_order: z.number().int(),
-      is_mint_active: z.boolean(),
-      is_archetype: z.boolean(),
-      is_pending: z.boolean(),
-      discounts: z.string(),
-      owner_alt_payout: z.string(),
-      super_affiliate_payout: z.string(),
-      contract_version: z.number().int(),
-      slug: z.string(),
-      mint_info: z.string(),
-      socials: z.string(),
-      token_address: z.string(),
-      token_address_lowercase: z.string(),
-      trait_counts: z.string(),
-      avatar_uri: z.string(),
-      banner_uri: z.string(),
-      description: z.string(),
-      hero_uri: z.string(),
-      twitter: z.string(),
-      website: z.string(),
-      discord: z.string(),
-      num_items: z.number().int(),
-      num_owners: z.number().int(),
-      last_refreshed: z.coerce.date(),
-      user_id: z.string(),
+      name: z.string().optional().nullable(),
+      max_items: z.number().int().optional().nullable(),
+      symbol: z.string().optional().nullable(),
+      creator_address: z.string().optional().nullable(),
+      is_hidden: z.boolean().optional().nullable(),
+      sort_order: z.number().int().optional().nullable(),
+      is_mint_active: z.boolean().optional().nullable(),
+      is_archetype: z.boolean().optional().nullable(),
+      is_pending: z.boolean().optional().nullable(),
+      discounts: z.string().optional().nullable(),
+      owner_alt_payout: z.string().optional().nullable(),
+      super_affiliate_payout: z.string().optional().nullable(),
+      contract_version: z.number().int().optional().nullable(),
+      slug: z.string().optional().nullable(),
+      mint_info: z.string().optional().nullable(),
+      socials: z.string().optional().nullable(),
+      token_address: z.string().optional().nullable(),
+      trait_counts: z.string().optional().nullable(),
+      avatar_uri: z.string().optional().nullable(),
+      banner_uri: z.string().optional().nullable(),
+      description: z.string().optional().nullable(),
+      hero_uri: z.string().optional().nullable(),
+      twitter: z.string().optional().nullable(),
+      website: z.string().optional().nullable(),
+      discord: z.string().optional().nullable(),
+      num_items: z.number().int().optional().nullable(),
+      num_owners: z.number().int().optional().nullable(),
+      last_refreshed: z.coerce.date().optional().nullable(),
       created_at: z.coerce.date().optional(),
       updated_at: z.coerce.date().optional(),
       nfts: z
@@ -16596,183 +17031,192 @@ export const CollectionUpdateWithoutMint_dataInputSchema: z.ZodType<Prisma.Colle
       name: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       max_items: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
-      max_batch_size: z
-        .union([
-          z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
+        .optional()
+        .nullable(),
       symbol: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
-      creator_address: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
+        .optional()
+        .nullable(),
       is_hidden: z
         .union([
           z.boolean(),
-          z.lazy(() => BoolFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableBoolFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       sort_order: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       is_mint_active: z
         .union([
           z.boolean(),
-          z.lazy(() => BoolFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableBoolFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       is_archetype: z
         .union([
           z.boolean(),
-          z.lazy(() => BoolFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableBoolFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       is_pending: z
         .union([
           z.boolean(),
-          z.lazy(() => BoolFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableBoolFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       discounts: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       owner_alt_payout: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       super_affiliate_payout: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       contract_version: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       slug: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       mint_info: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       socials: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       token_address: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
-      token_address_lowercase: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
+        .optional()
+        .nullable(),
       trait_counts: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       avatar_uri: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       banner_uri: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       description: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       hero_uri: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       twitter: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       website: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       discord: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       num_items: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       num_owners: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       last_refreshed: z
         .union([
           z.coerce.date(),
-          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       created_at: z
         .union([
           z.coerce.date(),
@@ -16786,7 +17230,7 @@ export const CollectionUpdateWithoutMint_dataInputSchema: z.ZodType<Prisma.Colle
         ])
         .optional(),
       creator: z
-        .lazy(() => UserUpdateOneRequiredWithoutCollectionsNestedInputSchema)
+        .lazy(() => UserUpdateOneWithoutCollectionsNestedInputSchema)
         .optional(),
       nfts: z
         .lazy(() => NftUpdateManyWithoutCollectionNestedInputSchema)
@@ -16806,189 +17250,199 @@ export const CollectionUncheckedUpdateWithoutMint_dataInputSchema: z.ZodType<Pri
       name: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       max_items: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
-      max_batch_size: z
-        .union([
-          z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
+        .optional()
+        .nullable(),
       symbol: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       creator_address: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       is_hidden: z
         .union([
           z.boolean(),
-          z.lazy(() => BoolFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableBoolFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       sort_order: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       is_mint_active: z
         .union([
           z.boolean(),
-          z.lazy(() => BoolFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableBoolFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       is_archetype: z
         .union([
           z.boolean(),
-          z.lazy(() => BoolFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableBoolFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       is_pending: z
         .union([
           z.boolean(),
-          z.lazy(() => BoolFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableBoolFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       discounts: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       owner_alt_payout: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       super_affiliate_payout: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       contract_version: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       slug: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       mint_info: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       socials: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       token_address: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
-      token_address_lowercase: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
+        .optional()
+        .nullable(),
       trait_counts: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       avatar_uri: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       banner_uri: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       description: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       hero_uri: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       twitter: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       website: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       discord: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       num_items: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       num_owners: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       last_refreshed: z
         .union([
           z.coerce.date(),
-          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
-      user_id: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
+        .optional()
+        .nullable(),
       created_at: z
         .union([
           z.coerce.date(),
@@ -17012,14 +17466,11 @@ export const NftCreateWithoutOpen_rarityInputSchema: z.ZodType<Prisma.NftCreateW
     .object({
       id: z.string().cuid().optional(),
       token_address: z.string(),
-      token_address_lowercase: z.string(),
       token_id: z.string(),
       attributes: z.string(),
       block_minted: z.number().int(),
       contract_type: z.string(),
       description: z.string(),
-      dna: z.string(),
-      edition: z.number().int(),
       image: z.string(),
       image_url: z.string(),
       metadata: z.string(),
@@ -17041,14 +17492,11 @@ export const NftUncheckedCreateWithoutOpen_rarityInputSchema: z.ZodType<Prisma.N
     .object({
       id: z.string().cuid().optional(),
       token_address: z.string(),
-      token_address_lowercase: z.string(),
       token_id: z.string(),
       attributes: z.string(),
       block_minted: z.number().int(),
       contract_type: z.string(),
       description: z.string(),
-      dna: z.string(),
-      edition: z.number().int(),
       image: z.string(),
       image_url: z.string(),
       metadata: z.string(),
@@ -17117,12 +17565,6 @@ export const NftUpdateWithoutOpen_rarityInputSchema: z.ZodType<Prisma.NftUpdateW
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
-      token_address_lowercase: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
       token_id: z
         .union([
           z.string(),
@@ -17151,18 +17593,6 @@ export const NftUpdateWithoutOpen_rarityInputSchema: z.ZodType<Prisma.NftUpdateW
         .union([
           z.string(),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      dna: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      edition: z
-        .union([
-          z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       image: z
@@ -17258,12 +17688,6 @@ export const NftUncheckedUpdateWithoutOpen_rarityInputSchema: z.ZodType<Prisma.N
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
-      token_address_lowercase: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
       token_id: z
         .union([
           z.string(),
@@ -17292,18 +17716,6 @@ export const NftUncheckedUpdateWithoutOpen_rarityInputSchema: z.ZodType<Prisma.N
         .union([
           z.string(),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      dna: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      edition: z
-        .union([
-          z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       image: z
@@ -17391,36 +17803,33 @@ export const CollectionCreateWithoutCreatorInputSchema: z.ZodType<Prisma.Collect
   z
     .object({
       id: z.string().cuid().optional(),
-      name: z.string(),
-      max_items: z.number().int(),
-      max_batch_size: z.number().int(),
-      symbol: z.string(),
-      creator_address: z.string(),
-      is_hidden: z.boolean(),
-      sort_order: z.number().int(),
-      is_mint_active: z.boolean(),
-      is_archetype: z.boolean(),
-      is_pending: z.boolean(),
-      discounts: z.string(),
-      owner_alt_payout: z.string(),
-      super_affiliate_payout: z.string(),
-      contract_version: z.number().int(),
-      slug: z.string(),
-      mint_info: z.string(),
-      socials: z.string(),
-      token_address: z.string(),
-      token_address_lowercase: z.string(),
-      trait_counts: z.string(),
-      avatar_uri: z.string(),
-      banner_uri: z.string(),
-      description: z.string(),
-      hero_uri: z.string(),
-      twitter: z.string(),
-      website: z.string(),
-      discord: z.string(),
-      num_items: z.number().int(),
-      num_owners: z.number().int(),
-      last_refreshed: z.coerce.date(),
+      name: z.string().optional().nullable(),
+      max_items: z.number().int().optional().nullable(),
+      symbol: z.string().optional().nullable(),
+      is_hidden: z.boolean().optional().nullable(),
+      sort_order: z.number().int().optional().nullable(),
+      is_mint_active: z.boolean().optional().nullable(),
+      is_archetype: z.boolean().optional().nullable(),
+      is_pending: z.boolean().optional().nullable(),
+      discounts: z.string().optional().nullable(),
+      owner_alt_payout: z.string().optional().nullable(),
+      super_affiliate_payout: z.string().optional().nullable(),
+      contract_version: z.number().int().optional().nullable(),
+      slug: z.string().optional().nullable(),
+      mint_info: z.string().optional().nullable(),
+      socials: z.string().optional().nullable(),
+      token_address: z.string().optional().nullable(),
+      trait_counts: z.string().optional().nullable(),
+      avatar_uri: z.string().optional().nullable(),
+      banner_uri: z.string().optional().nullable(),
+      description: z.string().optional().nullable(),
+      hero_uri: z.string().optional().nullable(),
+      twitter: z.string().optional().nullable(),
+      website: z.string().optional().nullable(),
+      discord: z.string().optional().nullable(),
+      num_items: z.number().int().optional().nullable(),
+      num_owners: z.number().int().optional().nullable(),
+      last_refreshed: z.coerce.date().optional().nullable(),
       created_at: z.coerce.date().optional(),
       updated_at: z.coerce.date().optional(),
       mint_data: z
@@ -17436,36 +17845,33 @@ export const CollectionUncheckedCreateWithoutCreatorInputSchema: z.ZodType<Prism
   z
     .object({
       id: z.string().cuid().optional(),
-      name: z.string(),
-      max_items: z.number().int(),
-      max_batch_size: z.number().int(),
-      symbol: z.string(),
-      creator_address: z.string(),
-      is_hidden: z.boolean(),
-      sort_order: z.number().int(),
-      is_mint_active: z.boolean(),
-      is_archetype: z.boolean(),
-      is_pending: z.boolean(),
-      discounts: z.string(),
-      owner_alt_payout: z.string(),
-      super_affiliate_payout: z.string(),
-      contract_version: z.number().int(),
-      slug: z.string(),
-      mint_info: z.string(),
-      socials: z.string(),
-      token_address: z.string(),
-      token_address_lowercase: z.string(),
-      trait_counts: z.string(),
-      avatar_uri: z.string(),
-      banner_uri: z.string(),
-      description: z.string(),
-      hero_uri: z.string(),
-      twitter: z.string(),
-      website: z.string(),
-      discord: z.string(),
-      num_items: z.number().int(),
-      num_owners: z.number().int(),
-      last_refreshed: z.coerce.date(),
+      name: z.string().optional().nullable(),
+      max_items: z.number().int().optional().nullable(),
+      symbol: z.string().optional().nullable(),
+      is_hidden: z.boolean().optional().nullable(),
+      sort_order: z.number().int().optional().nullable(),
+      is_mint_active: z.boolean().optional().nullable(),
+      is_archetype: z.boolean().optional().nullable(),
+      is_pending: z.boolean().optional().nullable(),
+      discounts: z.string().optional().nullable(),
+      owner_alt_payout: z.string().optional().nullable(),
+      super_affiliate_payout: z.string().optional().nullable(),
+      contract_version: z.number().int().optional().nullable(),
+      slug: z.string().optional().nullable(),
+      mint_info: z.string().optional().nullable(),
+      socials: z.string().optional().nullable(),
+      token_address: z.string().optional().nullable(),
+      trait_counts: z.string().optional().nullable(),
+      avatar_uri: z.string().optional().nullable(),
+      banner_uri: z.string().optional().nullable(),
+      description: z.string().optional().nullable(),
+      hero_uri: z.string().optional().nullable(),
+      twitter: z.string().optional().nullable(),
+      website: z.string().optional().nullable(),
+      discord: z.string().optional().nullable(),
+      num_items: z.number().int().optional().nullable(),
+      num_owners: z.number().int().optional().nullable(),
+      last_refreshed: z.coerce.date().optional().nullable(),
       created_at: z.coerce.date().optional(),
       updated_at: z.coerce.date().optional(),
       mint_data: z
@@ -17724,95 +18130,118 @@ export const CollectionScalarWhereInputSchema: z.ZodType<Prisma.CollectionScalar
         ])
         .optional(),
       id: z.union([z.lazy(() => StringFilterSchema), z.string()]).optional(),
-      name: z.union([z.lazy(() => StringFilterSchema), z.string()]).optional(),
+      name: z
+        .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+        .optional()
+        .nullable(),
       max_items: z
-        .union([z.lazy(() => IntFilterSchema), z.number()])
-        .optional(),
-      max_batch_size: z
-        .union([z.lazy(() => IntFilterSchema), z.number()])
-        .optional(),
+        .union([z.lazy(() => IntNullableFilterSchema), z.number()])
+        .optional()
+        .nullable(),
       symbol: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
+        .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+        .optional()
+        .nullable(),
       creator_address: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
+        .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+        .optional()
+        .nullable(),
       is_hidden: z
-        .union([z.lazy(() => BoolFilterSchema), z.boolean()])
-        .optional(),
+        .union([z.lazy(() => BoolNullableFilterSchema), z.boolean()])
+        .optional()
+        .nullable(),
       sort_order: z
-        .union([z.lazy(() => IntFilterSchema), z.number()])
-        .optional(),
+        .union([z.lazy(() => IntNullableFilterSchema), z.number()])
+        .optional()
+        .nullable(),
       is_mint_active: z
-        .union([z.lazy(() => BoolFilterSchema), z.boolean()])
-        .optional(),
+        .union([z.lazy(() => BoolNullableFilterSchema), z.boolean()])
+        .optional()
+        .nullable(),
       is_archetype: z
-        .union([z.lazy(() => BoolFilterSchema), z.boolean()])
-        .optional(),
+        .union([z.lazy(() => BoolNullableFilterSchema), z.boolean()])
+        .optional()
+        .nullable(),
       is_pending: z
-        .union([z.lazy(() => BoolFilterSchema), z.boolean()])
-        .optional(),
+        .union([z.lazy(() => BoolNullableFilterSchema), z.boolean()])
+        .optional()
+        .nullable(),
       discounts: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
+        .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+        .optional()
+        .nullable(),
       owner_alt_payout: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
+        .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+        .optional()
+        .nullable(),
       super_affiliate_payout: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
+        .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+        .optional()
+        .nullable(),
       contract_version: z
-        .union([z.lazy(() => IntFilterSchema), z.number()])
-        .optional(),
-      slug: z.union([z.lazy(() => StringFilterSchema), z.string()]).optional(),
+        .union([z.lazy(() => IntNullableFilterSchema), z.number()])
+        .optional()
+        .nullable(),
+      slug: z
+        .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+        .optional()
+        .nullable(),
       mint_info: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
+        .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+        .optional()
+        .nullable(),
       socials: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
+        .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+        .optional()
+        .nullable(),
       token_address: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
-      token_address_lowercase: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
+        .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+        .optional()
+        .nullable(),
       trait_counts: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
+        .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+        .optional()
+        .nullable(),
       avatar_uri: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
+        .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+        .optional()
+        .nullable(),
       banner_uri: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
+        .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+        .optional()
+        .nullable(),
       description: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
+        .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+        .optional()
+        .nullable(),
       hero_uri: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
+        .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+        .optional()
+        .nullable(),
       twitter: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
+        .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+        .optional()
+        .nullable(),
       website: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
+        .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+        .optional()
+        .nullable(),
       discord: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
+        .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+        .optional()
+        .nullable(),
       num_items: z
-        .union([z.lazy(() => IntFilterSchema), z.number()])
-        .optional(),
+        .union([z.lazy(() => IntNullableFilterSchema), z.number()])
+        .optional()
+        .nullable(),
       num_owners: z
-        .union([z.lazy(() => IntFilterSchema), z.number()])
-        .optional(),
+        .union([z.lazy(() => IntNullableFilterSchema), z.number()])
+        .optional()
+        .nullable(),
       last_refreshed: z
-        .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
-        .optional(),
-      user_id: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
+        .union([z.lazy(() => DateTimeNullableFilterSchema), z.coerce.date()])
+        .optional()
+        .nullable(),
       created_at: z
         .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
         .optional(),
@@ -18184,11 +18613,9 @@ export const UserCreateWithoutConnectionsInputSchema: z.ZodType<Prisma.UserCreat
   z
     .object({
       id: z.string().cuid().optional(),
-      address: z
-        .string()
-        .refine((val) => getAddress(val), {
-          message: "is not a valid Ethereum address",
-        }),
+      address: z.string().refine((val) => getAddress(val), {
+        message: "is not a valid Ethereum address",
+      }),
       avatar_uri: z
         .string()
         .url({ message: "Invalid url" })
@@ -18213,7 +18640,7 @@ export const UserCreateWithoutConnectionsInputSchema: z.ZodType<Prisma.UserCreat
       status: z.string().optional(),
       email: z.string().optional().nullable(),
       created_at: z.coerce.date().optional(),
-      updated_at: z.coerce.date().optional().nullable(),
+      updated_at: z.coerce.date().optional(),
       collections: z
         .lazy(() => CollectionCreateNestedManyWithoutCreatorInputSchema)
         .optional(),
@@ -18236,11 +18663,9 @@ export const UserUncheckedCreateWithoutConnectionsInputSchema: z.ZodType<Prisma.
   z
     .object({
       id: z.string().cuid().optional(),
-      address: z
-        .string()
-        .refine((val) => getAddress(val), {
-          message: "is not a valid Ethereum address",
-        }),
+      address: z.string().refine((val) => getAddress(val), {
+        message: "is not a valid Ethereum address",
+      }),
       avatar_uri: z
         .string()
         .url({ message: "Invalid url" })
@@ -18265,7 +18690,7 @@ export const UserUncheckedCreateWithoutConnectionsInputSchema: z.ZodType<Prisma.
       status: z.string().optional(),
       email: z.string().optional().nullable(),
       created_at: z.coerce.date().optional(),
-      updated_at: z.coerce.date().optional().nullable(),
+      updated_at: z.coerce.date().optional(),
       collections: z
         .lazy(
           () => CollectionUncheckedCreateNestedManyWithoutCreatorInputSchema
@@ -18334,11 +18759,9 @@ export const UserUpdateWithoutConnectionsInputSchema: z.ZodType<Prisma.UserUpdat
         .optional(),
       address: z
         .union([
-          z
-            .string()
-            .refine((val) => getAddress(val), {
-              message: "is not a valid Ethereum address",
-            }),
+          z.string().refine((val) => getAddress(val), {
+            message: "is not a valid Ethereum address",
+          }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -18399,10 +18822,9 @@ export const UserUpdateWithoutConnectionsInputSchema: z.ZodType<Prisma.UserUpdat
       updated_at: z
         .union([
           z.coerce.date(),
-          z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
+          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
-        .optional()
-        .nullable(),
+        .optional(),
       collections: z
         .lazy(() => CollectionUpdateManyWithoutCreatorNestedInputSchema)
         .optional(),
@@ -18432,11 +18854,9 @@ export const UserUncheckedUpdateWithoutConnectionsInputSchema: z.ZodType<Prisma.
         .optional(),
       address: z
         .union([
-          z
-            .string()
-            .refine((val) => getAddress(val), {
-              message: "is not a valid Ethereum address",
-            }),
+          z.string().refine((val) => getAddress(val), {
+            message: "is not a valid Ethereum address",
+          }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -18497,10 +18917,9 @@ export const UserUncheckedUpdateWithoutConnectionsInputSchema: z.ZodType<Prisma.
       updated_at: z
         .union([
           z.coerce.date(),
-          z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
+          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
-        .optional()
-        .nullable(),
+        .optional(),
       collections: z
         .lazy(
           () => CollectionUncheckedUpdateManyWithoutCreatorNestedInputSchema
@@ -18525,11 +18944,9 @@ export const UserCreateWithoutPasswordInputSchema: z.ZodType<Prisma.UserCreateWi
   z
     .object({
       id: z.string().cuid().optional(),
-      address: z
-        .string()
-        .refine((val) => getAddress(val), {
-          message: "is not a valid Ethereum address",
-        }),
+      address: z.string().refine((val) => getAddress(val), {
+        message: "is not a valid Ethereum address",
+      }),
       avatar_uri: z
         .string()
         .url({ message: "Invalid url" })
@@ -18554,7 +18971,7 @@ export const UserCreateWithoutPasswordInputSchema: z.ZodType<Prisma.UserCreateWi
       status: z.string().optional(),
       email: z.string().optional().nullable(),
       created_at: z.coerce.date().optional(),
-      updated_at: z.coerce.date().optional().nullable(),
+      updated_at: z.coerce.date().optional(),
       collections: z
         .lazy(() => CollectionCreateNestedManyWithoutCreatorInputSchema)
         .optional(),
@@ -18577,11 +18994,9 @@ export const UserUncheckedCreateWithoutPasswordInputSchema: z.ZodType<Prisma.Use
   z
     .object({
       id: z.string().cuid().optional(),
-      address: z
-        .string()
-        .refine((val) => getAddress(val), {
-          message: "is not a valid Ethereum address",
-        }),
+      address: z.string().refine((val) => getAddress(val), {
+        message: "is not a valid Ethereum address",
+      }),
       avatar_uri: z
         .string()
         .url({ message: "Invalid url" })
@@ -18606,7 +19021,7 @@ export const UserUncheckedCreateWithoutPasswordInputSchema: z.ZodType<Prisma.Use
       status: z.string().optional(),
       email: z.string().optional().nullable(),
       created_at: z.coerce.date().optional(),
-      updated_at: z.coerce.date().optional().nullable(),
+      updated_at: z.coerce.date().optional(),
       collections: z
         .lazy(
           () => CollectionUncheckedCreateNestedManyWithoutCreatorInputSchema
@@ -18675,11 +19090,9 @@ export const UserUpdateWithoutPasswordInputSchema: z.ZodType<Prisma.UserUpdateWi
         .optional(),
       address: z
         .union([
-          z
-            .string()
-            .refine((val) => getAddress(val), {
-              message: "is not a valid Ethereum address",
-            }),
+          z.string().refine((val) => getAddress(val), {
+            message: "is not a valid Ethereum address",
+          }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -18740,10 +19153,9 @@ export const UserUpdateWithoutPasswordInputSchema: z.ZodType<Prisma.UserUpdateWi
       updated_at: z
         .union([
           z.coerce.date(),
-          z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
+          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
-        .optional()
-        .nullable(),
+        .optional(),
       collections: z
         .lazy(() => CollectionUpdateManyWithoutCreatorNestedInputSchema)
         .optional(),
@@ -18773,11 +19185,9 @@ export const UserUncheckedUpdateWithoutPasswordInputSchema: z.ZodType<Prisma.Use
         .optional(),
       address: z
         .union([
-          z
-            .string()
-            .refine((val) => getAddress(val), {
-              message: "is not a valid Ethereum address",
-            }),
+          z.string().refine((val) => getAddress(val), {
+            message: "is not a valid Ethereum address",
+          }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -18838,10 +19248,9 @@ export const UserUncheckedUpdateWithoutPasswordInputSchema: z.ZodType<Prisma.Use
       updated_at: z
         .union([
           z.coerce.date(),
-          z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
+          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
-        .optional()
-        .nullable(),
+        .optional(),
       collections: z
         .lazy(
           () => CollectionUncheckedUpdateManyWithoutCreatorNestedInputSchema
@@ -18942,11 +19351,9 @@ export const UserCreateWithoutWalletsInputSchema: z.ZodType<Prisma.UserCreateWit
   z
     .object({
       id: z.string().cuid().optional(),
-      address: z
-        .string()
-        .refine((val) => getAddress(val), {
-          message: "is not a valid Ethereum address",
-        }),
+      address: z.string().refine((val) => getAddress(val), {
+        message: "is not a valid Ethereum address",
+      }),
       avatar_uri: z
         .string()
         .url({ message: "Invalid url" })
@@ -18971,7 +19378,7 @@ export const UserCreateWithoutWalletsInputSchema: z.ZodType<Prisma.UserCreateWit
       status: z.string().optional(),
       email: z.string().optional().nullable(),
       created_at: z.coerce.date().optional(),
-      updated_at: z.coerce.date().optional().nullable(),
+      updated_at: z.coerce.date().optional(),
       collections: z
         .lazy(() => CollectionCreateNestedManyWithoutCreatorInputSchema)
         .optional(),
@@ -18994,11 +19401,9 @@ export const UserUncheckedCreateWithoutWalletsInputSchema: z.ZodType<Prisma.User
   z
     .object({
       id: z.string().cuid().optional(),
-      address: z
-        .string()
-        .refine((val) => getAddress(val), {
-          message: "is not a valid Ethereum address",
-        }),
+      address: z.string().refine((val) => getAddress(val), {
+        message: "is not a valid Ethereum address",
+      }),
       avatar_uri: z
         .string()
         .url({ message: "Invalid url" })
@@ -19023,7 +19428,7 @@ export const UserUncheckedCreateWithoutWalletsInputSchema: z.ZodType<Prisma.User
       status: z.string().optional(),
       email: z.string().optional().nullable(),
       created_at: z.coerce.date().optional(),
-      updated_at: z.coerce.date().optional().nullable(),
+      updated_at: z.coerce.date().optional(),
       collections: z
         .lazy(
           () => CollectionUncheckedCreateNestedManyWithoutCreatorInputSchema
@@ -19170,11 +19575,9 @@ export const UserUpdateWithoutWalletsInputSchema: z.ZodType<Prisma.UserUpdateWit
         .optional(),
       address: z
         .union([
-          z
-            .string()
-            .refine((val) => getAddress(val), {
-              message: "is not a valid Ethereum address",
-            }),
+          z.string().refine((val) => getAddress(val), {
+            message: "is not a valid Ethereum address",
+          }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -19235,10 +19638,9 @@ export const UserUpdateWithoutWalletsInputSchema: z.ZodType<Prisma.UserUpdateWit
       updated_at: z
         .union([
           z.coerce.date(),
-          z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
+          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
-        .optional()
-        .nullable(),
+        .optional(),
       collections: z
         .lazy(() => CollectionUpdateManyWithoutCreatorNestedInputSchema)
         .optional(),
@@ -19268,11 +19670,9 @@ export const UserUncheckedUpdateWithoutWalletsInputSchema: z.ZodType<Prisma.User
         .optional(),
       address: z
         .union([
-          z
-            .string()
-            .refine((val) => getAddress(val), {
-              message: "is not a valid Ethereum address",
-            }),
+          z.string().refine((val) => getAddress(val), {
+            message: "is not a valid Ethereum address",
+          }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -19333,10 +19733,9 @@ export const UserUncheckedUpdateWithoutWalletsInputSchema: z.ZodType<Prisma.User
       updated_at: z
         .union([
           z.coerce.date(),
-          z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
+          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
-        .optional()
-        .nullable(),
+        .optional(),
       collections: z
         .lazy(
           () => CollectionUncheckedUpdateManyWithoutCreatorNestedInputSchema
@@ -19522,11 +19921,9 @@ export const UserCreateWithoutSessionsInputSchema: z.ZodType<Prisma.UserCreateWi
   z
     .object({
       id: z.string().cuid().optional(),
-      address: z
-        .string()
-        .refine((val) => getAddress(val), {
-          message: "is not a valid Ethereum address",
-        }),
+      address: z.string().refine((val) => getAddress(val), {
+        message: "is not a valid Ethereum address",
+      }),
       avatar_uri: z
         .string()
         .url({ message: "Invalid url" })
@@ -19551,7 +19948,7 @@ export const UserCreateWithoutSessionsInputSchema: z.ZodType<Prisma.UserCreateWi
       status: z.string().optional(),
       email: z.string().optional().nullable(),
       created_at: z.coerce.date().optional(),
-      updated_at: z.coerce.date().optional().nullable(),
+      updated_at: z.coerce.date().optional(),
       collections: z
         .lazy(() => CollectionCreateNestedManyWithoutCreatorInputSchema)
         .optional(),
@@ -19574,11 +19971,9 @@ export const UserUncheckedCreateWithoutSessionsInputSchema: z.ZodType<Prisma.Use
   z
     .object({
       id: z.string().cuid().optional(),
-      address: z
-        .string()
-        .refine((val) => getAddress(val), {
-          message: "is not a valid Ethereum address",
-        }),
+      address: z.string().refine((val) => getAddress(val), {
+        message: "is not a valid Ethereum address",
+      }),
       avatar_uri: z
         .string()
         .url({ message: "Invalid url" })
@@ -19603,7 +19998,7 @@ export const UserUncheckedCreateWithoutSessionsInputSchema: z.ZodType<Prisma.Use
       status: z.string().optional(),
       email: z.string().optional().nullable(),
       created_at: z.coerce.date().optional(),
-      updated_at: z.coerce.date().optional().nullable(),
+      updated_at: z.coerce.date().optional(),
       collections: z
         .lazy(
           () => CollectionUncheckedCreateNestedManyWithoutCreatorInputSchema
@@ -19707,11 +20102,9 @@ export const UserUpdateWithoutSessionsInputSchema: z.ZodType<Prisma.UserUpdateWi
         .optional(),
       address: z
         .union([
-          z
-            .string()
-            .refine((val) => getAddress(val), {
-              message: "is not a valid Ethereum address",
-            }),
+          z.string().refine((val) => getAddress(val), {
+            message: "is not a valid Ethereum address",
+          }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -19772,10 +20165,9 @@ export const UserUpdateWithoutSessionsInputSchema: z.ZodType<Prisma.UserUpdateWi
       updated_at: z
         .union([
           z.coerce.date(),
-          z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
+          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
-        .optional()
-        .nullable(),
+        .optional(),
       collections: z
         .lazy(() => CollectionUpdateManyWithoutCreatorNestedInputSchema)
         .optional(),
@@ -19805,11 +20197,9 @@ export const UserUncheckedUpdateWithoutSessionsInputSchema: z.ZodType<Prisma.Use
         .optional(),
       address: z
         .union([
-          z
-            .string()
-            .refine((val) => getAddress(val), {
-              message: "is not a valid Ethereum address",
-            }),
+          z.string().refine((val) => getAddress(val), {
+            message: "is not a valid Ethereum address",
+          }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -19870,10 +20260,9 @@ export const UserUncheckedUpdateWithoutSessionsInputSchema: z.ZodType<Prisma.Use
       updated_at: z
         .union([
           z.coerce.date(),
-          z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
+          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
-        .optional()
-        .nullable(),
+        .optional(),
       collections: z
         .lazy(
           () => CollectionUncheckedUpdateManyWithoutCreatorNestedInputSchema
@@ -20078,11 +20467,9 @@ export const UserCreateWithoutRolesInputSchema: z.ZodType<Prisma.UserCreateWitho
   z
     .object({
       id: z.string().cuid().optional(),
-      address: z
-        .string()
-        .refine((val) => getAddress(val), {
-          message: "is not a valid Ethereum address",
-        }),
+      address: z.string().refine((val) => getAddress(val), {
+        message: "is not a valid Ethereum address",
+      }),
       avatar_uri: z
         .string()
         .url({ message: "Invalid url" })
@@ -20107,7 +20494,7 @@ export const UserCreateWithoutRolesInputSchema: z.ZodType<Prisma.UserCreateWitho
       status: z.string().optional(),
       email: z.string().optional().nullable(),
       created_at: z.coerce.date().optional(),
-      updated_at: z.coerce.date().optional().nullable(),
+      updated_at: z.coerce.date().optional(),
       collections: z
         .lazy(() => CollectionCreateNestedManyWithoutCreatorInputSchema)
         .optional(),
@@ -20130,11 +20517,9 @@ export const UserUncheckedCreateWithoutRolesInputSchema: z.ZodType<Prisma.UserUn
   z
     .object({
       id: z.string().cuid().optional(),
-      address: z
-        .string()
-        .refine((val) => getAddress(val), {
-          message: "is not a valid Ethereum address",
-        }),
+      address: z.string().refine((val) => getAddress(val), {
+        message: "is not a valid Ethereum address",
+      }),
       avatar_uri: z
         .string()
         .url({ message: "Invalid url" })
@@ -20159,7 +20544,7 @@ export const UserUncheckedCreateWithoutRolesInputSchema: z.ZodType<Prisma.UserUn
       status: z.string().optional(),
       email: z.string().optional().nullable(),
       created_at: z.coerce.date().optional(),
-      updated_at: z.coerce.date().optional().nullable(),
+      updated_at: z.coerce.date().optional(),
       collections: z
         .lazy(
           () => CollectionUncheckedCreateNestedManyWithoutCreatorInputSchema
@@ -20319,9 +20704,8 @@ export const UserScalarWhereInputSchema: z.ZodType<Prisma.UserScalarWhereInput> 
         .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
         .optional(),
       updated_at: z
-        .union([z.lazy(() => DateTimeNullableFilterSchema), z.coerce.date()])
-        .optional()
-        .nullable(),
+        .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
+        .optional(),
     })
     .strict();
 
@@ -20418,12 +20802,6 @@ export const NftUpdateWithoutCollectionInputSchema: z.ZodType<Prisma.NftUpdateWi
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
-      token_address_lowercase: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
       token_id: z
         .union([
           z.string(),
@@ -20452,18 +20830,6 @@ export const NftUpdateWithoutCollectionInputSchema: z.ZodType<Prisma.NftUpdateWi
         .union([
           z.string(),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      dna: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      edition: z
-        .union([
-          z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       image: z
@@ -20559,12 +20925,6 @@ export const NftUncheckedUpdateWithoutCollectionInputSchema: z.ZodType<Prisma.Nf
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
-      token_address_lowercase: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
       token_id: z
         .union([
           z.string(),
@@ -20593,18 +20953,6 @@ export const NftUncheckedUpdateWithoutCollectionInputSchema: z.ZodType<Prisma.Nf
         .union([
           z.string(),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      dna: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      edition: z
-        .union([
-          z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       image: z
@@ -20700,12 +21048,6 @@ export const NftUncheckedUpdateManyWithoutCollectionInputSchema: z.ZodType<Prism
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
-      token_address_lowercase: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
       token_id: z
         .union([
           z.string(),
@@ -20734,18 +21076,6 @@ export const NftUncheckedUpdateManyWithoutCollectionInputSchema: z.ZodType<Prism
         .union([
           z.string(),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      dna: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      edition: z
-        .union([
-          z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       image: z
@@ -20835,183 +21165,192 @@ export const CollectionUpdateWithoutCreatorInputSchema: z.ZodType<Prisma.Collect
       name: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       max_items: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
-      max_batch_size: z
-        .union([
-          z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
+        .optional()
+        .nullable(),
       symbol: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
-      creator_address: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
+        .optional()
+        .nullable(),
       is_hidden: z
         .union([
           z.boolean(),
-          z.lazy(() => BoolFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableBoolFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       sort_order: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       is_mint_active: z
         .union([
           z.boolean(),
-          z.lazy(() => BoolFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableBoolFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       is_archetype: z
         .union([
           z.boolean(),
-          z.lazy(() => BoolFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableBoolFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       is_pending: z
         .union([
           z.boolean(),
-          z.lazy(() => BoolFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableBoolFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       discounts: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       owner_alt_payout: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       super_affiliate_payout: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       contract_version: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       slug: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       mint_info: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       socials: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       token_address: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
-      token_address_lowercase: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
+        .optional()
+        .nullable(),
       trait_counts: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       avatar_uri: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       banner_uri: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       description: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       hero_uri: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       twitter: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       website: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       discord: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       num_items: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       num_owners: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       last_refreshed: z
         .union([
           z.coerce.date(),
-          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       created_at: z
         .union([
           z.coerce.date(),
@@ -21045,183 +21384,192 @@ export const CollectionUncheckedUpdateWithoutCreatorInputSchema: z.ZodType<Prism
       name: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       max_items: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
-      max_batch_size: z
-        .union([
-          z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
+        .optional()
+        .nullable(),
       symbol: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
-      creator_address: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
+        .optional()
+        .nullable(),
       is_hidden: z
         .union([
           z.boolean(),
-          z.lazy(() => BoolFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableBoolFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       sort_order: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       is_mint_active: z
         .union([
           z.boolean(),
-          z.lazy(() => BoolFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableBoolFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       is_archetype: z
         .union([
           z.boolean(),
-          z.lazy(() => BoolFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableBoolFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       is_pending: z
         .union([
           z.boolean(),
-          z.lazy(() => BoolFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableBoolFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       discounts: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       owner_alt_payout: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       super_affiliate_payout: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       contract_version: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       slug: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       mint_info: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       socials: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       token_address: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
-      token_address_lowercase: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
+        .optional()
+        .nullable(),
       trait_counts: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       avatar_uri: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       banner_uri: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       description: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       hero_uri: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       twitter: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       website: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       discord: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       num_items: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       num_owners: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       last_refreshed: z
         .union([
           z.coerce.date(),
-          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       created_at: z
         .union([
           z.coerce.date(),
@@ -21257,183 +21605,192 @@ export const CollectionUncheckedUpdateManyWithoutCreatorInputSchema: z.ZodType<P
       name: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       max_items: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
-      max_batch_size: z
-        .union([
-          z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
+        .optional()
+        .nullable(),
       symbol: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
-      creator_address: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
+        .optional()
+        .nullable(),
       is_hidden: z
         .union([
           z.boolean(),
-          z.lazy(() => BoolFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableBoolFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       sort_order: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       is_mint_active: z
         .union([
           z.boolean(),
-          z.lazy(() => BoolFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableBoolFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       is_archetype: z
         .union([
           z.boolean(),
-          z.lazy(() => BoolFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableBoolFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       is_pending: z
         .union([
           z.boolean(),
-          z.lazy(() => BoolFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableBoolFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       discounts: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       owner_alt_payout: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       super_affiliate_payout: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       contract_version: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       slug: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       mint_info: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       socials: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       token_address: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
-      token_address_lowercase: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
+        .optional()
+        .nullable(),
       trait_counts: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       avatar_uri: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       banner_uri: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       description: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       hero_uri: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       twitter: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       website: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       discord: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       num_items: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       num_owners: z
         .union([
           z.number().int(),
-          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       last_refreshed: z
         .union([
           z.coerce.date(),
-          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       created_at: z
         .union([
           z.coerce.date(),
@@ -22390,11 +22747,9 @@ export const UserUpdateWithoutRolesInputSchema: z.ZodType<Prisma.UserUpdateWitho
         .optional(),
       address: z
         .union([
-          z
-            .string()
-            .refine((val) => getAddress(val), {
-              message: "is not a valid Ethereum address",
-            }),
+          z.string().refine((val) => getAddress(val), {
+            message: "is not a valid Ethereum address",
+          }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -22455,10 +22810,9 @@ export const UserUpdateWithoutRolesInputSchema: z.ZodType<Prisma.UserUpdateWitho
       updated_at: z
         .union([
           z.coerce.date(),
-          z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
+          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
-        .optional()
-        .nullable(),
+        .optional(),
       collections: z
         .lazy(() => CollectionUpdateManyWithoutCreatorNestedInputSchema)
         .optional(),
@@ -22488,11 +22842,9 @@ export const UserUncheckedUpdateWithoutRolesInputSchema: z.ZodType<Prisma.UserUn
         .optional(),
       address: z
         .union([
-          z
-            .string()
-            .refine((val) => getAddress(val), {
-              message: "is not a valid Ethereum address",
-            }),
+          z.string().refine((val) => getAddress(val), {
+            message: "is not a valid Ethereum address",
+          }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -22553,10 +22905,9 @@ export const UserUncheckedUpdateWithoutRolesInputSchema: z.ZodType<Prisma.UserUn
       updated_at: z
         .union([
           z.coerce.date(),
-          z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
+          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
-        .optional()
-        .nullable(),
+        .optional(),
       collections: z
         .lazy(
           () => CollectionUncheckedUpdateManyWithoutCreatorNestedInputSchema
@@ -22588,11 +22939,9 @@ export const UserUncheckedUpdateManyWithoutRolesInputSchema: z.ZodType<Prisma.Us
         .optional(),
       address: z
         .union([
-          z
-            .string()
-            .refine((val) => getAddress(val), {
-              message: "is not a valid Ethereum address",
-            }),
+          z.string().refine((val) => getAddress(val), {
+            message: "is not a valid Ethereum address",
+          }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -22653,10 +23002,9 @@ export const UserUncheckedUpdateManyWithoutRolesInputSchema: z.ZodType<Prisma.Us
       updated_at: z
         .union([
           z.coerce.date(),
-          z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
+          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
-        .optional()
-        .nullable(),
+        .optional(),
     })
     .strict();
 

@@ -12,12 +12,13 @@ create-migration:
 	npx prettier --write ./types/generated/index.ts
 
 dump-mongo-everything:
-	./scripts/echo.sh
 	mongodump --forceTableScan --uri $$MONGO_URI
 
 dump-mongo-users:
-	./scripts/echo.sh
 	mongodump --collection=Users --forceTableScan --uri $$MONGO_URI
+
+dump-mongo-collections:
+	mongodump --collection=Collections --forceTableScan --uri $$MONGO_URI
 
 migrate-prod:
 	for file in ./prisma/migrations/*/*.sql; do \
@@ -36,23 +37,31 @@ wipe-local:
 seed-prod:
 	turso db shell --location iad $$REMOTE_DB_NAME < ./dump.sql
 
+seed-prod-rust:
+	npx ts-node ./scripts/migrate.ts --source=$(source) --write=prod
+
 reset-local:
 	$(MAKE) wipe-local
 	$(MAKE) create-migration
 
-seed-local-users:
-	npx ts-node ./scripts/migrate.ts --source=$(source)
+seed-local-tables:
+	npx ts-node ./scripts/migrate.ts --source=$(source) --write=local
+
+build-rust-binary:
+	cargo build --release --manifest-path ./scripts/rust/Cargo.toml
 
 migrate-users-to-prod:
 	./scripts/echo.sh
 	@if [ "$(source)" = "file" ]; then \
-		$(MAKE) dump-mongo-users; \
+	    $(MAKE) dump-mongo-users; \
+	    $(MAKE) dump-mongo-collections; \
 	fi
-	$(MAKE) reset-local
-	$(MAKE) seed-local-users
-	$(MAKE) dump-local
-	$(MAKE) wipe-prod
-	$(MAKE) seed-prod
+	$(MAKE) reset-local; \
+	$(MAKE) build-rust-binary; \
+	$(MAKE) seed-local-tables; \
+	$(MAKE) dump-local; \
+	$(MAKE) wipe-prod; \
+	$(MAKE) seed-prod; \
 
 dump-local:
 	sqlite3 ./prisma/dev.db '.output ./dump.sql' '.dump'

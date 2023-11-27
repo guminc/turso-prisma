@@ -1,54 +1,48 @@
 -- CreateTable
 CREATE TABLE "Collection" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "name" TEXT NOT NULL,
-    "max_items" INTEGER NOT NULL,
-    "max_batch_size" INTEGER NOT NULL,
-    "symbol" TEXT NOT NULL,
-    "creator_address" TEXT NOT NULL,
-    "is_hidden" BOOLEAN NOT NULL,
-    "sort_order" INTEGER NOT NULL,
-    "is_mint_active" BOOLEAN NOT NULL,
-    "is_archetype" BOOLEAN NOT NULL,
-    "is_pending" BOOLEAN NOT NULL,
-    "discounts" TEXT NOT NULL,
-    "owner_alt_payout" TEXT NOT NULL,
-    "super_affiliate_payout" TEXT NOT NULL,
-    "contract_version" INTEGER NOT NULL,
-    "slug" TEXT NOT NULL,
-    "mint_info" TEXT NOT NULL,
-    "socials" TEXT NOT NULL,
-    "token_address" TEXT NOT NULL,
-    "token_address_lowercase" TEXT NOT NULL,
-    "trait_counts" TEXT NOT NULL,
-    "avatar_uri" TEXT NOT NULL,
-    "banner_uri" TEXT NOT NULL,
-    "description" TEXT NOT NULL,
-    "hero_uri" TEXT NOT NULL,
-    "twitter" TEXT NOT NULL,
-    "website" TEXT NOT NULL,
-    "discord" TEXT NOT NULL,
-    "num_items" INTEGER NOT NULL,
-    "num_owners" INTEGER NOT NULL,
-    "last_refreshed" DATETIME NOT NULL,
-    "user_id" TEXT NOT NULL,
+    "name" TEXT,
+    "max_items" INTEGER,
+    "symbol" TEXT,
+    "creator_address" TEXT,
+    "is_hidden" BOOLEAN,
+    "sort_order" INTEGER,
+    "is_mint_active" BOOLEAN,
+    "is_archetype" BOOLEAN,
+    "is_pending" BOOLEAN,
+    "discounts" TEXT,
+    "owner_alt_payout" TEXT,
+    "super_affiliate_payout" TEXT,
+    "contract_version" INTEGER,
+    "slug" TEXT,
+    "mint_info" TEXT,
+    "socials" TEXT,
+    "token_address" TEXT,
+    "trait_counts" TEXT,
+    "avatar_uri" TEXT,
+    "banner_uri" TEXT,
+    "description" TEXT,
+    "hero_uri" TEXT,
+    "twitter" TEXT,
+    "website" TEXT,
+    "discord" TEXT,
+    "num_items" INTEGER,
+    "num_owners" INTEGER,
+    "last_refreshed" DATETIME,
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" DATETIME NOT NULL,
-    CONSTRAINT "Collection_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    CONSTRAINT "Collection_creator_address_fkey" FOREIGN KEY ("creator_address") REFERENCES "User" ("address") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
 CREATE TABLE "Nft" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "token_address" TEXT NOT NULL,
-    "token_address_lowercase" TEXT NOT NULL,
     "token_id" TEXT NOT NULL,
     "attributes" TEXT NOT NULL,
     "block_minted" INTEGER NOT NULL,
     "contract_type" TEXT NOT NULL,
     "description" TEXT NOT NULL,
-    "dna" TEXT NOT NULL,
-    "edition" INTEGER NOT NULL,
     "image" TEXT NOT NULL,
     "image_url" TEXT NOT NULL,
     "metadata" TEXT NOT NULL,
@@ -117,7 +111,7 @@ CREATE TABLE "User" (
     "status" TEXT NOT NULL DEFAULT 'pending',
     "email" TEXT,
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME
+    "updated_at" DATETIME NOT NULL
 );
 
 -- CreateTable
@@ -252,9 +246,6 @@ CREATE TABLE "_RoleToUser" (
     CONSTRAINT "_RoleToUser_A_fkey" FOREIGN KEY ("A") REFERENCES "Role" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT "_RoleToUser_B_fkey" FOREIGN KEY ("B") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
-
--- CreateIndex
-CREATE UNIQUE INDEX "Collection_user_id_key" ON "Collection"("user_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "MintData_collection_id_key" ON "MintData"("collection_id");
