@@ -56,19 +56,12 @@ migrate-users-to-prod:
 	    $(MAKE) dump-mongo-users; \
 	    $(MAKE) dump-mongo-collections; \
 	fi
-	@if [ "$(write)" = "prod" ]; then \
-	    echo "use local method"; \
-	    # $(MAKE) build-rust-binary; \
-	    # $(MAKE) wipe-prod; \
-	    # $(MAKE) migrate-prod; \
-	    # $(MAKE) seed-prod-rust; \
-	else \
-	    $(MAKE) reset-local; \
-	    $(MAKE) seed-local-tables; \
-	    $(MAKE) dump-local; \
-	    $(MAKE) wipe-prod; \
-	    $(MAKE) seed-prod; \
-	fi
+	$(MAKE) reset-local; \
+	$(MAKE) build-rust-binary; \
+	$(MAKE) seed-local-tables; \
+	$(MAKE) dump-local; \
+	$(MAKE) wipe-prod; \
+	$(MAKE) seed-prod; \
 
 dump-local:
 	sqlite3 ./prisma/dev.db '.output ./dump.sql' '.dump'
