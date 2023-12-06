@@ -14,6 +14,7 @@ CREATE TABLE "Collection" (
     "owner_alt_payout" TEXT,
     "super_affiliate_payout" TEXT,
     "contract_version" INTEGER,
+    "contract_type" TEXT,
     "slug" TEXT,
     "mint_info" TEXT,
     "socials" TEXT,
@@ -22,6 +23,8 @@ CREATE TABLE "Collection" (
     "avatar_uri" TEXT,
     "banner_uri" TEXT,
     "description" TEXT,
+    "royalties" INTEGER,
+    "royalties_address" TEXT,
     "hero_uri" TEXT,
     "twitter" TEXT,
     "website" TEXT,
@@ -32,6 +35,15 @@ CREATE TABLE "Collection" (
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" DATETIME NOT NULL,
     CONSTRAINT "Collection_creator_address_fkey" FOREIGN KEY ("creator_address") REFERENCES "User" ("address") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "MaxItem1155" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "token_id" INTEGER NOT NULL,
+    "max_supply" INTEGER NOT NULL,
+    "collection_id" TEXT NOT NULL,
+    CONSTRAINT "MaxItem1155_collection_id_fkey" FOREIGN KEY ("collection_id") REFERENCES "Collection" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -62,25 +74,25 @@ CREATE TABLE "Nft" (
 -- CreateTable
 CREATE TABLE "MintData" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "block_last_mint" INTEGER NOT NULL,
-    "date_last_mint" DATETIME NOT NULL,
-    "mints_last_1h" INTEGER NOT NULL,
-    "mints_last_12h" INTEGER NOT NULL,
-    "mints_last_24h" INTEGER NOT NULL,
-    "mints_last_7d" INTEGER NOT NULL,
-    "mints_last_1m" INTEGER NOT NULL,
-    "mints_last_6m" INTEGER NOT NULL,
-    "floor_price_raw" TEXT NOT NULL,
-    "floor_price_decimal" REAL NOT NULL,
-    "all_time_raw" TEXT NOT NULL,
-    "all_time_decimal" REAL NOT NULL,
-    "last_12h_decimal" REAL NOT NULL,
-    "last_1h_decimal" REAL NOT NULL,
-    "last_24h_decimal" REAL NOT NULL,
-    "last_7d_decimal" REAL NOT NULL,
-    "last_1m_decimal" REAL NOT NULL,
-    "last_6m_decimal" REAL NOT NULL,
-    "date_last_sale" DATETIME NOT NULL,
+    "block_last_mint" INTEGER,
+    "date_last_mint" DATETIME,
+    "mints_last_1h" INTEGER,
+    "mints_last_12h" INTEGER,
+    "mints_last_24h" INTEGER,
+    "mints_last_7d" INTEGER,
+    "mints_last_1m" INTEGER,
+    "mints_last_6m" INTEGER,
+    "floor_price_raw" TEXT,
+    "floor_price_decimal" REAL,
+    "all_time_raw" TEXT,
+    "all_time_decimal" REAL,
+    "last_12h_decimal" REAL,
+    "last_1h_decimal" REAL,
+    "last_24h_decimal" REAL,
+    "last_7d_decimal" REAL,
+    "last_1m_decimal" REAL,
+    "last_6m_decimal" REAL,
+    "date_last_sale" DATETIME,
     "collection_id" TEXT NOT NULL,
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" DATETIME NOT NULL,
@@ -246,6 +258,9 @@ CREATE TABLE "_RoleToUser" (
     CONSTRAINT "_RoleToUser_A_fkey" FOREIGN KEY ("A") REFERENCES "Role" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT "_RoleToUser_B_fkey" FOREIGN KEY ("B") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "MaxItem1155_token_id_collection_id_key" ON "MaxItem1155"("token_id", "collection_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "MintData_collection_id_key" ON "MintData"("collection_id");
