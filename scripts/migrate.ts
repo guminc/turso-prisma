@@ -102,7 +102,7 @@ function cleanCollectionForSqlite(
   const parsedMintData = MintDataSchema.safeParse(mintData);
   if (!parsedMintData.success) {
     console.error({ error: parsedMintData.error });
-    throw new Error(`Invalid collection: ${parsedMintData.error}`);
+    throw new Error(`Invalid mintData: ${parsedMintData.error}`);
   }
 
   const parsedCollection = CollectionSchema.safeParse(collection);

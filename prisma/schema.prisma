@@ -62,7 +62,7 @@ model MaxItem1155 {
   id            String     @id @default(cuid())
   token_id      Int
   max_supply    Int
-  collection    Collection @relation(fields: [collection_id], references: [id])
+  collection    Collection @relation(fields: [collection_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
   collection_id String
 
   @@unique([token_id, collection_id])
