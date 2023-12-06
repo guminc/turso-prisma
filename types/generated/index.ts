@@ -373,9 +373,11 @@ export type OpenRarity = z.infer<typeof OpenRaritySchema>;
 
 export const UserSchema = z.object({
   id: z.string().cuid(),
-  address: z.string().refine((val) => getAddress(val), {
-    message: "is not a valid Ethereum address",
-  }),
+  address: z
+    .string()
+    .refine((val) => getAddress(val), {
+      message: "is not a valid Ethereum address",
+    }),
   avatar_uri: z.string().url({ message: "Invalid url" }).nullish(),
   banner_uri: z.string().url({ message: "Invalid url" }).nullish(),
   username: z.string().max(64, { message: "too lengthy" }).nullish(),
@@ -3773,17 +3775,21 @@ export const UserWhereUniqueInputSchema: z.ZodType<Prisma.UserWhereUniqueInput> 
     .union([
       z.object({
         id: z.string().cuid(),
-        address: z.string().refine((val) => getAddress(val), {
-          message: "is not a valid Ethereum address",
-        }),
+        address: z
+          .string()
+          .refine((val) => getAddress(val), {
+            message: "is not a valid Ethereum address",
+          }),
       }),
       z.object({
         id: z.string().cuid(),
       }),
       z.object({
-        address: z.string().refine((val) => getAddress(val), {
-          message: "is not a valid Ethereum address",
-        }),
+        address: z
+          .string()
+          .refine((val) => getAddress(val), {
+            message: "is not a valid Ethereum address",
+          }),
       }),
     ])
     .and(
@@ -8716,9 +8722,11 @@ export const OpenRarityUncheckedUpdateManyInputSchema: z.ZodType<Prisma.OpenRari
 export const UserCreateInputSchema: z.ZodType<Prisma.UserCreateInput> = z
   .object({
     id: z.string().cuid().optional(),
-    address: z.string().refine((val) => getAddress(val), {
-      message: "is not a valid Ethereum address",
-    }),
+    address: z
+      .string()
+      .refine((val) => getAddress(val), {
+        message: "is not a valid Ethereum address",
+      }),
     avatar_uri: z
       .string()
       .url({ message: "Invalid url" })
@@ -8767,9 +8775,11 @@ export const UserUncheckedCreateInputSchema: z.ZodType<Prisma.UserUncheckedCreat
   z
     .object({
       id: z.string().cuid().optional(),
-      address: z.string().refine((val) => getAddress(val), {
-        message: "is not a valid Ethereum address",
-      }),
+      address: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        }),
       avatar_uri: z
         .string()
         .url({ message: "Invalid url" })
@@ -8828,9 +8838,11 @@ export const UserUpdateInputSchema: z.ZodType<Prisma.UserUpdateInput> = z
       .optional(),
     address: z
       .union([
-        z.string().refine((val) => getAddress(val), {
-          message: "is not a valid Ethereum address",
-        }),
+        z
+          .string()
+          .refine((val) => getAddress(val), {
+            message: "is not a valid Ethereum address",
+          }),
         z.lazy(() => StringFieldUpdateOperationsInputSchema),
       ])
       .optional(),
@@ -8921,9 +8933,11 @@ export const UserUncheckedUpdateInputSchema: z.ZodType<Prisma.UserUncheckedUpdat
         .optional(),
       address: z
         .union([
-          z.string().refine((val) => getAddress(val), {
-            message: "is not a valid Ethereum address",
-          }),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -9021,9 +9035,11 @@ export const UserUpdateManyMutationInputSchema: z.ZodType<Prisma.UserUpdateManyM
         .optional(),
       address: z
         .union([
-          z.string().refine((val) => getAddress(val), {
-            message: "is not a valid Ethereum address",
-          }),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -9101,9 +9117,11 @@ export const UserUncheckedUpdateManyInputSchema: z.ZodType<Prisma.UserUncheckedU
         .optional(),
       address: z
         .union([
-          z.string().refine((val) => getAddress(val), {
-            message: "is not a valid Ethereum address",
-          }),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -16774,9 +16792,11 @@ export const UserCreateWithoutCollectionsInputSchema: z.ZodType<Prisma.UserCreat
   z
     .object({
       id: z.string().cuid().optional(),
-      address: z.string().refine((val) => getAddress(val), {
-        message: "is not a valid Ethereum address",
-      }),
+      address: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        }),
       avatar_uri: z
         .string()
         .url({ message: "Invalid url" })
@@ -16824,9 +16844,11 @@ export const UserUncheckedCreateWithoutCollectionsInputSchema: z.ZodType<Prisma.
   z
     .object({
       id: z.string().cuid().optional(),
-      address: z.string().refine((val) => getAddress(val), {
-        message: "is not a valid Ethereum address",
-      }),
+      address: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        }),
       avatar_uri: z
         .string()
         .url({ message: "Invalid url" })
@@ -17354,9 +17376,11 @@ export const UserUpdateWithoutCollectionsInputSchema: z.ZodType<Prisma.UserUpdat
         .optional(),
       address: z
         .union([
-          z.string().refine((val) => getAddress(val), {
-            message: "is not a valid Ethereum address",
-          }),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -17449,9 +17473,11 @@ export const UserUncheckedUpdateWithoutCollectionsInputSchema: z.ZodType<Prisma.
         .optional(),
       address: z
         .union([
-          z.string().refine((val) => getAddress(val), {
-            message: "is not a valid Ethereum address",
-          }),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -20917,9 +20943,11 @@ export const UserCreateWithoutConnectionsInputSchema: z.ZodType<Prisma.UserCreat
   z
     .object({
       id: z.string().cuid().optional(),
-      address: z.string().refine((val) => getAddress(val), {
-        message: "is not a valid Ethereum address",
-      }),
+      address: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        }),
       avatar_uri: z
         .string()
         .url({ message: "Invalid url" })
@@ -20967,9 +20995,11 @@ export const UserUncheckedCreateWithoutConnectionsInputSchema: z.ZodType<Prisma.
   z
     .object({
       id: z.string().cuid().optional(),
-      address: z.string().refine((val) => getAddress(val), {
-        message: "is not a valid Ethereum address",
-      }),
+      address: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        }),
       avatar_uri: z
         .string()
         .url({ message: "Invalid url" })
@@ -21063,9 +21093,11 @@ export const UserUpdateWithoutConnectionsInputSchema: z.ZodType<Prisma.UserUpdat
         .optional(),
       address: z
         .union([
-          z.string().refine((val) => getAddress(val), {
-            message: "is not a valid Ethereum address",
-          }),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -21158,9 +21190,11 @@ export const UserUncheckedUpdateWithoutConnectionsInputSchema: z.ZodType<Prisma.
         .optional(),
       address: z
         .union([
-          z.string().refine((val) => getAddress(val), {
-            message: "is not a valid Ethereum address",
-          }),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -21248,9 +21282,11 @@ export const UserCreateWithoutPasswordInputSchema: z.ZodType<Prisma.UserCreateWi
   z
     .object({
       id: z.string().cuid().optional(),
-      address: z.string().refine((val) => getAddress(val), {
-        message: "is not a valid Ethereum address",
-      }),
+      address: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        }),
       avatar_uri: z
         .string()
         .url({ message: "Invalid url" })
@@ -21298,9 +21334,11 @@ export const UserUncheckedCreateWithoutPasswordInputSchema: z.ZodType<Prisma.Use
   z
     .object({
       id: z.string().cuid().optional(),
-      address: z.string().refine((val) => getAddress(val), {
-        message: "is not a valid Ethereum address",
-      }),
+      address: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        }),
       avatar_uri: z
         .string()
         .url({ message: "Invalid url" })
@@ -21394,9 +21432,11 @@ export const UserUpdateWithoutPasswordInputSchema: z.ZodType<Prisma.UserUpdateWi
         .optional(),
       address: z
         .union([
-          z.string().refine((val) => getAddress(val), {
-            message: "is not a valid Ethereum address",
-          }),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -21489,9 +21529,11 @@ export const UserUncheckedUpdateWithoutPasswordInputSchema: z.ZodType<Prisma.Use
         .optional(),
       address: z
         .union([
-          z.string().refine((val) => getAddress(val), {
-            message: "is not a valid Ethereum address",
-          }),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -21655,9 +21697,11 @@ export const UserCreateWithoutWalletsInputSchema: z.ZodType<Prisma.UserCreateWit
   z
     .object({
       id: z.string().cuid().optional(),
-      address: z.string().refine((val) => getAddress(val), {
-        message: "is not a valid Ethereum address",
-      }),
+      address: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        }),
       avatar_uri: z
         .string()
         .url({ message: "Invalid url" })
@@ -21705,9 +21749,11 @@ export const UserUncheckedCreateWithoutWalletsInputSchema: z.ZodType<Prisma.User
   z
     .object({
       id: z.string().cuid().optional(),
-      address: z.string().refine((val) => getAddress(val), {
-        message: "is not a valid Ethereum address",
-      }),
+      address: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        }),
       avatar_uri: z
         .string()
         .url({ message: "Invalid url" })
@@ -21879,9 +21925,11 @@ export const UserUpdateWithoutWalletsInputSchema: z.ZodType<Prisma.UserUpdateWit
         .optional(),
       address: z
         .union([
-          z.string().refine((val) => getAddress(val), {
-            message: "is not a valid Ethereum address",
-          }),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -21974,9 +22022,11 @@ export const UserUncheckedUpdateWithoutWalletsInputSchema: z.ZodType<Prisma.User
         .optional(),
       address: z
         .union([
-          z.string().refine((val) => getAddress(val), {
-            message: "is not a valid Ethereum address",
-          }),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -22225,9 +22275,11 @@ export const UserCreateWithoutSessionsInputSchema: z.ZodType<Prisma.UserCreateWi
   z
     .object({
       id: z.string().cuid().optional(),
-      address: z.string().refine((val) => getAddress(val), {
-        message: "is not a valid Ethereum address",
-      }),
+      address: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        }),
       avatar_uri: z
         .string()
         .url({ message: "Invalid url" })
@@ -22275,9 +22327,11 @@ export const UserUncheckedCreateWithoutSessionsInputSchema: z.ZodType<Prisma.Use
   z
     .object({
       id: z.string().cuid().optional(),
-      address: z.string().refine((val) => getAddress(val), {
-        message: "is not a valid Ethereum address",
-      }),
+      address: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        }),
       avatar_uri: z
         .string()
         .url({ message: "Invalid url" })
@@ -22406,9 +22460,11 @@ export const UserUpdateWithoutSessionsInputSchema: z.ZodType<Prisma.UserUpdateWi
         .optional(),
       address: z
         .union([
-          z.string().refine((val) => getAddress(val), {
-            message: "is not a valid Ethereum address",
-          }),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -22501,9 +22557,11 @@ export const UserUncheckedUpdateWithoutSessionsInputSchema: z.ZodType<Prisma.Use
         .optional(),
       address: z
         .union([
-          z.string().refine((val) => getAddress(val), {
-            message: "is not a valid Ethereum address",
-          }),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -22771,9 +22829,11 @@ export const UserCreateWithoutRolesInputSchema: z.ZodType<Prisma.UserCreateWitho
   z
     .object({
       id: z.string().cuid().optional(),
-      address: z.string().refine((val) => getAddress(val), {
-        message: "is not a valid Ethereum address",
-      }),
+      address: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        }),
       avatar_uri: z
         .string()
         .url({ message: "Invalid url" })
@@ -22821,9 +22881,11 @@ export const UserUncheckedCreateWithoutRolesInputSchema: z.ZodType<Prisma.UserUn
   z
     .object({
       id: z.string().cuid().optional(),
-      address: z.string().refine((val) => getAddress(val), {
-        message: "is not a valid Ethereum address",
-      }),
+      address: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        }),
       avatar_uri: z
         .string()
         .url({ message: "Invalid url" })
@@ -25194,9 +25256,11 @@ export const UserUpdateWithoutRolesInputSchema: z.ZodType<Prisma.UserUpdateWitho
         .optional(),
       address: z
         .union([
-          z.string().refine((val) => getAddress(val), {
-            message: "is not a valid Ethereum address",
-          }),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -25289,9 +25353,11 @@ export const UserUncheckedUpdateWithoutRolesInputSchema: z.ZodType<Prisma.UserUn
         .optional(),
       address: z
         .union([
-          z.string().refine((val) => getAddress(val), {
-            message: "is not a valid Ethereum address",
-          }),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -25386,9 +25452,11 @@ export const UserUncheckedUpdateManyWithoutRolesInputSchema: z.ZodType<Prisma.Us
         .optional(),
       address: z
         .union([
-          z.string().refine((val) => getAddress(val), {
-            message: "is not a valid Ethereum address",
-          }),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
