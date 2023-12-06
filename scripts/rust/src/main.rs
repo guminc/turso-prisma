@@ -4,6 +4,13 @@ use std::env;
 use std::fs;
 use url;
 
+fn split_sql_commands(sql: &str) -> Vec<String> {
+    sql.split("INSERT INTO")
+        .filter(|cmd| !cmd.trim().is_empty())
+        .map(|cmd| format!("INSERT INTO {}", cmd))
+        .collect()
+}
+
 #[tokio::main]
 async fn main() {
     dotenv().ok();
@@ -37,10 +44,9 @@ async fn main() {
         .expect("No batch file path provided");
     let batch_commands = fs::read_to_string(batch_file_path).expect("Failed to read batch file");
 
-    let commands: Vec<&str> = batch_commands.split(';').filter(|cmd| !cmd.is_empty()).collect();
-
+    let commands = split_sql_commands(&batch_commands);
     println!("Sending SQL batch");
-    match client.batch(&commands).await {
+    match client.batch(commands).await {
         Ok(_) => println!("Batch executed successfully"),
         Err(e) => eprintln!("Error executing batch: {}", e),
     }

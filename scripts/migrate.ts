@@ -13,6 +13,10 @@ import { PrismaClient } from "@prisma/client";
 import {
   Collection,
   CollectionSchema,
+  MaxItem1155,
+  MaxItem1155Schema,
+  MintData,
+  MintDataSchema,
   User,
   UserSchema,
 } from "../types/generated";
@@ -27,23 +31,30 @@ const localClient = createClient({
 const adapter = new PrismaLibSQL(localClient);
 const prisma = new PrismaClient({ adapter });
 
-function cleanCollectionForSqlite(collectionMongo: any): Collection {
-  // revist forced empty and stringify fields
-  const input = {
+function cleanCollectionForSqlite(
+  collectionMongo: any
+): [Collection, MintData, MaxItem1155[]] {
+  // revist stringify fields
+  const collection = {
     ...collectionMongo,
     id: cuid(),
-    max_items: 0, //collectionMongo.max_items || 0,
+    max_items: null,
+    is_hidden: collectionMongo.isHidden,
+    owner_alt_payout: collectionMongo.ownerAltPayout,
+    super_affiliate_payout: collectionMongo.superAffiliatePayout,
     creator_address: ethers.isAddress(collectionMongo.creator)
       ? ethers.getAddress(collectionMongo.creator)
       : null,
-    discounts: JSON.stringify(collectionMongo.discounts) || "", // JSON serialized as a string
-    mint_info: JSON.stringify(collectionMongo.mint_info) || "", // JSON serialized as a string
-    socials: JSON.stringify(collectionMongo.socials) || "", // JSON serialized as a string
     token_address: ethers.isAddress(collectionMongo.token_address)
       ? ethers.getAddress(collectionMongo.token_address)
       : null,
-    trait_counts: "", //JSON.stringify(collectionMongo.trait_counts) || '', // JSON serialized as a string
-    description: "",
+    royalty_address: ethers.isAddress(collectionMongo.royalty_address)
+      ? ethers.getAddress(collectionMongo.royalty_address)
+      : null,
+    discounts: JSON.stringify(collectionMongo.discounts), // JSON serialized as a string
+    mint_info: JSON.stringify(collectionMongo.mint_info), // JSON serialized as a string
+    socials: JSON.stringify(collectionMongo.socials), // JSON serialized as a string
+    trait_counts: JSON.stringify(collectionMongo.trait_counts), // JSON serialized as a string
     last_refreshed: collectionMongo.last_refreshed
       ? new Date(collectionMongo.last_refreshed)
       : null,
@@ -53,14 +64,54 @@ function cleanCollectionForSqlite(collectionMongo: any): Collection {
     updated_at: new Date(),
   };
 
-  const result = CollectionSchema.safeParse(input);
+  let maxItems1155: MaxItem1155[] = [];
+  if (Array.isArray(collectionMongo.max_items)) {
+    maxItems1155 = collectionMongo.max_items.map(
+      (max_supply: number, index: number) => {
+        const maxItem1155Data = {
+          id: cuid(),
+          token_id: index + 1,
+          max_supply: max_supply,
+          collection_id: collection.id,
+        };
 
-  if (!result.success) {
-    console.error({ error: result.error });
-    throw new Error(`Invalid collection: ${result.error}`);
+        const parsedMaxItem1155 = MaxItem1155Schema.safeParse(maxItem1155Data);
+        if (!parsedMaxItem1155.success) {
+          console.error({ error: parsedMaxItem1155.error });
+          throw new Error(`Invalid MaxItem1155: ${parsedMaxItem1155.error}`);
+        }
+
+        return parsedMaxItem1155.data;
+      }
+    );
+  } else {
+    collection.max_items = collectionMongo.max_items || null;
   }
 
-  return result.data;
+  const mintData = {
+    ...collectionMongo.mint_data,
+    ...collectionMongo.mint_sales,
+    id: cuid(),
+    collection_id: collection.id,
+    floor_price_raw: collectionMongo.floor?.floorPriceRaw,
+    floor_price_decimal: collectionMongo.floor?.floorPriceDecimal,
+    created_at: new Date(),
+    updated_at: new Date(),
+  };
+
+  const parsedMintData = MintDataSchema.safeParse(mintData);
+  if (!parsedMintData.success) {
+    console.error({ error: parsedMintData.error });
+    throw new Error(`Invalid collection: ${parsedMintData.error}`);
+  }
+
+  const parsedCollection = CollectionSchema.safeParse(collection);
+  if (!parsedCollection.success) {
+    console.error({ error: parsedCollection.error });
+    throw new Error(`Invalid collection: ${parsedCollection.error}`);
+  }
+
+  return [parsedCollection.data, parsedMintData.data, maxItems1155];
 }
 
 function cleanUserForSqlite(userMongo: any): User {
@@ -123,29 +174,39 @@ async function main() {
     batchStatements.length = 0;
 
     const cleanedCollections: Collection[] = [];
+    const cleanedMaxItem1155s: MaxItem1155[] = [];
+    const cleanedMintDatas: MintData[] = [];
+
     for (const collection of collectionsMongo) {
-      const cleaned = cleanCollectionForSqlite(collection);
-      if (cleaned != null && cleaned.creator_address) {
+      const [cleanedCollection, cleanedMintData, cleanedMaxItem1155] =
+        cleanCollectionForSqlite(collection);
+      if (cleanedCollection != null && cleanedCollection.creator_address) {
         const user = await prisma.user.findFirst({
-          where: { address: cleaned.creator_address },
+          where: { address: cleanedCollection.creator_address },
         });
         if (!user) {
           console.log(
             "User",
-            cleaned.creator_address,
+            cleanedCollection.creator_address,
             "does not exist, creating User ..."
           );
           await prisma.user.create({
             data: cleanUserForSqlite({
-              address: cleaned.creator_address,
+              address: cleanedCollection.creator_address,
             }),
           });
         }
       }
-      cleanedCollections.push(cleaned);
+      cleanedCollections.push(cleanedCollection);
+      cleanedMintDatas.push(cleanedMintData);
+      cleanedMaxItem1155s.push(...cleanedMaxItem1155);
     }
     batchStatements.push(
       getBatchSqlStatements(cleanedCollections, "Collection")
+    );
+    batchStatements.push(getBatchSqlStatements(cleanedMintDatas, "MintData"));
+    batchStatements.push(
+      getBatchSqlStatements(cleanedMaxItem1155s, "MaxItem1155")
     );
 
     await writeToDb(batchStatements, write);
