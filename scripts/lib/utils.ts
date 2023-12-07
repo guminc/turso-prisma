@@ -5,6 +5,7 @@ import { spawn } from "child_process";
 
 import { BSON } from "bson";
 import { MongoClient } from "mongodb";
+import { executeBatch } from "../rust/index.js";
 
 export function parseArgs() {
   const args = process.argv.slice(2); // Remove the first two default arguments
@@ -136,30 +137,12 @@ export async function writeWithRustClient(
   batchStatements: string[],
   db: string
 ) {
-  let arg = db == "local" ? "--local-db" : "";
+  let useLocalDb = db == "local";
   for (let i = 0; i < batchStatements.length; i++) {
     const tempFilePath = path.join(os.tmpdir(), "batch.sql");
+
     fs.writeFileSync(tempFilePath, batchStatements[i]);
-    await new Promise((resolve, reject) => {
-      const rustProcess = spawn("./scripts/rust/target/release/upload", [
-        tempFilePath,
-        arg,
-      ]);
-
-      rustProcess.stdout.on("data", (data) => {
-        console.log(`stdout: ${data}`);
-      });
-
-      rustProcess.stderr.on("data", (data) => {
-        console.error(`stderr: ${data}`);
-        reject(new Error(`Rust process error: ${data}`));
-      });
-
-      rustProcess.on("close", (code) => {
-        console.log(`Rust process exited with code ${code}`);
-        fs.unlinkSync(tempFilePath);
-        resolve(code);
-      });
-    });
+    await executeBatch(tempFilePath, useLocalDb);
+    fs.unlinkSync(tempFilePath);
   }
 }

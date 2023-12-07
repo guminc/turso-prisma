@@ -6,41 +6,51 @@ use std::env;
 use std::fs;
 use url;
 
+fn split_sql_commands(sql: &str) -> Vec<String> {
+    sql.split("INSERT INTO")
+        .filter(|cmd| !cmd.trim().is_empty())
+        .map(|cmd| format!("INSERT INTO {}", cmd))
+        .collect()
+}
+
 #[napi]
 async fn execute_batch(batch_file_path: String, use_local_db: bool) -> Result<u32> {
     dotenv().ok();
 
-    let db_url = if use_local_db {
-        let current_dir = env::current_dir()
-            .map_err(|e| Error::new(Status::GenericFailure, format!("Failed to get current directory: {}", e)))?;
+    let (db_url, auth_token);
+    if use_local_db {
+        let current_dir = env::current_dir().expect("Failed to get current directory");
         let db_path = current_dir.join("prisma/dev.db");
-        format!("file:////{}", db_path.to_str().ok_or_else(|| Error::new(Status::GenericFailure, "Failed to convert path to string".to_owned()))?)
+        db_url = format!(
+            "file:////{}",
+            db_path.to_str().expect("Failed to convert path to string")
+        );
+        auth_token = None;
+        println!("Using local db: {}", db_url);
     } else {
-        env::var("TURSO_DATABASE_URL")
-            .map_err(|_| Error::new(Status::GenericFailure, "TURSO_DATABASE_URL is not set in .env".to_owned()))?
-    };
+        db_url = env::var("TURSO_DATABASE_URL").expect("TURSO_DATABASE_URL is not set in .env");
+        auth_token =
+            Some(env::var("TURSO_AUTH_TOKEN").expect("TURSO_AUTH_TOKEN is not set in .env"));
+        println!("Using production db: {}", db_url);
+    }
 
-    let auth_token = if use_local_db {
-        None
-    } else {
-        Some(env::var("TURSO_AUTH_TOKEN")
-            .map_err(|_| Error::new(Status::GenericFailure, "TURSO_AUTH_TOKEN is not set in .env".to_owned()))?)
-    };
-
-    let client = libsql_client::Client::from_config(libsql_client::Config {
-        url: url::Url::parse(&db_url).map_err(|_| Error::new(Status::GenericFailure, "Failed to parse URL".to_owned()))?,
+    let client = libsql_client::SyncClient::from_config(libsql_client::Config {
+        url: url::Url::parse(&db_url).expect("Failed to parse URL"),
         auth_token,
     })
-    .await
-    .map_err(|_| Error::new(Status::GenericFailure, "Failed to create client".to_owned()))?;
+    .expect("Failed to create client");
 
-    let batch_commands = fs::read_to_string(&batch_file_path)
-        .map_err(|e| Error::new(Status::GenericFailure, format!("Failed to read batch file: {}", e)))?;
+    let batch_commands = fs::read_to_string(batch_file_path).expect("Failed to read batch file");
+    let commands = split_sql_commands(&batch_commands);
 
-    let commands: Vec<&str> = batch_commands.split(';').filter(|cmd| !cmd.is_empty()).collect();
+    println!("Sending SQL batch");
 
-    client.batch(&commands).await
-        .map_err(|e| Error::new(Status::GenericFailure, format!("Error executing batch: {}", e)))?;
+    client.batch(commands).map_err(|e| {
+        Error::new(
+            Status::GenericFailure,
+            format!("Error executing batch: {}", e),
+        )
+    })?;
 
     Ok(0)
 }
