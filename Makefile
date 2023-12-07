@@ -48,7 +48,7 @@ seed-local-tables:
 	npx ts-node ./scripts/migrate.ts --source=$(source) --write=local
 
 build-rust-binary:
-	cargo build --release --manifest-path ./scripts/rust/Cargo.toml
+	cd ./scripts/rust/ && npx napi build --platform --release
 
 migrate-users-to-prod:
 	./scripts/echo.sh

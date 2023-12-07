@@ -1,14 +1,14 @@
 {
-    "name": "your-rust-addon",
-    "version": "1.0.0",
-    "main": "index.js",
-    "scripts": {
-        "build": "napi build --release"
-    },
-    "author": "",
-    "license": "ISC",
-    "dependencies": {
-        "napi": "^2.0.0",
-        "napi-build": "^1.0.0"
-    }
+  "name": "upload",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "napi build --platform --release --pipe \"prettier -w\""
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "napi": "^2.0.0",
+    "napi-build": "^1.0.0"
+  }
 }
