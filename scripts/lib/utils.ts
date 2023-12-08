@@ -6,6 +6,7 @@ import { spawn } from "child_process";
 import { BSON } from "bson";
 import { MongoClient } from "mongodb";
 import { executeBatch } from "../rust/index.js";
+import { WriteOption } from "../migrate.js";
 
 export function parseArgs() {
   const args = process.argv.slice(2); // Remove the first two default arguments
@@ -135,14 +136,16 @@ export function getBatchSqlStatements(
 
 export async function writeWithRustClient(
   batchStatements: string[],
-  db: string
+  db: WriteOption
 ) {
   let useLocalDb = db == "local";
   for (let i = 0; i < batchStatements.length; i++) {
     const tempFilePath = path.join(os.tmpdir(), "batch.sql");
 
+    console.log("\nWriting batch to temp file: ", tempFilePath);
+
     fs.writeFileSync(tempFilePath, batchStatements[i]);
     await executeBatch(tempFilePath, useLocalDb);
-    fs.unlinkSync(tempFilePath);
+    // fs.unlinkSync(tempFilePath);
   }
 }

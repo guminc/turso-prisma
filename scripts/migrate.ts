@@ -84,7 +84,13 @@ function cleanUserForSqlite(userMongo: any): User {
   return result.data;
 }
 
-async function writeToDb(batchStatements: string[], write: string) {
+const WRITE_OPTION = { prod: "prod", local: "local" } as const;
+export type WriteOption = keyof typeof WRITE_OPTION;
+
+const SOURCE_OPTION = { file: "file", network: "network" } as const;
+export type SourceOption = keyof typeof SOURCE_OPTION;
+
+async function writeToDb(batchStatements: string[], write: WriteOption) {
   if (write == "prod") {
     console.time("Inserting docs into prod with Rust");
     await writeWithRustClient(batchStatements, "prod");
@@ -100,8 +106,8 @@ async function main() {
   console.time("Total Migration Duration");
 
   const args = parseArgs();
-  const source = args.source === "file" ? "file" : "network";
-  const write = args.write === "prod" ? "prod" : "local";
+  const source: SourceOption = args.source === "file" ? "file" : "network";
+  const write: WriteOption = args.write === "prod" ? "prod" : "local";
 
   console.log("\nInitiating migration from:", source);
 
@@ -116,6 +122,7 @@ async function main() {
     console.timeEnd(`Fetching tables from ${source}`);
 
     const batchStatements: string[] = [];
+
     const cleanedUsers = usersMongo.map((user) => cleanUserForSqlite(user));
     batchStatements.push(getBatchSqlStatements(cleanedUsers, "User"));
 
