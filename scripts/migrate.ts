@@ -21,6 +21,8 @@ import {
   NftSchema,
   OpenRarity,
   OpenRaritySchema,
+  NftOwner1155,
+  NftOwner1155Schema,
   User,
   UserSchema,
 } from "../types/generated";
@@ -121,18 +123,17 @@ function cleanCollectionForSqlite(
 function cleanNftForSqlite(
   nftMongo: any,
   collections: Collection[]
-): [Nft | null, OpenRarity | null] {
+): [Nft | null, OpenRarity | null, NftOwner1155[]] {
   let token_address: string;
   let foundCollection: any;
   let collection_id: string;
 
   let nftResult: Nft | null = null;
   let openRarityResult: OpenRarity | null = null;
+  let nftOwner1155Result: NftOwner1155[] = [];
 
   try {
-    token_address = ethers.isAddress(nftMongo.token_address)
-      ? ethers.getAddress(nftMongo.token_address)
-      : ethers.getAddress(nftMongo.token_address_lowercase);
+    token_address = ethers.getAddress(nftMongo.token_address);
     foundCollection = collections.find(
       (collection) => collection?.token_address == token_address
     );
@@ -141,7 +142,7 @@ function cleanNftForSqlite(
     console.log(nftMongo.token_address, nftMongo.token_address_lowercase);
     console.log(nftMongo);
     console.log(foundCollection);
-    return [null, null];
+    return [null, null, []];
   }
 
   const nft = {
@@ -150,6 +151,7 @@ function cleanNftForSqlite(
     name: nftMongo.name ? String(nftMongo.name) : null,
     collection_id: collection_id,
     token_address: token_address,
+    owner_of: nftMongo.owner_of ? ethers.getAddress(nftMongo.owner_of) : null,
     token_id: Number(nftMongo.token_id),
     attributes: JSON.stringify(nftMongo.attributes), // JSON serialized as a string
     metadata: JSON.stringify(nftMongo.metadata), // JSON serialized as a string
@@ -170,7 +172,7 @@ function cleanNftForSqlite(
     const openRarityRaw = {
       ...nftMongo.open_rarity,
       id: cuid(),
-      nft_id: nft.id,
+      nft_id: nftResult.id,
       created_at: new Date(),
       updated_at: new Date(),
     };
@@ -183,7 +185,25 @@ function cleanNftForSqlite(
     openRarityResult = parsedOpenRarity.data;
   }
 
-  return [nftResult, openRarityResult];
+  if (nftMongo.owners) {
+    for (const [key, value] of Object.entries(nftMongo.owners)) {
+      const nftOwner1155Raw = {
+        id: cuid(),
+        nft_id: nftResult.id,
+        owner_of: ethers.getAddress(key),
+        quantity: value,
+      };
+
+      const parsedNftOwner1155 = NftOwner1155Schema.safeParse(nftOwner1155Raw);
+      if (!parsedNftOwner1155.success) {
+        console.error({ error: parsedNftOwner1155.error });
+        throw new Error(`Invalid nft owner 1155: ${parsedNftOwner1155.error}`);
+      }
+      nftOwner1155Result.push(parsedNftOwner1155.data);
+    }
+  }
+
+  return [nftResult, openRarityResult, nftOwner1155Result];
 }
 
 function cleanUserForSqlite(userMongo: any): User {
@@ -293,18 +313,20 @@ async function main() {
 
     const cleanedNfts: Nft[] = [];
     const cleanedOpenRarities: OpenRarity[] = [];
+    const cleanedNftOwner1155s: NftOwner1155[] = [];
 
     while (nftsMongo.length > 0) {
       const nft = nftsMongo.pop(); // Removes element for memory
-      const [cleanedNft, cleanedOpenrarity] = cleanNftForSqlite(
-        nft,
-        cleanedCollections
-      );
+      const [cleanedNft, cleanedOpenrarity, cleanedNftOwner1155] =
+        cleanNftForSqlite(nft, cleanedCollections);
       if (cleanedNft) {
         cleanedNfts.push(cleanedNft);
       }
       if (cleanedOpenrarity) {
         cleanedOpenRarities.push(cleanedOpenrarity);
+      }
+      if (cleanedNftOwner1155.length) {
+        cleanedNftOwner1155s.push(...cleanedNftOwner1155);
       }
     }
 
@@ -324,6 +346,11 @@ async function main() {
       saveBatchSqlStatements(cleanedOpenRarities, "OpenRarity")
     );
     cleanedOpenRarities.length = 0;
+
+    batchStatementPaths.push(
+      saveBatchSqlStatements(cleanedNftOwner1155s, "NftOwner1155")
+    );
+    cleanedNftOwner1155s.length = 0;
 
     // force garbage collector
     if (typeof global !== "undefined" && typeof global.gc === "function") {

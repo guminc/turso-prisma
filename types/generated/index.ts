@@ -42,6 +42,7 @@ export const CollectionScalarFieldEnumSchema = z.enum([
   "twitter",
   "website",
   "discord",
+  "network",
   "num_items",
   "num_owners",
   "last_refreshed",
@@ -73,9 +74,18 @@ export const NftScalarFieldEnumSchema = z.enum([
   "old_token_uri",
   "owner_of",
   "token_uri",
+  "log_index",
+  "transaction_index",
   "collection_id",
   "created_at",
   "updated_at",
+]);
+
+export const NftOwner1155ScalarFieldEnumSchema = z.enum([
+  "id",
+  "owner_of",
+  "quantity",
+  "nft_id",
 ]);
 
 export const MintDataScalarFieldEnumSchema = z.enum([
@@ -267,6 +277,7 @@ export const CollectionSchema = z.object({
   twitter: z.string().nullish(),
   website: z.string().nullish(),
   discord: z.string().nullish(),
+  network: z.string().nullish(),
   num_items: z.number().int().nullish(),
   num_owners: z.number().int().nullish(),
   last_refreshed: z.coerce.date().nullish(),
@@ -310,12 +321,27 @@ export const NftSchema = z.object({
   old_token_uri: z.string().nullish(),
   owner_of: z.string().nullish(),
   token_uri: z.string().nullish(),
+  log_index: z.number().int().nullish(),
+  transaction_index: z.number().int().nullish(),
   collection_id: z.string(),
   created_at: z.coerce.date(),
   updated_at: z.coerce.date(),
 });
 
 export type Nft = z.infer<typeof NftSchema>;
+
+/////////////////////////////////////////
+// NFT OWNER 1155 SCHEMA
+/////////////////////////////////////////
+
+export const NftOwner1155Schema = z.object({
+  id: z.string().cuid(),
+  owner_of: z.string(),
+  quantity: z.number().int(),
+  nft_id: z.string(),
+});
+
+export type NftOwner1155 = z.infer<typeof NftOwner1155Schema>;
 
 /////////////////////////////////////////
 // MINT DATA SCHEMA
@@ -636,6 +662,7 @@ export const CollectionSelectSchema: z.ZodType<Prisma.CollectionSelect> = z
     twitter: z.boolean().optional(),
     website: z.boolean().optional(),
     discord: z.boolean().optional(),
+    network: z.boolean().optional(),
     num_items: z.boolean().optional(),
     num_owners: z.boolean().optional(),
     last_refreshed: z.boolean().optional(),
@@ -695,8 +722,14 @@ export const NftIncludeSchema: z.ZodType<Prisma.NftInclude> = z
     open_rarity: z
       .union([z.boolean(), z.lazy(() => OpenRarityArgsSchema)])
       .optional(),
+    nft_owner_1155: z
+      .union([z.boolean(), z.lazy(() => NftOwner1155FindManyArgsSchema)])
+      .optional(),
     collection: z
       .union([z.boolean(), z.lazy(() => CollectionArgsSchema)])
+      .optional(),
+    _count: z
+      .union([z.boolean(), z.lazy(() => NftCountOutputTypeArgsSchema)])
       .optional(),
   })
   .strict();
@@ -707,6 +740,20 @@ export const NftArgsSchema: z.ZodType<Prisma.NftDefaultArgs> = z
     include: z.lazy(() => NftIncludeSchema).optional(),
   })
   .strict();
+
+export const NftCountOutputTypeArgsSchema: z.ZodType<Prisma.NftCountOutputTypeDefaultArgs> =
+  z
+    .object({
+      select: z.lazy(() => NftCountOutputTypeSelectSchema).nullish(),
+    })
+    .strict();
+
+export const NftCountOutputTypeSelectSchema: z.ZodType<Prisma.NftCountOutputTypeSelect> =
+  z
+    .object({
+      nft_owner_1155: z.boolean().optional(),
+    })
+    .strict();
 
 export const NftSelectSchema: z.ZodType<Prisma.NftSelect> = z
   .object({
@@ -726,15 +773,51 @@ export const NftSelectSchema: z.ZodType<Prisma.NftSelect> = z
     old_token_uri: z.boolean().optional(),
     owner_of: z.boolean().optional(),
     token_uri: z.boolean().optional(),
+    log_index: z.boolean().optional(),
+    transaction_index: z.boolean().optional(),
     collection_id: z.boolean().optional(),
     created_at: z.boolean().optional(),
     updated_at: z.boolean().optional(),
     open_rarity: z
       .union([z.boolean(), z.lazy(() => OpenRarityArgsSchema)])
       .optional(),
+    nft_owner_1155: z
+      .union([z.boolean(), z.lazy(() => NftOwner1155FindManyArgsSchema)])
+      .optional(),
     collection: z
       .union([z.boolean(), z.lazy(() => CollectionArgsSchema)])
       .optional(),
+    _count: z
+      .union([z.boolean(), z.lazy(() => NftCountOutputTypeArgsSchema)])
+      .optional(),
+  })
+  .strict();
+
+// NFT OWNER 1155
+//------------------------------------------------------
+
+export const NftOwner1155IncludeSchema: z.ZodType<Prisma.NftOwner1155Include> =
+  z
+    .object({
+      nft: z.union([z.boolean(), z.lazy(() => NftArgsSchema)]).optional(),
+    })
+    .strict();
+
+export const NftOwner1155ArgsSchema: z.ZodType<Prisma.NftOwner1155DefaultArgs> =
+  z
+    .object({
+      select: z.lazy(() => NftOwner1155SelectSchema).optional(),
+      include: z.lazy(() => NftOwner1155IncludeSchema).optional(),
+    })
+    .strict();
+
+export const NftOwner1155SelectSchema: z.ZodType<Prisma.NftOwner1155Select> = z
+  .object({
+    id: z.boolean().optional(),
+    owner_of: z.boolean().optional(),
+    quantity: z.boolean().optional(),
+    nft_id: z.boolean().optional(),
+    nft: z.union([z.boolean(), z.lazy(() => NftArgsSchema)]).optional(),
   })
   .strict();
 
@@ -1403,6 +1486,10 @@ export const CollectionWhereInputSchema: z.ZodType<Prisma.CollectionWhereInput> 
         .union([z.lazy(() => StringNullableFilterSchema), z.string()])
         .optional()
         .nullable(),
+      network: z
+        .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+        .optional()
+        .nullable(),
       num_items: z
         .union([z.lazy(() => IntNullableFilterSchema), z.number()])
         .optional()
@@ -1614,6 +1701,12 @@ export const CollectionOrderByWithRelationInputSchema: z.ZodType<Prisma.Collecti
           z.lazy(() => SortOrderInputSchema),
         ])
         .optional(),
+      network: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
       num_items: z
         .union([
           z.lazy(() => SortOrderSchema),
@@ -1647,13 +1740,29 @@ export const CollectionOrderByWithRelationInputSchema: z.ZodType<Prisma.Collecti
 
 export const CollectionWhereUniqueInputSchema: z.ZodType<Prisma.CollectionWhereUniqueInput> =
   z
-    .object({
-      id: z.string().cuid(),
-    })
+    .union([
+      z.object({
+        id: z.string().cuid(),
+        token_address_network: z.lazy(
+          () => CollectionToken_addressNetworkCompoundUniqueInputSchema
+        ),
+      }),
+      z.object({
+        id: z.string().cuid(),
+      }),
+      z.object({
+        token_address_network: z.lazy(
+          () => CollectionToken_addressNetworkCompoundUniqueInputSchema
+        ),
+      }),
+    ])
     .and(
       z
         .object({
           id: z.string().cuid().optional(),
+          token_address_network: z
+            .lazy(() => CollectionToken_addressNetworkCompoundUniqueInputSchema)
+            .optional(),
           AND: z
             .union([
               z.lazy(() => CollectionWhereInputSchema),
@@ -1779,6 +1888,10 @@ export const CollectionWhereUniqueInputSchema: z.ZodType<Prisma.CollectionWhereU
             .optional()
             .nullable(),
           discord: z
+            .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+            .optional()
+            .nullable(),
+          network: z
             .union([z.lazy(() => StringNullableFilterSchema), z.string()])
             .optional()
             .nullable(),
@@ -1992,6 +2105,12 @@ export const CollectionOrderByWithAggregationInputSchema: z.ZodType<Prisma.Colle
         ])
         .optional(),
       discord: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      network: z
         .union([
           z.lazy(() => SortOrderSchema),
           z.lazy(() => SortOrderInputSchema),
@@ -2239,6 +2358,13 @@ export const CollectionScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.Co
         .optional()
         .nullable(),
       discord: z
+        .union([
+          z.lazy(() => StringNullableWithAggregatesFilterSchema),
+          z.string(),
+        ])
+        .optional()
+        .nullable(),
+      network: z
         .union([
           z.lazy(() => StringNullableWithAggregatesFilterSchema),
           z.string(),
@@ -2518,6 +2644,14 @@ export const NftWhereInputSchema: z.ZodType<Prisma.NftWhereInput> = z
       .union([z.lazy(() => StringNullableFilterSchema), z.string()])
       .optional()
       .nullable(),
+    log_index: z
+      .union([z.lazy(() => IntNullableFilterSchema), z.number()])
+      .optional()
+      .nullable(),
+    transaction_index: z
+      .union([z.lazy(() => IntNullableFilterSchema), z.number()])
+      .optional()
+      .nullable(),
     collection_id: z
       .union([z.lazy(() => StringFilterSchema), z.string()])
       .optional(),
@@ -2534,6 +2668,9 @@ export const NftWhereInputSchema: z.ZodType<Prisma.NftWhereInput> = z
       ])
       .optional()
       .nullable(),
+    nft_owner_1155: z
+      .lazy(() => NftOwner1155ListRelationFilterSchema)
+      .optional(),
     collection: z
       .union([
         z.lazy(() => CollectionRelationFilterSchema),
@@ -2627,11 +2764,26 @@ export const NftOrderByWithRelationInputSchema: z.ZodType<Prisma.NftOrderByWithR
           z.lazy(() => SortOrderInputSchema),
         ])
         .optional(),
+      log_index: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      transaction_index: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
       collection_id: z.lazy(() => SortOrderSchema).optional(),
       created_at: z.lazy(() => SortOrderSchema).optional(),
       updated_at: z.lazy(() => SortOrderSchema).optional(),
       open_rarity: z
         .lazy(() => OpenRarityOrderByWithRelationInputSchema)
+        .optional(),
+      nft_owner_1155: z
+        .lazy(() => NftOwner1155OrderByRelationAggregateInputSchema)
         .optional(),
       collection: z
         .lazy(() => CollectionOrderByWithRelationInputSchema)
@@ -2641,13 +2793,29 @@ export const NftOrderByWithRelationInputSchema: z.ZodType<Prisma.NftOrderByWithR
 
 export const NftWhereUniqueInputSchema: z.ZodType<Prisma.NftWhereUniqueInput> =
   z
-    .object({
-      id: z.string().cuid(),
-    })
+    .union([
+      z.object({
+        id: z.string().cuid(),
+        token_id_collection_id: z.lazy(
+          () => NftToken_idCollection_idCompoundUniqueInputSchema
+        ),
+      }),
+      z.object({
+        id: z.string().cuid(),
+      }),
+      z.object({
+        token_id_collection_id: z.lazy(
+          () => NftToken_idCollection_idCompoundUniqueInputSchema
+        ),
+      }),
+    ])
     .and(
       z
         .object({
           id: z.string().cuid().optional(),
+          token_id_collection_id: z
+            .lazy(() => NftToken_idCollection_idCompoundUniqueInputSchema)
+            .optional(),
           AND: z
             .union([
               z.lazy(() => NftWhereInputSchema),
@@ -2722,6 +2890,14 @@ export const NftWhereUniqueInputSchema: z.ZodType<Prisma.NftWhereUniqueInput> =
             .union([z.lazy(() => StringNullableFilterSchema), z.string()])
             .optional()
             .nullable(),
+          log_index: z
+            .union([z.lazy(() => IntNullableFilterSchema), z.number().int()])
+            .optional()
+            .nullable(),
+          transaction_index: z
+            .union([z.lazy(() => IntNullableFilterSchema), z.number().int()])
+            .optional()
+            .nullable(),
           collection_id: z
             .union([z.lazy(() => StringFilterSchema), z.string()])
             .optional(),
@@ -2738,6 +2914,9 @@ export const NftWhereUniqueInputSchema: z.ZodType<Prisma.NftWhereUniqueInput> =
             ])
             .optional()
             .nullable(),
+          nft_owner_1155: z
+            .lazy(() => NftOwner1155ListRelationFilterSchema)
+            .optional(),
           collection: z
             .union([
               z.lazy(() => CollectionRelationFilterSchema),
@@ -2827,6 +3006,18 @@ export const NftOrderByWithAggregationInputSchema: z.ZodType<Prisma.NftOrderByWi
         ])
         .optional(),
       token_uri: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      log_index: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      transaction_index: z
         .union([
           z.lazy(() => SortOrderSchema),
           z.lazy(() => SortOrderInputSchema),
@@ -2962,6 +3153,20 @@ export const NftScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.NftScalar
         ])
         .optional()
         .nullable(),
+      log_index: z
+        .union([
+          z.lazy(() => IntNullableWithAggregatesFilterSchema),
+          z.number(),
+        ])
+        .optional()
+        .nullable(),
+      transaction_index: z
+        .union([
+          z.lazy(() => IntNullableWithAggregatesFilterSchema),
+          z.number(),
+        ])
+        .optional()
+        .nullable(),
       collection_id: z
         .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
         .optional(),
@@ -2976,6 +3181,168 @@ export const NftScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.NftScalar
           z.lazy(() => DateTimeWithAggregatesFilterSchema),
           z.coerce.date(),
         ])
+        .optional(),
+    })
+    .strict();
+
+export const NftOwner1155WhereInputSchema: z.ZodType<Prisma.NftOwner1155WhereInput> =
+  z
+    .object({
+      AND: z
+        .union([
+          z.lazy(() => NftOwner1155WhereInputSchema),
+          z.lazy(() => NftOwner1155WhereInputSchema).array(),
+        ])
+        .optional(),
+      OR: z
+        .lazy(() => NftOwner1155WhereInputSchema)
+        .array()
+        .optional(),
+      NOT: z
+        .union([
+          z.lazy(() => NftOwner1155WhereInputSchema),
+          z.lazy(() => NftOwner1155WhereInputSchema).array(),
+        ])
+        .optional(),
+      id: z.union([z.lazy(() => StringFilterSchema), z.string()]).optional(),
+      owner_of: z
+        .union([z.lazy(() => StringFilterSchema), z.string()])
+        .optional(),
+      quantity: z.union([z.lazy(() => IntFilterSchema), z.number()]).optional(),
+      nft_id: z
+        .union([z.lazy(() => StringFilterSchema), z.string()])
+        .optional(),
+      nft: z
+        .union([
+          z.lazy(() => NftRelationFilterSchema),
+          z.lazy(() => NftWhereInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const NftOwner1155OrderByWithRelationInputSchema: z.ZodType<Prisma.NftOwner1155OrderByWithRelationInput> =
+  z
+    .object({
+      id: z.lazy(() => SortOrderSchema).optional(),
+      owner_of: z.lazy(() => SortOrderSchema).optional(),
+      quantity: z.lazy(() => SortOrderSchema).optional(),
+      nft_id: z.lazy(() => SortOrderSchema).optional(),
+      nft: z.lazy(() => NftOrderByWithRelationInputSchema).optional(),
+    })
+    .strict();
+
+export const NftOwner1155WhereUniqueInputSchema: z.ZodType<Prisma.NftOwner1155WhereUniqueInput> =
+  z
+    .union([
+      z.object({
+        id: z.string().cuid(),
+        owner_of_nft_id: z.lazy(
+          () => NftOwner1155Owner_ofNft_idCompoundUniqueInputSchema
+        ),
+      }),
+      z.object({
+        id: z.string().cuid(),
+      }),
+      z.object({
+        owner_of_nft_id: z.lazy(
+          () => NftOwner1155Owner_ofNft_idCompoundUniqueInputSchema
+        ),
+      }),
+    ])
+    .and(
+      z
+        .object({
+          id: z.string().cuid().optional(),
+          owner_of_nft_id: z
+            .lazy(() => NftOwner1155Owner_ofNft_idCompoundUniqueInputSchema)
+            .optional(),
+          AND: z
+            .union([
+              z.lazy(() => NftOwner1155WhereInputSchema),
+              z.lazy(() => NftOwner1155WhereInputSchema).array(),
+            ])
+            .optional(),
+          OR: z
+            .lazy(() => NftOwner1155WhereInputSchema)
+            .array()
+            .optional(),
+          NOT: z
+            .union([
+              z.lazy(() => NftOwner1155WhereInputSchema),
+              z.lazy(() => NftOwner1155WhereInputSchema).array(),
+            ])
+            .optional(),
+          owner_of: z
+            .union([z.lazy(() => StringFilterSchema), z.string()])
+            .optional(),
+          quantity: z
+            .union([z.lazy(() => IntFilterSchema), z.number().int()])
+            .optional(),
+          nft_id: z
+            .union([z.lazy(() => StringFilterSchema), z.string()])
+            .optional(),
+          nft: z
+            .union([
+              z.lazy(() => NftRelationFilterSchema),
+              z.lazy(() => NftWhereInputSchema),
+            ])
+            .optional(),
+        })
+        .strict()
+    );
+
+export const NftOwner1155OrderByWithAggregationInputSchema: z.ZodType<Prisma.NftOwner1155OrderByWithAggregationInput> =
+  z
+    .object({
+      id: z.lazy(() => SortOrderSchema).optional(),
+      owner_of: z.lazy(() => SortOrderSchema).optional(),
+      quantity: z.lazy(() => SortOrderSchema).optional(),
+      nft_id: z.lazy(() => SortOrderSchema).optional(),
+      _count: z
+        .lazy(() => NftOwner1155CountOrderByAggregateInputSchema)
+        .optional(),
+      _avg: z.lazy(() => NftOwner1155AvgOrderByAggregateInputSchema).optional(),
+      _max: z.lazy(() => NftOwner1155MaxOrderByAggregateInputSchema).optional(),
+      _min: z.lazy(() => NftOwner1155MinOrderByAggregateInputSchema).optional(),
+      _sum: z.lazy(() => NftOwner1155SumOrderByAggregateInputSchema).optional(),
+    })
+    .strict();
+
+export const NftOwner1155ScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.NftOwner1155ScalarWhereWithAggregatesInput> =
+  z
+    .object({
+      AND: z
+        .union([
+          z.lazy(() => NftOwner1155ScalarWhereWithAggregatesInputSchema),
+          z
+            .lazy(() => NftOwner1155ScalarWhereWithAggregatesInputSchema)
+            .array(),
+        ])
+        .optional(),
+      OR: z
+        .lazy(() => NftOwner1155ScalarWhereWithAggregatesInputSchema)
+        .array()
+        .optional(),
+      NOT: z
+        .union([
+          z.lazy(() => NftOwner1155ScalarWhereWithAggregatesInputSchema),
+          z
+            .lazy(() => NftOwner1155ScalarWhereWithAggregatesInputSchema)
+            .array(),
+        ])
+        .optional(),
+      id: z
+        .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
+        .optional(),
+      owner_of: z
+        .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
+        .optional(),
+      quantity: z
+        .union([z.lazy(() => IntWithAggregatesFilterSchema), z.number()])
+        .optional(),
+      nft_id: z
+        .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
         .optional(),
     })
     .strict();
@@ -6356,6 +6723,7 @@ export const CollectionCreateInputSchema: z.ZodType<Prisma.CollectionCreateInput
       twitter: z.string().optional().nullable(),
       website: z.string().optional().nullable(),
       discord: z.string().optional().nullable(),
+      network: z.string().optional().nullable(),
       num_items: z.number().int().optional().nullable(),
       num_owners: z.number().int().optional().nullable(),
       last_refreshed: z.coerce.date().optional().nullable(),
@@ -6408,6 +6776,7 @@ export const CollectionUncheckedCreateInputSchema: z.ZodType<Prisma.CollectionUn
       twitter: z.string().optional().nullable(),
       website: z.string().optional().nullable(),
       discord: z.string().optional().nullable(),
+      network: z.string().optional().nullable(),
       num_items: z.number().int().optional().nullable(),
       num_owners: z.number().int().optional().nullable(),
       last_refreshed: z.coerce.date().optional().nullable(),
@@ -6621,6 +6990,13 @@ export const CollectionUpdateInputSchema: z.ZodType<Prisma.CollectionUpdateInput
         .optional()
         .nullable(),
       discord: z
+        .union([
+          z.string(),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      network: z
         .union([
           z.string(),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
@@ -6880,6 +7256,13 @@ export const CollectionUncheckedUpdateInputSchema: z.ZodType<Prisma.CollectionUn
         ])
         .optional()
         .nullable(),
+      network: z
+        .union([
+          z.string(),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
       num_items: z
         .union([
           z.number().int(),
@@ -7127,6 +7510,13 @@ export const CollectionUpdateManyMutationInputSchema: z.ZodType<Prisma.Collectio
         ])
         .optional()
         .nullable(),
+      network: z
+        .union([
+          z.string(),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
       num_items: z
         .union([
           z.number().int(),
@@ -7368,6 +7758,13 @@ export const CollectionUncheckedUpdateManyInputSchema: z.ZodType<Prisma.Collecti
         ])
         .optional()
         .nullable(),
+      network: z
+        .union([
+          z.string(),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
       num_items: z
         .union([
           z.number().int(),
@@ -7558,10 +7955,15 @@ export const NftCreateInputSchema: z.ZodType<Prisma.NftCreateInput> = z
     old_token_uri: z.string().optional().nullable(),
     owner_of: z.string().optional().nullable(),
     token_uri: z.string().optional().nullable(),
+    log_index: z.number().int().optional().nullable(),
+    transaction_index: z.number().int().optional().nullable(),
     created_at: z.coerce.date().optional(),
     updated_at: z.coerce.date().optional(),
     open_rarity: z
       .lazy(() => OpenRarityCreateNestedOneWithoutNftInputSchema)
+      .optional(),
+    nft_owner_1155: z
+      .lazy(() => NftOwner1155CreateNestedManyWithoutNftInputSchema)
       .optional(),
     collection: z.lazy(() => CollectionCreateNestedOneWithoutNftsInputSchema),
   })
@@ -7586,11 +7988,16 @@ export const NftUncheckedCreateInputSchema: z.ZodType<Prisma.NftUncheckedCreateI
       old_token_uri: z.string().optional().nullable(),
       owner_of: z.string().optional().nullable(),
       token_uri: z.string().optional().nullable(),
+      log_index: z.number().int().optional().nullable(),
+      transaction_index: z.number().int().optional().nullable(),
       collection_id: z.string(),
       created_at: z.coerce.date().optional(),
       updated_at: z.coerce.date().optional(),
       open_rarity: z
         .lazy(() => OpenRarityUncheckedCreateNestedOneWithoutNftInputSchema)
+        .optional(),
+      nft_owner_1155: z
+        .lazy(() => NftOwner1155UncheckedCreateNestedManyWithoutNftInputSchema)
         .optional(),
     })
     .strict();
@@ -7703,6 +8110,20 @@ export const NftUpdateInputSchema: z.ZodType<Prisma.NftUpdateInput> = z
       ])
       .optional()
       .nullable(),
+    log_index: z
+      .union([
+        z.number().int(),
+        z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+      ])
+      .optional()
+      .nullable(),
+    transaction_index: z
+      .union([
+        z.number().int(),
+        z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+      ])
+      .optional()
+      .nullable(),
     created_at: z
       .union([
         z.coerce.date(),
@@ -7717,6 +8138,9 @@ export const NftUpdateInputSchema: z.ZodType<Prisma.NftUpdateInput> = z
       .optional(),
     open_rarity: z
       .lazy(() => OpenRarityUpdateOneWithoutNftNestedInputSchema)
+      .optional(),
+    nft_owner_1155: z
+      .lazy(() => NftOwner1155UpdateManyWithoutNftNestedInputSchema)
       .optional(),
     collection: z
       .lazy(() => CollectionUpdateOneRequiredWithoutNftsNestedInputSchema)
@@ -7836,6 +8260,20 @@ export const NftUncheckedUpdateInputSchema: z.ZodType<Prisma.NftUncheckedUpdateI
         ])
         .optional()
         .nullable(),
+      log_index: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      transaction_index: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
       collection_id: z
         .union([
           z.string(),
@@ -7856,6 +8294,9 @@ export const NftUncheckedUpdateInputSchema: z.ZodType<Prisma.NftUncheckedUpdateI
         .optional(),
       open_rarity: z
         .lazy(() => OpenRarityUncheckedUpdateOneWithoutNftNestedInputSchema)
+        .optional(),
+      nft_owner_1155: z
+        .lazy(() => NftOwner1155UncheckedUpdateManyWithoutNftNestedInputSchema)
         .optional(),
     })
     .strict();
@@ -7969,6 +8410,20 @@ export const NftUpdateManyMutationInputSchema: z.ZodType<Prisma.NftUpdateManyMut
         .union([
           z.string(),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      log_index: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      transaction_index: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
         ])
         .optional()
         .nullable(),
@@ -8099,6 +8554,20 @@ export const NftUncheckedUpdateManyInputSchema: z.ZodType<Prisma.NftUncheckedUpd
         ])
         .optional()
         .nullable(),
+      log_index: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      transaction_index: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
       collection_id: z
         .union([
           z.string(),
@@ -8115,6 +8584,137 @@ export const NftUncheckedUpdateManyInputSchema: z.ZodType<Prisma.NftUncheckedUpd
         .union([
           z.coerce.date(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const NftOwner1155CreateInputSchema: z.ZodType<Prisma.NftOwner1155CreateInput> =
+  z
+    .object({
+      id: z.string().cuid().optional(),
+      owner_of: z.string(),
+      quantity: z.number().int(),
+      nft: z.lazy(() => NftCreateNestedOneWithoutNft_owner_1155InputSchema),
+    })
+    .strict();
+
+export const NftOwner1155UncheckedCreateInputSchema: z.ZodType<Prisma.NftOwner1155UncheckedCreateInput> =
+  z
+    .object({
+      id: z.string().cuid().optional(),
+      owner_of: z.string(),
+      quantity: z.number().int(),
+      nft_id: z.string(),
+    })
+    .strict();
+
+export const NftOwner1155UpdateInputSchema: z.ZodType<Prisma.NftOwner1155UpdateInput> =
+  z
+    .object({
+      id: z
+        .union([
+          z.string().cuid(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      owner_of: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      quantity: z
+        .union([
+          z.number().int(),
+          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      nft: z
+        .lazy(() => NftUpdateOneRequiredWithoutNft_owner_1155NestedInputSchema)
+        .optional(),
+    })
+    .strict();
+
+export const NftOwner1155UncheckedUpdateInputSchema: z.ZodType<Prisma.NftOwner1155UncheckedUpdateInput> =
+  z
+    .object({
+      id: z
+        .union([
+          z.string().cuid(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      owner_of: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      quantity: z
+        .union([
+          z.number().int(),
+          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      nft_id: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const NftOwner1155UpdateManyMutationInputSchema: z.ZodType<Prisma.NftOwner1155UpdateManyMutationInput> =
+  z
+    .object({
+      id: z
+        .union([
+          z.string().cuid(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      owner_of: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      quantity: z
+        .union([
+          z.number().int(),
+          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const NftOwner1155UncheckedUpdateManyInputSchema: z.ZodType<Prisma.NftOwner1155UncheckedUpdateManyInput> =
+  z
+    .object({
+      id: z
+        .union([
+          z.string().cuid(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      owner_of: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      quantity: z
+        .union([
+          z.number().int(),
+          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      nft_id: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
     })
@@ -11873,6 +12473,14 @@ export const MaxItem1155OrderByRelationAggregateInputSchema: z.ZodType<Prisma.Ma
     })
     .strict();
 
+export const CollectionToken_addressNetworkCompoundUniqueInputSchema: z.ZodType<Prisma.CollectionToken_addressNetworkCompoundUniqueInput> =
+  z
+    .object({
+      token_address: z.string(),
+      network: z.string(),
+    })
+    .strict();
+
 export const CollectionCountOrderByAggregateInputSchema: z.ZodType<Prisma.CollectionCountOrderByAggregateInput> =
   z
     .object({
@@ -11905,6 +12513,7 @@ export const CollectionCountOrderByAggregateInputSchema: z.ZodType<Prisma.Collec
       twitter: z.lazy(() => SortOrderSchema).optional(),
       website: z.lazy(() => SortOrderSchema).optional(),
       discord: z.lazy(() => SortOrderSchema).optional(),
+      network: z.lazy(() => SortOrderSchema).optional(),
       num_items: z.lazy(() => SortOrderSchema).optional(),
       num_owners: z.lazy(() => SortOrderSchema).optional(),
       last_refreshed: z.lazy(() => SortOrderSchema).optional(),
@@ -11957,6 +12566,7 @@ export const CollectionMaxOrderByAggregateInputSchema: z.ZodType<Prisma.Collecti
       twitter: z.lazy(() => SortOrderSchema).optional(),
       website: z.lazy(() => SortOrderSchema).optional(),
       discord: z.lazy(() => SortOrderSchema).optional(),
+      network: z.lazy(() => SortOrderSchema).optional(),
       num_items: z.lazy(() => SortOrderSchema).optional(),
       num_owners: z.lazy(() => SortOrderSchema).optional(),
       last_refreshed: z.lazy(() => SortOrderSchema).optional(),
@@ -11997,6 +12607,7 @@ export const CollectionMinOrderByAggregateInputSchema: z.ZodType<Prisma.Collecti
       twitter: z.lazy(() => SortOrderSchema).optional(),
       website: z.lazy(() => SortOrderSchema).optional(),
       discord: z.lazy(() => SortOrderSchema).optional(),
+      network: z.lazy(() => SortOrderSchema).optional(),
       num_items: z.lazy(() => SortOrderSchema).optional(),
       num_owners: z.lazy(() => SortOrderSchema).optional(),
       last_refreshed: z.lazy(() => SortOrderSchema).optional(),
@@ -12265,6 +12876,30 @@ export const OpenRarityNullableRelationFilterSchema: z.ZodType<Prisma.OpenRarity
     })
     .strict();
 
+export const NftOwner1155ListRelationFilterSchema: z.ZodType<Prisma.NftOwner1155ListRelationFilter> =
+  z
+    .object({
+      every: z.lazy(() => NftOwner1155WhereInputSchema).optional(),
+      some: z.lazy(() => NftOwner1155WhereInputSchema).optional(),
+      none: z.lazy(() => NftOwner1155WhereInputSchema).optional(),
+    })
+    .strict();
+
+export const NftOwner1155OrderByRelationAggregateInputSchema: z.ZodType<Prisma.NftOwner1155OrderByRelationAggregateInput> =
+  z
+    .object({
+      _count: z.lazy(() => SortOrderSchema).optional(),
+    })
+    .strict();
+
+export const NftToken_idCollection_idCompoundUniqueInputSchema: z.ZodType<Prisma.NftToken_idCollection_idCompoundUniqueInput> =
+  z
+    .object({
+      token_id: z.number(),
+      collection_id: z.string(),
+    })
+    .strict();
+
 export const NftCountOrderByAggregateInputSchema: z.ZodType<Prisma.NftCountOrderByAggregateInput> =
   z
     .object({
@@ -12284,6 +12919,8 @@ export const NftCountOrderByAggregateInputSchema: z.ZodType<Prisma.NftCountOrder
       old_token_uri: z.lazy(() => SortOrderSchema).optional(),
       owner_of: z.lazy(() => SortOrderSchema).optional(),
       token_uri: z.lazy(() => SortOrderSchema).optional(),
+      log_index: z.lazy(() => SortOrderSchema).optional(),
+      transaction_index: z.lazy(() => SortOrderSchema).optional(),
       collection_id: z.lazy(() => SortOrderSchema).optional(),
       created_at: z.lazy(() => SortOrderSchema).optional(),
       updated_at: z.lazy(() => SortOrderSchema).optional(),
@@ -12295,6 +12932,8 @@ export const NftAvgOrderByAggregateInputSchema: z.ZodType<Prisma.NftAvgOrderByAg
     .object({
       token_id: z.lazy(() => SortOrderSchema).optional(),
       block_minted: z.lazy(() => SortOrderSchema).optional(),
+      log_index: z.lazy(() => SortOrderSchema).optional(),
+      transaction_index: z.lazy(() => SortOrderSchema).optional(),
     })
     .strict();
 
@@ -12317,6 +12956,8 @@ export const NftMaxOrderByAggregateInputSchema: z.ZodType<Prisma.NftMaxOrderByAg
       old_token_uri: z.lazy(() => SortOrderSchema).optional(),
       owner_of: z.lazy(() => SortOrderSchema).optional(),
       token_uri: z.lazy(() => SortOrderSchema).optional(),
+      log_index: z.lazy(() => SortOrderSchema).optional(),
+      transaction_index: z.lazy(() => SortOrderSchema).optional(),
       collection_id: z.lazy(() => SortOrderSchema).optional(),
       created_at: z.lazy(() => SortOrderSchema).optional(),
       updated_at: z.lazy(() => SortOrderSchema).optional(),
@@ -12342,6 +12983,8 @@ export const NftMinOrderByAggregateInputSchema: z.ZodType<Prisma.NftMinOrderByAg
       old_token_uri: z.lazy(() => SortOrderSchema).optional(),
       owner_of: z.lazy(() => SortOrderSchema).optional(),
       token_uri: z.lazy(() => SortOrderSchema).optional(),
+      log_index: z.lazy(() => SortOrderSchema).optional(),
+      transaction_index: z.lazy(() => SortOrderSchema).optional(),
       collection_id: z.lazy(() => SortOrderSchema).optional(),
       created_at: z.lazy(() => SortOrderSchema).optional(),
       updated_at: z.lazy(() => SortOrderSchema).optional(),
@@ -12353,6 +12996,67 @@ export const NftSumOrderByAggregateInputSchema: z.ZodType<Prisma.NftSumOrderByAg
     .object({
       token_id: z.lazy(() => SortOrderSchema).optional(),
       block_minted: z.lazy(() => SortOrderSchema).optional(),
+      log_index: z.lazy(() => SortOrderSchema).optional(),
+      transaction_index: z.lazy(() => SortOrderSchema).optional(),
+    })
+    .strict();
+
+export const NftRelationFilterSchema: z.ZodType<Prisma.NftRelationFilter> = z
+  .object({
+    is: z.lazy(() => NftWhereInputSchema).optional(),
+    isNot: z.lazy(() => NftWhereInputSchema).optional(),
+  })
+  .strict();
+
+export const NftOwner1155Owner_ofNft_idCompoundUniqueInputSchema: z.ZodType<Prisma.NftOwner1155Owner_ofNft_idCompoundUniqueInput> =
+  z
+    .object({
+      owner_of: z.string(),
+      nft_id: z.string(),
+    })
+    .strict();
+
+export const NftOwner1155CountOrderByAggregateInputSchema: z.ZodType<Prisma.NftOwner1155CountOrderByAggregateInput> =
+  z
+    .object({
+      id: z.lazy(() => SortOrderSchema).optional(),
+      owner_of: z.lazy(() => SortOrderSchema).optional(),
+      quantity: z.lazy(() => SortOrderSchema).optional(),
+      nft_id: z.lazy(() => SortOrderSchema).optional(),
+    })
+    .strict();
+
+export const NftOwner1155AvgOrderByAggregateInputSchema: z.ZodType<Prisma.NftOwner1155AvgOrderByAggregateInput> =
+  z
+    .object({
+      quantity: z.lazy(() => SortOrderSchema).optional(),
+    })
+    .strict();
+
+export const NftOwner1155MaxOrderByAggregateInputSchema: z.ZodType<Prisma.NftOwner1155MaxOrderByAggregateInput> =
+  z
+    .object({
+      id: z.lazy(() => SortOrderSchema).optional(),
+      owner_of: z.lazy(() => SortOrderSchema).optional(),
+      quantity: z.lazy(() => SortOrderSchema).optional(),
+      nft_id: z.lazy(() => SortOrderSchema).optional(),
+    })
+    .strict();
+
+export const NftOwner1155MinOrderByAggregateInputSchema: z.ZodType<Prisma.NftOwner1155MinOrderByAggregateInput> =
+  z
+    .object({
+      id: z.lazy(() => SortOrderSchema).optional(),
+      owner_of: z.lazy(() => SortOrderSchema).optional(),
+      quantity: z.lazy(() => SortOrderSchema).optional(),
+      nft_id: z.lazy(() => SortOrderSchema).optional(),
+    })
+    .strict();
+
+export const NftOwner1155SumOrderByAggregateInputSchema: z.ZodType<Prisma.NftOwner1155SumOrderByAggregateInput> =
+  z
+    .object({
+      quantity: z.lazy(() => SortOrderSchema).optional(),
     })
     .strict();
 
@@ -12526,13 +13230,6 @@ export const FloatNullableWithAggregatesFilterSchema: z.ZodType<Prisma.FloatNull
       _max: z.lazy(() => NestedFloatNullableFilterSchema).optional(),
     })
     .strict();
-
-export const NftRelationFilterSchema: z.ZodType<Prisma.NftRelationFilter> = z
-  .object({
-    is: z.lazy(() => NftWhereInputSchema).optional(),
-    isNot: z.lazy(() => NftWhereInputSchema).optional(),
-  })
-  .strict();
 
 export const OpenRarityCountOrderByAggregateInputSchema: z.ZodType<Prisma.OpenRarityCountOrderByAggregateInput> =
   z
@@ -14048,6 +14745,36 @@ export const OpenRarityCreateNestedOneWithoutNftInputSchema: z.ZodType<Prisma.Op
     })
     .strict();
 
+export const NftOwner1155CreateNestedManyWithoutNftInputSchema: z.ZodType<Prisma.NftOwner1155CreateNestedManyWithoutNftInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => NftOwner1155CreateWithoutNftInputSchema),
+          z.lazy(() => NftOwner1155CreateWithoutNftInputSchema).array(),
+          z.lazy(() => NftOwner1155UncheckedCreateWithoutNftInputSchema),
+          z
+            .lazy(() => NftOwner1155UncheckedCreateWithoutNftInputSchema)
+            .array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => NftOwner1155CreateOrConnectWithoutNftInputSchema),
+          z
+            .lazy(() => NftOwner1155CreateOrConnectWithoutNftInputSchema)
+            .array(),
+        ])
+        .optional(),
+      connect: z
+        .union([
+          z.lazy(() => NftOwner1155WhereUniqueInputSchema),
+          z.lazy(() => NftOwner1155WhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
+
 export const CollectionCreateNestedOneWithoutNftsInputSchema: z.ZodType<Prisma.CollectionCreateNestedOneWithoutNftsInput> =
   z
     .object({
@@ -14080,6 +14807,36 @@ export const OpenRarityUncheckedCreateNestedOneWithoutNftInputSchema: z.ZodType<
     })
     .strict();
 
+export const NftOwner1155UncheckedCreateNestedManyWithoutNftInputSchema: z.ZodType<Prisma.NftOwner1155UncheckedCreateNestedManyWithoutNftInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => NftOwner1155CreateWithoutNftInputSchema),
+          z.lazy(() => NftOwner1155CreateWithoutNftInputSchema).array(),
+          z.lazy(() => NftOwner1155UncheckedCreateWithoutNftInputSchema),
+          z
+            .lazy(() => NftOwner1155UncheckedCreateWithoutNftInputSchema)
+            .array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => NftOwner1155CreateOrConnectWithoutNftInputSchema),
+          z
+            .lazy(() => NftOwner1155CreateOrConnectWithoutNftInputSchema)
+            .array(),
+        ])
+        .optional(),
+      connect: z
+        .union([
+          z.lazy(() => NftOwner1155WhereUniqueInputSchema),
+          z.lazy(() => NftOwner1155WhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
+
 export const OpenRarityUpdateOneWithoutNftNestedInputSchema: z.ZodType<Prisma.OpenRarityUpdateOneWithoutNftNestedInput> =
   z
     .object({
@@ -14105,6 +14862,84 @@ export const OpenRarityUpdateOneWithoutNftNestedInputSchema: z.ZodType<Prisma.Op
           z.lazy(() => OpenRarityUpdateToOneWithWhereWithoutNftInputSchema),
           z.lazy(() => OpenRarityUpdateWithoutNftInputSchema),
           z.lazy(() => OpenRarityUncheckedUpdateWithoutNftInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const NftOwner1155UpdateManyWithoutNftNestedInputSchema: z.ZodType<Prisma.NftOwner1155UpdateManyWithoutNftNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => NftOwner1155CreateWithoutNftInputSchema),
+          z.lazy(() => NftOwner1155CreateWithoutNftInputSchema).array(),
+          z.lazy(() => NftOwner1155UncheckedCreateWithoutNftInputSchema),
+          z
+            .lazy(() => NftOwner1155UncheckedCreateWithoutNftInputSchema)
+            .array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => NftOwner1155CreateOrConnectWithoutNftInputSchema),
+          z
+            .lazy(() => NftOwner1155CreateOrConnectWithoutNftInputSchema)
+            .array(),
+        ])
+        .optional(),
+      upsert: z
+        .union([
+          z.lazy(() => NftOwner1155UpsertWithWhereUniqueWithoutNftInputSchema),
+          z
+            .lazy(() => NftOwner1155UpsertWithWhereUniqueWithoutNftInputSchema)
+            .array(),
+        ])
+        .optional(),
+      set: z
+        .union([
+          z.lazy(() => NftOwner1155WhereUniqueInputSchema),
+          z.lazy(() => NftOwner1155WhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      disconnect: z
+        .union([
+          z.lazy(() => NftOwner1155WhereUniqueInputSchema),
+          z.lazy(() => NftOwner1155WhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      delete: z
+        .union([
+          z.lazy(() => NftOwner1155WhereUniqueInputSchema),
+          z.lazy(() => NftOwner1155WhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      connect: z
+        .union([
+          z.lazy(() => NftOwner1155WhereUniqueInputSchema),
+          z.lazy(() => NftOwner1155WhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      update: z
+        .union([
+          z.lazy(() => NftOwner1155UpdateWithWhereUniqueWithoutNftInputSchema),
+          z
+            .lazy(() => NftOwner1155UpdateWithWhereUniqueWithoutNftInputSchema)
+            .array(),
+        ])
+        .optional(),
+      updateMany: z
+        .union([
+          z.lazy(() => NftOwner1155UpdateManyWithWhereWithoutNftInputSchema),
+          z
+            .lazy(() => NftOwner1155UpdateManyWithWhereWithoutNftInputSchema)
+            .array(),
+        ])
+        .optional(),
+      deleteMany: z
+        .union([
+          z.lazy(() => NftOwner1155ScalarWhereInputSchema),
+          z.lazy(() => NftOwner1155ScalarWhereInputSchema).array(),
         ])
         .optional(),
     })
@@ -14159,6 +14994,126 @@ export const OpenRarityUncheckedUpdateOneWithoutNftNestedInputSchema: z.ZodType<
           z.lazy(() => OpenRarityUpdateToOneWithWhereWithoutNftInputSchema),
           z.lazy(() => OpenRarityUpdateWithoutNftInputSchema),
           z.lazy(() => OpenRarityUncheckedUpdateWithoutNftInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const NftOwner1155UncheckedUpdateManyWithoutNftNestedInputSchema: z.ZodType<Prisma.NftOwner1155UncheckedUpdateManyWithoutNftNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => NftOwner1155CreateWithoutNftInputSchema),
+          z.lazy(() => NftOwner1155CreateWithoutNftInputSchema).array(),
+          z.lazy(() => NftOwner1155UncheckedCreateWithoutNftInputSchema),
+          z
+            .lazy(() => NftOwner1155UncheckedCreateWithoutNftInputSchema)
+            .array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => NftOwner1155CreateOrConnectWithoutNftInputSchema),
+          z
+            .lazy(() => NftOwner1155CreateOrConnectWithoutNftInputSchema)
+            .array(),
+        ])
+        .optional(),
+      upsert: z
+        .union([
+          z.lazy(() => NftOwner1155UpsertWithWhereUniqueWithoutNftInputSchema),
+          z
+            .lazy(() => NftOwner1155UpsertWithWhereUniqueWithoutNftInputSchema)
+            .array(),
+        ])
+        .optional(),
+      set: z
+        .union([
+          z.lazy(() => NftOwner1155WhereUniqueInputSchema),
+          z.lazy(() => NftOwner1155WhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      disconnect: z
+        .union([
+          z.lazy(() => NftOwner1155WhereUniqueInputSchema),
+          z.lazy(() => NftOwner1155WhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      delete: z
+        .union([
+          z.lazy(() => NftOwner1155WhereUniqueInputSchema),
+          z.lazy(() => NftOwner1155WhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      connect: z
+        .union([
+          z.lazy(() => NftOwner1155WhereUniqueInputSchema),
+          z.lazy(() => NftOwner1155WhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      update: z
+        .union([
+          z.lazy(() => NftOwner1155UpdateWithWhereUniqueWithoutNftInputSchema),
+          z
+            .lazy(() => NftOwner1155UpdateWithWhereUniqueWithoutNftInputSchema)
+            .array(),
+        ])
+        .optional(),
+      updateMany: z
+        .union([
+          z.lazy(() => NftOwner1155UpdateManyWithWhereWithoutNftInputSchema),
+          z
+            .lazy(() => NftOwner1155UpdateManyWithWhereWithoutNftInputSchema)
+            .array(),
+        ])
+        .optional(),
+      deleteMany: z
+        .union([
+          z.lazy(() => NftOwner1155ScalarWhereInputSchema),
+          z.lazy(() => NftOwner1155ScalarWhereInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const NftCreateNestedOneWithoutNft_owner_1155InputSchema: z.ZodType<Prisma.NftCreateNestedOneWithoutNft_owner_1155Input> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => NftCreateWithoutNft_owner_1155InputSchema),
+          z.lazy(() => NftUncheckedCreateWithoutNft_owner_1155InputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .lazy(() => NftCreateOrConnectWithoutNft_owner_1155InputSchema)
+        .optional(),
+      connect: z.lazy(() => NftWhereUniqueInputSchema).optional(),
+    })
+    .strict();
+
+export const NftUpdateOneRequiredWithoutNft_owner_1155NestedInputSchema: z.ZodType<Prisma.NftUpdateOneRequiredWithoutNft_owner_1155NestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => NftCreateWithoutNft_owner_1155InputSchema),
+          z.lazy(() => NftUncheckedCreateWithoutNft_owner_1155InputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .lazy(() => NftCreateOrConnectWithoutNft_owner_1155InputSchema)
+        .optional(),
+      upsert: z
+        .lazy(() => NftUpsertWithoutNft_owner_1155InputSchema)
+        .optional(),
+      connect: z.lazy(() => NftWhereUniqueInputSchema).optional(),
+      update: z
+        .union([
+          z.lazy(() => NftUpdateToOneWithWhereWithoutNft_owner_1155InputSchema),
+          z.lazy(() => NftUpdateWithoutNft_owner_1155InputSchema),
+          z.lazy(() => NftUncheckedUpdateWithoutNft_owner_1155InputSchema),
         ])
         .optional(),
     })
@@ -17246,10 +18201,15 @@ export const NftCreateWithoutCollectionInputSchema: z.ZodType<Prisma.NftCreateWi
       old_token_uri: z.string().optional().nullable(),
       owner_of: z.string().optional().nullable(),
       token_uri: z.string().optional().nullable(),
+      log_index: z.number().int().optional().nullable(),
+      transaction_index: z.number().int().optional().nullable(),
       created_at: z.coerce.date().optional(),
       updated_at: z.coerce.date().optional(),
       open_rarity: z
         .lazy(() => OpenRarityCreateNestedOneWithoutNftInputSchema)
+        .optional(),
+      nft_owner_1155: z
+        .lazy(() => NftOwner1155CreateNestedManyWithoutNftInputSchema)
         .optional(),
     })
     .strict();
@@ -17273,10 +18233,15 @@ export const NftUncheckedCreateWithoutCollectionInputSchema: z.ZodType<Prisma.Nf
       old_token_uri: z.string().optional().nullable(),
       owner_of: z.string().optional().nullable(),
       token_uri: z.string().optional().nullable(),
+      log_index: z.number().int().optional().nullable(),
+      transaction_index: z.number().int().optional().nullable(),
       created_at: z.coerce.date().optional(),
       updated_at: z.coerce.date().optional(),
       open_rarity: z
         .lazy(() => OpenRarityUncheckedCreateNestedOneWithoutNftInputSchema)
+        .optional(),
+      nft_owner_1155: z
+        .lazy(() => NftOwner1155UncheckedCreateNestedManyWithoutNftInputSchema)
         .optional(),
     })
     .strict();
@@ -17994,6 +18959,14 @@ export const NftScalarWhereInputSchema: z.ZodType<Prisma.NftScalarWhereInput> =
         .union([z.lazy(() => StringNullableFilterSchema), z.string()])
         .optional()
         .nullable(),
+      log_index: z
+        .union([z.lazy(() => IntNullableFilterSchema), z.number()])
+        .optional()
+        .nullable(),
+      transaction_index: z
+        .union([z.lazy(() => IntNullableFilterSchema), z.number()])
+        .optional()
+        .nullable(),
       collection_id: z
         .union([z.lazy(() => StringFilterSchema), z.string()])
         .optional(),
@@ -18106,6 +19079,7 @@ export const CollectionCreateWithoutMax_items_1155InputSchema: z.ZodType<Prisma.
       twitter: z.string().optional().nullable(),
       website: z.string().optional().nullable(),
       discord: z.string().optional().nullable(),
+      network: z.string().optional().nullable(),
       num_items: z.number().int().optional().nullable(),
       num_owners: z.number().int().optional().nullable(),
       last_refreshed: z.coerce.date().optional().nullable(),
@@ -18155,6 +19129,7 @@ export const CollectionUncheckedCreateWithoutMax_items_1155InputSchema: z.ZodTyp
       twitter: z.string().optional().nullable(),
       website: z.string().optional().nullable(),
       discord: z.string().optional().nullable(),
+      network: z.string().optional().nullable(),
       num_items: z.number().int().optional().nullable(),
       num_owners: z.number().int().optional().nullable(),
       last_refreshed: z.coerce.date().optional().nullable(),
@@ -18400,6 +19375,13 @@ export const CollectionUpdateWithoutMax_items_1155InputSchema: z.ZodType<Prisma.
         .optional()
         .nullable(),
       discord: z
+        .union([
+          z.string(),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      network: z
         .union([
           z.string(),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
@@ -18656,6 +19638,13 @@ export const CollectionUncheckedUpdateWithoutMax_items_1155InputSchema: z.ZodTyp
         ])
         .optional()
         .nullable(),
+      network: z
+        .union([
+          z.string(),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
       num_items: z
         .union([
           z.number().int(),
@@ -18735,6 +19724,35 @@ export const OpenRarityCreateOrConnectWithoutNftInputSchema: z.ZodType<Prisma.Op
     })
     .strict();
 
+export const NftOwner1155CreateWithoutNftInputSchema: z.ZodType<Prisma.NftOwner1155CreateWithoutNftInput> =
+  z
+    .object({
+      id: z.string().cuid().optional(),
+      owner_of: z.string(),
+      quantity: z.number().int(),
+    })
+    .strict();
+
+export const NftOwner1155UncheckedCreateWithoutNftInputSchema: z.ZodType<Prisma.NftOwner1155UncheckedCreateWithoutNftInput> =
+  z
+    .object({
+      id: z.string().cuid().optional(),
+      owner_of: z.string(),
+      quantity: z.number().int(),
+    })
+    .strict();
+
+export const NftOwner1155CreateOrConnectWithoutNftInputSchema: z.ZodType<Prisma.NftOwner1155CreateOrConnectWithoutNftInput> =
+  z
+    .object({
+      where: z.lazy(() => NftOwner1155WhereUniqueInputSchema),
+      create: z.union([
+        z.lazy(() => NftOwner1155CreateWithoutNftInputSchema),
+        z.lazy(() => NftOwner1155UncheckedCreateWithoutNftInputSchema),
+      ]),
+    })
+    .strict();
+
 export const CollectionCreateWithoutNftsInputSchema: z.ZodType<Prisma.CollectionCreateWithoutNftsInput> =
   z
     .object({
@@ -18766,6 +19784,7 @@ export const CollectionCreateWithoutNftsInputSchema: z.ZodType<Prisma.Collection
       twitter: z.string().optional().nullable(),
       website: z.string().optional().nullable(),
       discord: z.string().optional().nullable(),
+      network: z.string().optional().nullable(),
       num_items: z.number().int().optional().nullable(),
       num_owners: z.number().int().optional().nullable(),
       last_refreshed: z.coerce.date().optional().nullable(),
@@ -18815,6 +19834,7 @@ export const CollectionUncheckedCreateWithoutNftsInputSchema: z.ZodType<Prisma.C
       twitter: z.string().optional().nullable(),
       website: z.string().optional().nullable(),
       discord: z.string().optional().nullable(),
+      network: z.string().optional().nullable(),
       num_items: z.number().int().optional().nullable(),
       num_owners: z.number().int().optional().nullable(),
       last_refreshed: z.coerce.date().optional().nullable(),
@@ -18956,6 +19976,73 @@ export const OpenRarityUncheckedUpdateWithoutNftInputSchema: z.ZodType<Prisma.Op
           z.coerce.date(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
+        .optional(),
+    })
+    .strict();
+
+export const NftOwner1155UpsertWithWhereUniqueWithoutNftInputSchema: z.ZodType<Prisma.NftOwner1155UpsertWithWhereUniqueWithoutNftInput> =
+  z
+    .object({
+      where: z.lazy(() => NftOwner1155WhereUniqueInputSchema),
+      update: z.union([
+        z.lazy(() => NftOwner1155UpdateWithoutNftInputSchema),
+        z.lazy(() => NftOwner1155UncheckedUpdateWithoutNftInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => NftOwner1155CreateWithoutNftInputSchema),
+        z.lazy(() => NftOwner1155UncheckedCreateWithoutNftInputSchema),
+      ]),
+    })
+    .strict();
+
+export const NftOwner1155UpdateWithWhereUniqueWithoutNftInputSchema: z.ZodType<Prisma.NftOwner1155UpdateWithWhereUniqueWithoutNftInput> =
+  z
+    .object({
+      where: z.lazy(() => NftOwner1155WhereUniqueInputSchema),
+      data: z.union([
+        z.lazy(() => NftOwner1155UpdateWithoutNftInputSchema),
+        z.lazy(() => NftOwner1155UncheckedUpdateWithoutNftInputSchema),
+      ]),
+    })
+    .strict();
+
+export const NftOwner1155UpdateManyWithWhereWithoutNftInputSchema: z.ZodType<Prisma.NftOwner1155UpdateManyWithWhereWithoutNftInput> =
+  z
+    .object({
+      where: z.lazy(() => NftOwner1155ScalarWhereInputSchema),
+      data: z.union([
+        z.lazy(() => NftOwner1155UpdateManyMutationInputSchema),
+        z.lazy(() => NftOwner1155UncheckedUpdateManyWithoutNftInputSchema),
+      ]),
+    })
+    .strict();
+
+export const NftOwner1155ScalarWhereInputSchema: z.ZodType<Prisma.NftOwner1155ScalarWhereInput> =
+  z
+    .object({
+      AND: z
+        .union([
+          z.lazy(() => NftOwner1155ScalarWhereInputSchema),
+          z.lazy(() => NftOwner1155ScalarWhereInputSchema).array(),
+        ])
+        .optional(),
+      OR: z
+        .lazy(() => NftOwner1155ScalarWhereInputSchema)
+        .array()
+        .optional(),
+      NOT: z
+        .union([
+          z.lazy(() => NftOwner1155ScalarWhereInputSchema),
+          z.lazy(() => NftOwner1155ScalarWhereInputSchema).array(),
+        ])
+        .optional(),
+      id: z.union([z.lazy(() => StringFilterSchema), z.string()]).optional(),
+      owner_of: z
+        .union([z.lazy(() => StringFilterSchema), z.string()])
+        .optional(),
+      quantity: z.union([z.lazy(() => IntFilterSchema), z.number()]).optional(),
+      nft_id: z
+        .union([z.lazy(() => StringFilterSchema), z.string()])
         .optional(),
     })
     .strict();
@@ -19178,6 +20265,13 @@ export const CollectionUpdateWithoutNftsInputSchema: z.ZodType<Prisma.Collection
         .optional()
         .nullable(),
       discord: z
+        .union([
+          z.string(),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      network: z
         .union([
           z.string(),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
@@ -19434,6 +20528,13 @@ export const CollectionUncheckedUpdateWithoutNftsInputSchema: z.ZodType<Prisma.C
         ])
         .optional()
         .nullable(),
+      network: z
+        .union([
+          z.string(),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
       num_items: z
         .union([
           z.number().int(),
@@ -19480,6 +20581,400 @@ export const CollectionUncheckedUpdateWithoutNftsInputSchema: z.ZodType<Prisma.C
     })
     .strict();
 
+export const NftCreateWithoutNft_owner_1155InputSchema: z.ZodType<Prisma.NftCreateWithoutNft_owner_1155Input> =
+  z
+    .object({
+      id: z.string().cuid().optional(),
+      token_address: z.string(),
+      token_id: z.number().int(),
+      attributes: z.string().optional().nullable(),
+      block_minted: z.number().int().optional().nullable(),
+      contract_type: z.string().optional().nullable(),
+      description: z.string().optional().nullable(),
+      image: z.string().optional().nullable(),
+      image_url: z.string().optional().nullable(),
+      metadata: z.string().optional().nullable(),
+      name: z.string().optional().nullable(),
+      network: z.string().optional().nullable(),
+      old_image_url: z.string().optional().nullable(),
+      old_token_uri: z.string().optional().nullable(),
+      owner_of: z.string().optional().nullable(),
+      token_uri: z.string().optional().nullable(),
+      log_index: z.number().int().optional().nullable(),
+      transaction_index: z.number().int().optional().nullable(),
+      created_at: z.coerce.date().optional(),
+      updated_at: z.coerce.date().optional(),
+      open_rarity: z
+        .lazy(() => OpenRarityCreateNestedOneWithoutNftInputSchema)
+        .optional(),
+      collection: z.lazy(() => CollectionCreateNestedOneWithoutNftsInputSchema),
+    })
+    .strict();
+
+export const NftUncheckedCreateWithoutNft_owner_1155InputSchema: z.ZodType<Prisma.NftUncheckedCreateWithoutNft_owner_1155Input> =
+  z
+    .object({
+      id: z.string().cuid().optional(),
+      token_address: z.string(),
+      token_id: z.number().int(),
+      attributes: z.string().optional().nullable(),
+      block_minted: z.number().int().optional().nullable(),
+      contract_type: z.string().optional().nullable(),
+      description: z.string().optional().nullable(),
+      image: z.string().optional().nullable(),
+      image_url: z.string().optional().nullable(),
+      metadata: z.string().optional().nullable(),
+      name: z.string().optional().nullable(),
+      network: z.string().optional().nullable(),
+      old_image_url: z.string().optional().nullable(),
+      old_token_uri: z.string().optional().nullable(),
+      owner_of: z.string().optional().nullable(),
+      token_uri: z.string().optional().nullable(),
+      log_index: z.number().int().optional().nullable(),
+      transaction_index: z.number().int().optional().nullable(),
+      collection_id: z.string(),
+      created_at: z.coerce.date().optional(),
+      updated_at: z.coerce.date().optional(),
+      open_rarity: z
+        .lazy(() => OpenRarityUncheckedCreateNestedOneWithoutNftInputSchema)
+        .optional(),
+    })
+    .strict();
+
+export const NftCreateOrConnectWithoutNft_owner_1155InputSchema: z.ZodType<Prisma.NftCreateOrConnectWithoutNft_owner_1155Input> =
+  z
+    .object({
+      where: z.lazy(() => NftWhereUniqueInputSchema),
+      create: z.union([
+        z.lazy(() => NftCreateWithoutNft_owner_1155InputSchema),
+        z.lazy(() => NftUncheckedCreateWithoutNft_owner_1155InputSchema),
+      ]),
+    })
+    .strict();
+
+export const NftUpsertWithoutNft_owner_1155InputSchema: z.ZodType<Prisma.NftUpsertWithoutNft_owner_1155Input> =
+  z
+    .object({
+      update: z.union([
+        z.lazy(() => NftUpdateWithoutNft_owner_1155InputSchema),
+        z.lazy(() => NftUncheckedUpdateWithoutNft_owner_1155InputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => NftCreateWithoutNft_owner_1155InputSchema),
+        z.lazy(() => NftUncheckedCreateWithoutNft_owner_1155InputSchema),
+      ]),
+      where: z.lazy(() => NftWhereInputSchema).optional(),
+    })
+    .strict();
+
+export const NftUpdateToOneWithWhereWithoutNft_owner_1155InputSchema: z.ZodType<Prisma.NftUpdateToOneWithWhereWithoutNft_owner_1155Input> =
+  z
+    .object({
+      where: z.lazy(() => NftWhereInputSchema).optional(),
+      data: z.union([
+        z.lazy(() => NftUpdateWithoutNft_owner_1155InputSchema),
+        z.lazy(() => NftUncheckedUpdateWithoutNft_owner_1155InputSchema),
+      ]),
+    })
+    .strict();
+
+export const NftUpdateWithoutNft_owner_1155InputSchema: z.ZodType<Prisma.NftUpdateWithoutNft_owner_1155Input> =
+  z
+    .object({
+      id: z
+        .union([
+          z.string().cuid(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      token_address: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      token_id: z
+        .union([
+          z.number().int(),
+          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      attributes: z
+        .union([
+          z.string(),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      block_minted: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      contract_type: z
+        .union([
+          z.string(),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      description: z
+        .union([
+          z.string(),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      image: z
+        .union([
+          z.string(),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      image_url: z
+        .union([
+          z.string(),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      metadata: z
+        .union([
+          z.string(),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      name: z
+        .union([
+          z.string(),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      network: z
+        .union([
+          z.string(),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      old_image_url: z
+        .union([
+          z.string(),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      old_token_uri: z
+        .union([
+          z.string(),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      owner_of: z
+        .union([
+          z.string(),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      token_uri: z
+        .union([
+          z.string(),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      log_index: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      transaction_index: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      created_at: z
+        .union([
+          z.coerce.date(),
+          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      updated_at: z
+        .union([
+          z.coerce.date(),
+          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      open_rarity: z
+        .lazy(() => OpenRarityUpdateOneWithoutNftNestedInputSchema)
+        .optional(),
+      collection: z
+        .lazy(() => CollectionUpdateOneRequiredWithoutNftsNestedInputSchema)
+        .optional(),
+    })
+    .strict();
+
+export const NftUncheckedUpdateWithoutNft_owner_1155InputSchema: z.ZodType<Prisma.NftUncheckedUpdateWithoutNft_owner_1155Input> =
+  z
+    .object({
+      id: z
+        .union([
+          z.string().cuid(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      token_address: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      token_id: z
+        .union([
+          z.number().int(),
+          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      attributes: z
+        .union([
+          z.string(),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      block_minted: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      contract_type: z
+        .union([
+          z.string(),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      description: z
+        .union([
+          z.string(),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      image: z
+        .union([
+          z.string(),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      image_url: z
+        .union([
+          z.string(),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      metadata: z
+        .union([
+          z.string(),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      name: z
+        .union([
+          z.string(),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      network: z
+        .union([
+          z.string(),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      old_image_url: z
+        .union([
+          z.string(),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      old_token_uri: z
+        .union([
+          z.string(),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      owner_of: z
+        .union([
+          z.string(),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      token_uri: z
+        .union([
+          z.string(),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      log_index: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      transaction_index: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      collection_id: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      created_at: z
+        .union([
+          z.coerce.date(),
+          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      updated_at: z
+        .union([
+          z.coerce.date(),
+          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      open_rarity: z
+        .lazy(() => OpenRarityUncheckedUpdateOneWithoutNftNestedInputSchema)
+        .optional(),
+    })
+    .strict();
+
 export const CollectionCreateWithoutMint_dataInputSchema: z.ZodType<Prisma.CollectionCreateWithoutMint_dataInput> =
   z
     .object({
@@ -19511,6 +21006,7 @@ export const CollectionCreateWithoutMint_dataInputSchema: z.ZodType<Prisma.Colle
       twitter: z.string().optional().nullable(),
       website: z.string().optional().nullable(),
       discord: z.string().optional().nullable(),
+      network: z.string().optional().nullable(),
       num_items: z.number().int().optional().nullable(),
       num_owners: z.number().int().optional().nullable(),
       last_refreshed: z.coerce.date().optional().nullable(),
@@ -19560,6 +21056,7 @@ export const CollectionUncheckedCreateWithoutMint_dataInputSchema: z.ZodType<Pri
       twitter: z.string().optional().nullable(),
       website: z.string().optional().nullable(),
       discord: z.string().optional().nullable(),
+      network: z.string().optional().nullable(),
       num_items: z.number().int().optional().nullable(),
       num_owners: z.number().int().optional().nullable(),
       last_refreshed: z.coerce.date().optional().nullable(),
@@ -19805,6 +21302,13 @@ export const CollectionUpdateWithoutMint_dataInputSchema: z.ZodType<Prisma.Colle
         .optional()
         .nullable(),
       discord: z
+        .union([
+          z.string(),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      network: z
         .union([
           z.string(),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
@@ -20061,6 +21565,13 @@ export const CollectionUncheckedUpdateWithoutMint_dataInputSchema: z.ZodType<Pri
         ])
         .optional()
         .nullable(),
+      network: z
+        .union([
+          z.string(),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
       num_items: z
         .union([
           z.number().int(),
@@ -20124,8 +21635,13 @@ export const NftCreateWithoutOpen_rarityInputSchema: z.ZodType<Prisma.NftCreateW
       old_token_uri: z.string().optional().nullable(),
       owner_of: z.string().optional().nullable(),
       token_uri: z.string().optional().nullable(),
+      log_index: z.number().int().optional().nullable(),
+      transaction_index: z.number().int().optional().nullable(),
       created_at: z.coerce.date().optional(),
       updated_at: z.coerce.date().optional(),
+      nft_owner_1155: z
+        .lazy(() => NftOwner1155CreateNestedManyWithoutNftInputSchema)
+        .optional(),
       collection: z.lazy(() => CollectionCreateNestedOneWithoutNftsInputSchema),
     })
     .strict();
@@ -20149,9 +21665,14 @@ export const NftUncheckedCreateWithoutOpen_rarityInputSchema: z.ZodType<Prisma.N
       old_token_uri: z.string().optional().nullable(),
       owner_of: z.string().optional().nullable(),
       token_uri: z.string().optional().nullable(),
+      log_index: z.number().int().optional().nullable(),
+      transaction_index: z.number().int().optional().nullable(),
       collection_id: z.string(),
       created_at: z.coerce.date().optional(),
       updated_at: z.coerce.date().optional(),
+      nft_owner_1155: z
+        .lazy(() => NftOwner1155UncheckedCreateNestedManyWithoutNftInputSchema)
+        .optional(),
     })
     .strict();
 
@@ -20304,6 +21825,20 @@ export const NftUpdateWithoutOpen_rarityInputSchema: z.ZodType<Prisma.NftUpdateW
         ])
         .optional()
         .nullable(),
+      log_index: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      transaction_index: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
       created_at: z
         .union([
           z.coerce.date(),
@@ -20315,6 +21850,9 @@ export const NftUpdateWithoutOpen_rarityInputSchema: z.ZodType<Prisma.NftUpdateW
           z.coerce.date(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
+        .optional(),
+      nft_owner_1155: z
+        .lazy(() => NftOwner1155UpdateManyWithoutNftNestedInputSchema)
         .optional(),
       collection: z
         .lazy(() => CollectionUpdateOneRequiredWithoutNftsNestedInputSchema)
@@ -20434,6 +21972,20 @@ export const NftUncheckedUpdateWithoutOpen_rarityInputSchema: z.ZodType<Prisma.N
         ])
         .optional()
         .nullable(),
+      log_index: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      transaction_index: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
       collection_id: z
         .union([
           z.string(),
@@ -20451,6 +22003,9 @@ export const NftUncheckedUpdateWithoutOpen_rarityInputSchema: z.ZodType<Prisma.N
           z.coerce.date(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
+        .optional(),
+      nft_owner_1155: z
+        .lazy(() => NftOwner1155UncheckedUpdateManyWithoutNftNestedInputSchema)
         .optional(),
     })
     .strict();
@@ -20486,6 +22041,7 @@ export const CollectionCreateWithoutCreatorInputSchema: z.ZodType<Prisma.Collect
       twitter: z.string().optional().nullable(),
       website: z.string().optional().nullable(),
       discord: z.string().optional().nullable(),
+      network: z.string().optional().nullable(),
       num_items: z.number().int().optional().nullable(),
       num_owners: z.number().int().optional().nullable(),
       last_refreshed: z.coerce.date().optional().nullable(),
@@ -20534,6 +22090,7 @@ export const CollectionUncheckedCreateWithoutCreatorInputSchema: z.ZodType<Prism
       twitter: z.string().optional().nullable(),
       website: z.string().optional().nullable(),
       discord: z.string().optional().nullable(),
+      network: z.string().optional().nullable(),
       num_items: z.number().int().optional().nullable(),
       num_owners: z.number().int().optional().nullable(),
       last_refreshed: z.coerce.date().optional().nullable(),
@@ -20909,6 +22466,10 @@ export const CollectionScalarWhereInputSchema: z.ZodType<Prisma.CollectionScalar
         .optional()
         .nullable(),
       discord: z
+        .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+        .optional()
+        .nullable(),
+      network: z
         .union([z.lazy(() => StringNullableFilterSchema), z.string()])
         .optional()
         .nullable(),
@@ -23617,6 +25178,20 @@ export const NftUpdateWithoutCollectionInputSchema: z.ZodType<Prisma.NftUpdateWi
         ])
         .optional()
         .nullable(),
+      log_index: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      transaction_index: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
       created_at: z
         .union([
           z.coerce.date(),
@@ -23631,6 +25206,9 @@ export const NftUpdateWithoutCollectionInputSchema: z.ZodType<Prisma.NftUpdateWi
         .optional(),
       open_rarity: z
         .lazy(() => OpenRarityUpdateOneWithoutNftNestedInputSchema)
+        .optional(),
+      nft_owner_1155: z
+        .lazy(() => NftOwner1155UpdateManyWithoutNftNestedInputSchema)
         .optional(),
     })
     .strict();
@@ -23747,6 +25325,20 @@ export const NftUncheckedUpdateWithoutCollectionInputSchema: z.ZodType<Prisma.Nf
         ])
         .optional()
         .nullable(),
+      log_index: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      transaction_index: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
       created_at: z
         .union([
           z.coerce.date(),
@@ -23761,6 +25353,9 @@ export const NftUncheckedUpdateWithoutCollectionInputSchema: z.ZodType<Prisma.Nf
         .optional(),
       open_rarity: z
         .lazy(() => OpenRarityUncheckedUpdateOneWithoutNftNestedInputSchema)
+        .optional(),
+      nft_owner_1155: z
+        .lazy(() => NftOwner1155UncheckedUpdateManyWithoutNftNestedInputSchema)
         .optional(),
     })
     .strict();
@@ -23877,6 +25472,20 @@ export const NftUncheckedUpdateManyWithoutCollectionInputSchema: z.ZodType<Prism
         ])
         .optional()
         .nullable(),
+      log_index: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      transaction_index: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
       created_at: z
         .union([
           z.coerce.date(),
@@ -23956,6 +25565,78 @@ export const MaxItem1155UncheckedUpdateManyWithoutCollectionInputSchema: z.ZodTy
         ])
         .optional(),
       max_supply: z
+        .union([
+          z.number().int(),
+          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const NftOwner1155UpdateWithoutNftInputSchema: z.ZodType<Prisma.NftOwner1155UpdateWithoutNftInput> =
+  z
+    .object({
+      id: z
+        .union([
+          z.string().cuid(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      owner_of: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      quantity: z
+        .union([
+          z.number().int(),
+          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const NftOwner1155UncheckedUpdateWithoutNftInputSchema: z.ZodType<Prisma.NftOwner1155UncheckedUpdateWithoutNftInput> =
+  z
+    .object({
+      id: z
+        .union([
+          z.string().cuid(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      owner_of: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      quantity: z
+        .union([
+          z.number().int(),
+          z.lazy(() => IntFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const NftOwner1155UncheckedUpdateManyWithoutNftInputSchema: z.ZodType<Prisma.NftOwner1155UncheckedUpdateManyWithoutNftInput> =
+  z
+    .object({
+      id: z
+        .union([
+          z.string().cuid(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      owner_of: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      quantity: z
         .union([
           z.number().int(),
           z.lazy(() => IntFieldUpdateOperationsInputSchema),
@@ -24156,6 +25837,13 @@ export const CollectionUpdateWithoutCreatorInputSchema: z.ZodType<Prisma.Collect
         .optional()
         .nullable(),
       discord: z
+        .union([
+          z.string(),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      network: z
         .union([
           z.string(),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
@@ -24405,6 +26093,13 @@ export const CollectionUncheckedUpdateWithoutCreatorInputSchema: z.ZodType<Prism
         ])
         .optional()
         .nullable(),
+      network: z
+        .union([
+          z.string(),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
       num_items: z
         .union([
           z.number().int(),
@@ -24646,6 +26341,13 @@ export const CollectionUncheckedUpdateManyWithoutCreatorInputSchema: z.ZodType<P
         .optional()
         .nullable(),
       discord: z
+        .union([
+          z.string(),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      network: z
         .union([
           z.string(),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
@@ -26399,6 +28101,129 @@ export const NftFindUniqueOrThrowArgsSchema: z.ZodType<Prisma.NftFindUniqueOrThr
     })
     .strict();
 
+export const NftOwner1155FindFirstArgsSchema: z.ZodType<Prisma.NftOwner1155FindFirstArgs> =
+  z
+    .object({
+      select: NftOwner1155SelectSchema.optional(),
+      include: NftOwner1155IncludeSchema.optional(),
+      where: NftOwner1155WhereInputSchema.optional(),
+      orderBy: z
+        .union([
+          NftOwner1155OrderByWithRelationInputSchema.array(),
+          NftOwner1155OrderByWithRelationInputSchema,
+        ])
+        .optional(),
+      cursor: NftOwner1155WhereUniqueInputSchema.optional(),
+      take: z.number().optional(),
+      skip: z.number().optional(),
+      distinct: z
+        .union([
+          NftOwner1155ScalarFieldEnumSchema,
+          NftOwner1155ScalarFieldEnumSchema.array(),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const NftOwner1155FindFirstOrThrowArgsSchema: z.ZodType<Prisma.NftOwner1155FindFirstOrThrowArgs> =
+  z
+    .object({
+      select: NftOwner1155SelectSchema.optional(),
+      include: NftOwner1155IncludeSchema.optional(),
+      where: NftOwner1155WhereInputSchema.optional(),
+      orderBy: z
+        .union([
+          NftOwner1155OrderByWithRelationInputSchema.array(),
+          NftOwner1155OrderByWithRelationInputSchema,
+        ])
+        .optional(),
+      cursor: NftOwner1155WhereUniqueInputSchema.optional(),
+      take: z.number().optional(),
+      skip: z.number().optional(),
+      distinct: z
+        .union([
+          NftOwner1155ScalarFieldEnumSchema,
+          NftOwner1155ScalarFieldEnumSchema.array(),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const NftOwner1155FindManyArgsSchema: z.ZodType<Prisma.NftOwner1155FindManyArgs> =
+  z
+    .object({
+      select: NftOwner1155SelectSchema.optional(),
+      include: NftOwner1155IncludeSchema.optional(),
+      where: NftOwner1155WhereInputSchema.optional(),
+      orderBy: z
+        .union([
+          NftOwner1155OrderByWithRelationInputSchema.array(),
+          NftOwner1155OrderByWithRelationInputSchema,
+        ])
+        .optional(),
+      cursor: NftOwner1155WhereUniqueInputSchema.optional(),
+      take: z.number().optional(),
+      skip: z.number().optional(),
+      distinct: z
+        .union([
+          NftOwner1155ScalarFieldEnumSchema,
+          NftOwner1155ScalarFieldEnumSchema.array(),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const NftOwner1155AggregateArgsSchema: z.ZodType<Prisma.NftOwner1155AggregateArgs> =
+  z
+    .object({
+      where: NftOwner1155WhereInputSchema.optional(),
+      orderBy: z
+        .union([
+          NftOwner1155OrderByWithRelationInputSchema.array(),
+          NftOwner1155OrderByWithRelationInputSchema,
+        ])
+        .optional(),
+      cursor: NftOwner1155WhereUniqueInputSchema.optional(),
+      take: z.number().optional(),
+      skip: z.number().optional(),
+    })
+    .strict();
+
+export const NftOwner1155GroupByArgsSchema: z.ZodType<Prisma.NftOwner1155GroupByArgs> =
+  z
+    .object({
+      where: NftOwner1155WhereInputSchema.optional(),
+      orderBy: z
+        .union([
+          NftOwner1155OrderByWithAggregationInputSchema.array(),
+          NftOwner1155OrderByWithAggregationInputSchema,
+        ])
+        .optional(),
+      by: NftOwner1155ScalarFieldEnumSchema.array(),
+      having: NftOwner1155ScalarWhereWithAggregatesInputSchema.optional(),
+      take: z.number().optional(),
+      skip: z.number().optional(),
+    })
+    .strict();
+
+export const NftOwner1155FindUniqueArgsSchema: z.ZodType<Prisma.NftOwner1155FindUniqueArgs> =
+  z
+    .object({
+      select: NftOwner1155SelectSchema.optional(),
+      include: NftOwner1155IncludeSchema.optional(),
+      where: NftOwner1155WhereUniqueInputSchema,
+    })
+    .strict();
+
+export const NftOwner1155FindUniqueOrThrowArgsSchema: z.ZodType<Prisma.NftOwner1155FindUniqueOrThrowArgs> =
+  z
+    .object({
+      select: NftOwner1155SelectSchema.optional(),
+      include: NftOwner1155IncludeSchema.optional(),
+      where: NftOwner1155WhereUniqueInputSchema,
+    })
+    .strict();
+
 export const MintDataFindFirstArgsSchema: z.ZodType<Prisma.MintDataFindFirstArgs> =
   z
     .object({
@@ -28126,6 +29951,75 @@ export const NftDeleteManyArgsSchema: z.ZodType<Prisma.NftDeleteManyArgs> = z
     where: NftWhereInputSchema.optional(),
   })
   .strict();
+
+export const NftOwner1155CreateArgsSchema: z.ZodType<Prisma.NftOwner1155CreateArgs> =
+  z
+    .object({
+      select: NftOwner1155SelectSchema.optional(),
+      include: NftOwner1155IncludeSchema.optional(),
+      data: z.union([
+        NftOwner1155CreateInputSchema,
+        NftOwner1155UncheckedCreateInputSchema,
+      ]),
+    })
+    .strict();
+
+export const NftOwner1155UpsertArgsSchema: z.ZodType<Prisma.NftOwner1155UpsertArgs> =
+  z
+    .object({
+      select: NftOwner1155SelectSchema.optional(),
+      include: NftOwner1155IncludeSchema.optional(),
+      where: NftOwner1155WhereUniqueInputSchema,
+      create: z.union([
+        NftOwner1155CreateInputSchema,
+        NftOwner1155UncheckedCreateInputSchema,
+      ]),
+      update: z.union([
+        NftOwner1155UpdateInputSchema,
+        NftOwner1155UncheckedUpdateInputSchema,
+      ]),
+    })
+    .strict();
+
+export const NftOwner1155DeleteArgsSchema: z.ZodType<Prisma.NftOwner1155DeleteArgs> =
+  z
+    .object({
+      select: NftOwner1155SelectSchema.optional(),
+      include: NftOwner1155IncludeSchema.optional(),
+      where: NftOwner1155WhereUniqueInputSchema,
+    })
+    .strict();
+
+export const NftOwner1155UpdateArgsSchema: z.ZodType<Prisma.NftOwner1155UpdateArgs> =
+  z
+    .object({
+      select: NftOwner1155SelectSchema.optional(),
+      include: NftOwner1155IncludeSchema.optional(),
+      data: z.union([
+        NftOwner1155UpdateInputSchema,
+        NftOwner1155UncheckedUpdateInputSchema,
+      ]),
+      where: NftOwner1155WhereUniqueInputSchema,
+    })
+    .strict();
+
+export const NftOwner1155UpdateManyArgsSchema: z.ZodType<Prisma.NftOwner1155UpdateManyArgs> =
+  z
+    .object({
+      data: z.union([
+        NftOwner1155UpdateManyMutationInputSchema,
+        NftOwner1155UncheckedUpdateManyInputSchema,
+      ]),
+      where: NftOwner1155WhereInputSchema.optional(),
+    })
+    .strict();
+
+export const NftOwner1155DeleteManyArgsSchema: z.ZodType<Prisma.NftOwner1155DeleteManyArgs> =
+  z
+    .object({
+      where: NftOwner1155WhereInputSchema.optional(),
+    })
+    .strict();
 
 export const MintDataCreateArgsSchema: z.ZodType<Prisma.MintDataCreateArgs> = z
   .object({

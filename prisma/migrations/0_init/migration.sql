@@ -29,6 +29,7 @@ CREATE TABLE "Collection" (
     "twitter" TEXT,
     "website" TEXT,
     "discord" TEXT,
+    "network" TEXT,
     "num_items" INTEGER,
     "num_owners" INTEGER,
     "last_refreshed" DATETIME,
@@ -64,10 +65,21 @@ CREATE TABLE "Nft" (
     "old_token_uri" TEXT,
     "owner_of" TEXT,
     "token_uri" TEXT,
+    "log_index" INTEGER,
+    "transaction_index" INTEGER,
     "collection_id" TEXT NOT NULL,
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" DATETIME NOT NULL,
     CONSTRAINT "Nft_collection_id_fkey" FOREIGN KEY ("collection_id") REFERENCES "Collection" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "NftOwner1155" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "owner_of" TEXT NOT NULL,
+    "quantity" INTEGER NOT NULL,
+    "nft_id" TEXT NOT NULL,
+    CONSTRAINT "NftOwner1155_nft_id_fkey" FOREIGN KEY ("nft_id") REFERENCES "Nft" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -259,7 +271,16 @@ CREATE TABLE "_RoleToUser" (
 );
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Collection_token_address_network_key" ON "Collection"("token_address", "network");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "MaxItem1155_token_id_collection_id_key" ON "MaxItem1155"("token_id", "collection_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Nft_token_id_collection_id_key" ON "Nft"("token_id", "collection_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "NftOwner1155_owner_of_nft_id_key" ON "NftOwner1155"("owner_of", "nft_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "MintData_collection_id_key" ON "MintData"("collection_id");
