@@ -46,14 +46,14 @@ seed-prod:
 	turso db shell --location iad $$REMOTE_DB_NAME < ./dump.sql
 
 seed-prod-rust:
-	node --max_old_space_size=4082 --require ts-node/register ./scripts/migrate.ts --source=$(source) --write=prod
+	node --max_old_space_size=8024 --require ts-node/register ./scripts/migrate.ts --source=$(source) --write=prod
 
 reset-local:
 	$(MAKE) wipe-local
 	$(MAKE) create-migration
 
 seed-local-tables:
-	node --max_old_space_size=4082 --require ts-node/register ./scripts/migrate.ts --source=$(source) --write=local
+	node --max_old_space_size=8024 --expose-gc --require ts-node/register ./scripts/migrate.ts --source=$(source) --write=local
 
 build-rust-binary:
 	cargo build --release --manifest-path ./scripts/rust/Cargo.toml

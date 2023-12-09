@@ -133,12 +133,16 @@ export async function getMongoTablesFromNetwork() {
   return { usersMongo, collectionsMongo, nftsMongo };
 }
 
-export function getBatchSqlStatements(
+export function saveBatchSqlStatements(
   objects: Object[],
   tableName: string
 ): string {
-  let statements: string[] = [];
-  objects.forEach((cleanedObj) => {
+  let batchCount = 0;
+  let batchSql = "";
+  let batchSize = 10000;
+  const outputPath = path.join(os.tmpdir(), `${tableName}.sql`);
+
+  objects.forEach((cleanedObj, index) => {
     const keys = Object.keys(cleanedObj);
     const columns = keys.join(", ");
     const values = Object.values(cleanedObj).map((value) => {
@@ -152,19 +156,27 @@ export function getBatchSqlStatements(
         ? `'${value.replace(/'/g, "''")}'`
         : value;
     });
-    statements.push(`INSERT INTO ${tableName} (${columns}) VALUES (${values})`);
+    const insertStatement = `INSERT INTO ${tableName} (${columns}) VALUES (${values});\n`;
+
+    batchSql += insertStatement;
+
+    if ((index + 1) % batchSize === 0 || index === objects.length - 1) {
+      // Write the batch to a file
+      fs.appendFileSync(outputPath, batchSql);
+      batchCount++;
+      batchSql = "";
+    }
   });
-  return statements.join(";\n");
+  return outputPath;
 }
 
 export async function writeWithRustClient(
-  batchStatements: string[],
+  batchStatementPaths: string[],
   db: string
 ) {
   let arg = db == "local" ? "--local-db" : "";
-  for (let i = 0; i < batchStatements.length; i++) {
-    const tempFilePath = path.join(os.tmpdir(), "batch.sql");
-    fs.writeFileSync(tempFilePath, batchStatements[i]);
+  for (let i = 0; i < batchStatementPaths.length; i++) {
+    const tempFilePath = batchStatementPaths[i];
     await new Promise((resolve, reject) => {
       const rustProcess = spawn("./scripts/rust/target/release/upload", [
         tempFilePath,

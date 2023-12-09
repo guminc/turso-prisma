@@ -2,7 +2,7 @@ import { createClient } from "@libsql/client";
 import { ethers } from "ethers";
 import cuid from "cuid";
 import {
-  getBatchSqlStatements,
+  saveBatchSqlStatements,
   getMongoTablesFromFile,
   getMongoTablesFromNetwork,
   parseArgs,
@@ -121,10 +121,13 @@ function cleanCollectionForSqlite(
 function cleanNftForSqlite(
   nftMongo: any,
   collections: Collection[]
-): [Nft, OpenRarity] | null {
+): [Nft | null, OpenRarity | null] {
   let token_address: string;
   let foundCollection: any;
   let collection_id: string;
+
+  let nftResult: Nft | null = null;
+  let openRarityResult: OpenRarity | null = null;
 
   try {
     token_address = ethers.isAddress(nftMongo.token_address)
@@ -138,12 +141,13 @@ function cleanNftForSqlite(
     console.log(nftMongo.token_address, nftMongo.token_address_lowercase);
     console.log(nftMongo);
     console.log(foundCollection);
-    return null;
+    return [null, null];
   }
 
   const nft = {
     ...nftMongo,
     id: cuid(),
+    name: nftMongo.name ? String(nftMongo.name) : null,
     collection_id: collection_id,
     token_address: token_address,
     token_id: Number(nftMongo.token_id),
@@ -155,27 +159,31 @@ function cleanNftForSqlite(
     updated_at: new Date(),
   };
 
-  const openRarity = {
-    ...nftMongo.openRarity,
-    id: cuid(),
-    nft_id: nft.id,
-    created_at: new Date(),
-    updated_at: new Date(),
-  };
-
-  const parsedOpenrarity = OpenRaritySchema.safeParse(openRarity);
-  if (!parsedOpenrarity.success) {
-    console.error({ error: parsedOpenrarity.error });
-    throw new Error(`Invalid openRarity: ${parsedOpenrarity.error}`);
-  }
-
   const parsedNft = NftSchema.safeParse(nft);
   if (!parsedNft.success) {
     console.error({ error: parsedNft.error });
     throw new Error(`Invalid nft: ${parsedNft.error}`);
   }
+  nftResult = parsedNft.data;
 
-  return [parsedNft.data, parsedOpenrarity.data];
+  if (nftMongo.open_rarity?.rank) {
+    const openRarityRaw = {
+      ...nftMongo.open_rarity,
+      id: cuid(),
+      nft_id: nft.id,
+      created_at: new Date(),
+      updated_at: new Date(),
+    };
+
+    const parsedOpenRarity = OpenRaritySchema.safeParse(openRarityRaw);
+    if (!parsedOpenRarity.success) {
+      console.error({ error: parsedOpenRarity.error });
+      throw new Error(`Invalid openRarity: ${parsedOpenRarity.error}`);
+    }
+    openRarityResult = parsedOpenRarity.data;
+  }
+
+  return [nftResult, openRarityResult];
 }
 
 function cleanUserForSqlite(userMongo: any): User {
@@ -199,14 +207,14 @@ function cleanUserForSqlite(userMongo: any): User {
   return result.data;
 }
 
-async function writeToDb(batchStatements: string[], write: string) {
+async function writeToDb(batchStatementPaths: string[], write: string) {
   if (write == "prod") {
     console.time("Inserting docs into prod with Rust");
-    await writeWithRustClient(batchStatements, "prod");
+    await writeWithRustClient(batchStatementPaths, "prod");
     console.timeEnd("Inserting docs into prod with Rust");
   } else {
     console.time("Inserting docs into local with Rust");
-    await writeWithRustClient(batchStatements, "local");
+    await writeWithRustClient(batchStatementPaths, "local");
     console.timeEnd("Inserting docs into local with Rust");
   }
 }
@@ -230,12 +238,14 @@ async function main() {
 
     console.timeEnd(`Fetching tables from ${source}`);
 
-    const batchStatements: string[] = [];
+    const batchStatementPaths: string[] = [];
     const cleanedUsers = usersMongo.map((user) => cleanUserForSqlite(user));
-    batchStatements.push(getBatchSqlStatements(cleanedUsers, "User"));
+    batchStatementPaths.push(saveBatchSqlStatements(cleanedUsers, "User"));
 
-    await writeToDb(batchStatements, write);
-    batchStatements.length = 0;
+    usersMongo.length = 0;
+    cleanedUsers.length = 0;
+    await writeToDb(batchStatementPaths, write);
+    batchStatementPaths.length = 0;
 
     const cleanedCollections: Collection[] = [];
     const cleanedMaxItem1155s: MaxItem1155[] = [];
@@ -265,34 +275,62 @@ async function main() {
       cleanedMintDatas.push(cleanedMintData);
       cleanedMaxItem1155s.push(...cleanedMaxItem1155);
     }
-    batchStatements.push(
-      getBatchSqlStatements(cleanedCollections, "Collection")
+    batchStatementPaths.push(
+      saveBatchSqlStatements(cleanedCollections, "Collection")
     );
-    batchStatements.push(getBatchSqlStatements(cleanedMintDatas, "MintData"));
-    batchStatements.push(
-      getBatchSqlStatements(cleanedMaxItem1155s, "MaxItem1155")
+    batchStatementPaths.push(
+      saveBatchSqlStatements(cleanedMintDatas, "MintData")
+    );
+    batchStatementPaths.push(
+      saveBatchSqlStatements(cleanedMaxItem1155s, "MaxItem1155")
     );
 
-    await writeToDb(batchStatements, write);
-    batchStatements.length = 0;
+    collectionsMongo.length = 0;
+    cleanedMintDatas.length = 0;
+    cleanedMaxItem1155s.length = 0;
+    await writeToDb(batchStatementPaths, write);
+    batchStatementPaths.length = 0;
 
     const cleanedNfts: Nft[] = [];
     const cleanedOpenRarities: OpenRarity[] = [];
-    nftsMongo.forEach((nft) => {
-      const response = cleanNftForSqlite(nft, cleanedCollections);
-      if (!response) {
-        return;
-      }
-      const [cleanedNft, cleanedOpenrarity] = response;
-      cleanedNfts.push(cleanedNft);
-      cleanedOpenRarities.push(cleanedOpenrarity);
-    });
-    batchStatements.push(getBatchSqlStatements(cleanedNfts, "Nft"));
-    batchStatements.push(
-      getBatchSqlStatements(cleanedOpenRarities, "OpenRarity")
-    );
 
-    await writeToDb(batchStatements, write);
+    while (nftsMongo.length > 0) {
+      const nft = nftsMongo.pop(); // Removes element for memory
+      const [cleanedNft, cleanedOpenrarity] = cleanNftForSqlite(
+        nft,
+        cleanedCollections
+      );
+      if (cleanedNft) {
+        cleanedNfts.push(cleanedNft);
+      }
+      if (cleanedOpenrarity) {
+        cleanedOpenRarities.push(cleanedOpenrarity);
+      }
+    }
+
+    cleanedCollections.length = 0;
+    batchStatementPaths.push(saveBatchSqlStatements(cleanedNfts, "Nft"));
+    cleanedNfts.length = 0;
+
+    // force garbage collector
+    if (typeof global !== "undefined" && typeof global.gc === "function") {
+      global.gc();
+    }
+
+    await writeToDb(batchStatementPaths, write);
+    batchStatementPaths.length = 0;
+
+    batchStatementPaths.push(
+      saveBatchSqlStatements(cleanedOpenRarities, "OpenRarity")
+    );
+    cleanedOpenRarities.length = 0;
+
+    // force garbage collector
+    if (typeof global !== "undefined" && typeof global.gc === "function") {
+      global.gc();
+    }
+
+    await writeToDb(batchStatementPaths, write);
   } catch (error) {
     console.error(error);
   }
