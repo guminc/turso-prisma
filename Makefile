@@ -20,6 +20,14 @@ dump-mongo-users:
 dump-mongo-collections:
 	mongodump --collection=Collections --forceTableScan --uri $$MONGO_URI
 
+dump-mongo-nfts:
+	mongodump --collection=NFTs --forceTableScan --uri $$MONGO_URI
+
+convert-bson-to-json:
+	for file in ./dump/scatter/*.bson; do \
+		bsondump --outFile "$${file%.bson}.json" "$$file"; \
+	done
+
 migrate-prod:
 	for file in ./prisma/migrations/*/*.sql; do \
 		turso db shell --location iad $$REMOTE_DB_NAME < $$file; \
@@ -38,14 +46,14 @@ seed-prod:
 	turso db shell --location iad $$REMOTE_DB_NAME < ./dump.sql
 
 seed-prod-rust:
-	npx ts-node ./scripts/migrate.ts --source=$(source) --write=prod
+	node --max_old_space_size=4082 --require ts-node/register ./scripts/migrate.ts --source=$(source) --write=prod
 
 reset-local:
 	$(MAKE) wipe-local
 	$(MAKE) create-migration
 
 seed-local-tables:
-	npx ts-node ./scripts/migrate.ts --source=$(source) --write=local
+	node --max_old_space_size=4082 --require ts-node/register ./scripts/migrate.ts --source=$(source) --write=local
 
 build-rust-binary:
 	cargo build --release --manifest-path ./scripts/rust/Cargo.toml
@@ -53,8 +61,8 @@ build-rust-binary:
 migrate-users-to-prod:
 	./scripts/echo.sh
 	@if [ "$(source)" = "file" ]; then \
-	    $(MAKE) dump-mongo-users; \
-	    $(MAKE) dump-mongo-collections; \
+	    $(MAKE) dump-mongo-everything; \
+		$(MAKE) convert-bson-to-json; \
 	fi
 	$(MAKE) reset-local; \
 	$(MAKE) build-rust-binary; \

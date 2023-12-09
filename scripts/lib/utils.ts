@@ -1,9 +1,9 @@
 import fs from "fs";
 import path from "path";
+import readline from "readline";
 import os from "os";
 import { spawn } from "child_process";
 
-import { BSON } from "bson";
 import { MongoClient } from "mongodb";
 
 export function parseArgs() {
@@ -20,71 +20,95 @@ export function parseArgs() {
   return parsedArgs;
 }
 
-export function getMongoTablesFromFile() {
-  let usersMongo: BSON.Document[] = [];
-  let collectionsMongo: BSON.Document[] = [];
-
-  const pathToUsersBson = path.join(__dirname, "../../dump/Scatter/Users.bson");
-  const pathToCollectionsBson = path.join(
+// Reminder to update make to turn to json
+export async function getMongoTablesFromFile() {
+  const pathToUsersJson = path.join(__dirname, "../../dump/Scatter/Users.json");
+  const pathToCollectionsJson = path.join(
     __dirname,
-    "../../dump/Scatter/Collections.bson"
+    "../../dump/Scatter/Collections.json"
   );
+  const pathToNftsJson = path.join(__dirname, "../../dump/Scatter/NFTs.json");
 
-  if (!fs.existsSync(pathToUsersBson)) {
-    throw new Error("Users.bson file not found at path: " + pathToUsersBson);
+  if (!fs.existsSync(pathToUsersJson)) {
+    throw new Error("Users.json file not found at path: " + pathToUsersJson);
   }
 
-  if (!fs.existsSync(pathToCollectionsBson)) {
+  if (!fs.existsSync(pathToCollectionsJson)) {
     throw new Error(
-      "Collections.bson file not found at path: " + pathToCollectionsBson
+      "Collections.json file not found at path: " + pathToCollectionsJson
     );
   }
 
-  const userbuffer = fs.readFileSync(pathToUsersBson);
-  const collectionBuffer = fs.readFileSync(pathToCollectionsBson);
-
-  let offset = 0;
-  let i = 0;
-
-  while (offset < userbuffer.length) {
-    // Read the size of the next document
-    const size = userbuffer.readInt32LE(offset);
-    // Extract the document's buffer using subarray
-    const documentBuffer = userbuffer.subarray(offset, offset + size);
-
-    // Deserialize the document
-    const document = BSON.deserialize(documentBuffer);
-
-    usersMongo.push(document);
-
-    process.stdout.write(`\rCount: ${++i}`);
-
-    // Move to the next document
-    offset += size;
+  if (!fs.existsSync(pathToNftsJson)) {
+    throw new Error("NFTs.json file not found at path: " + pathToNftsJson);
   }
 
-  offset = 0;
-  i = 0;
+  function convertMongoTypes(obj: any): any {
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        const value = obj[key];
 
-  while (offset < collectionBuffer.length) {
-    // Read the size of the next document
-    const size = collectionBuffer.readInt32LE(offset);
-    // Extract the document's buffer using subarray
-    const documentBuffer = collectionBuffer.subarray(offset, offset + size);
-    // Deserialize the document
-    const document = BSON.deserialize(documentBuffer);
-
-    collectionsMongo.push(document);
-
-    process.stdout.write(`\rCount: ${++i}`);
-
-    // Move to the next document
-    offset += size;
+        if (typeof value === "object" && value !== null) {
+          // Check for MongoDB specific types and convert
+          if ("$numberInt" in value) {
+            obj[key] = parseInt(value["$numberInt"], 10);
+          } else if ("$numberLong" in value) {
+            obj[key] = parseInt(value["$numberLong"], 10);
+          } else if ("$numberDouble" in value) {
+            obj[key] = parseFloat(value["$numberDouble"]);
+          } else if ("$date" in value) {
+            if (
+              typeof value["$date"] === "object" &&
+              "$numberLong" in value["$date"]
+            ) {
+              obj[key] = new Date(parseInt(value["$date"]["$numberLong"], 10));
+            } else {
+              obj[key] = new Date(value["$date"]);
+            }
+          } else {
+            // Recurse into object
+            convertMongoTypes(value);
+          }
+        }
+      }
+    }
+    return obj;
   }
 
-  process.stdout.write("\n");
+  function readAndParseJsonFile(filePath: string): Promise<Document[]> {
+    return new Promise((resolve, reject) => {
+      const jsonArray: Document[] = [];
+      const fileStream = fs.createReadStream(filePath, { encoding: "utf8" });
+      const rl = readline.createInterface({
+        input: fileStream,
+        crlfDelay: Infinity,
+      });
 
-  return { usersMongo, collectionsMongo };
+      rl.on("line", (line) => {
+        if (line.trim() === "") return; // Skip empty lines
+        try {
+          const jsonObj = JSON.parse(line);
+          jsonArray.push(convertMongoTypes(jsonObj));
+        } catch (error) {
+          reject(error);
+        }
+      });
+
+      rl.on("close", () => {
+        resolve(jsonArray);
+      });
+
+      rl.on("error", (error) => {
+        reject(error);
+      });
+    });
+  }
+
+  const usersMongo = await readAndParseJsonFile(pathToUsersJson);
+  const collectionsMongo = await readAndParseJsonFile(pathToCollectionsJson);
+  const nftsMongo = await readAndParseJsonFile(pathToNftsJson);
+
+  return { usersMongo, collectionsMongo, nftsMongo };
 }
 
 export async function getMongoTablesFromNetwork() {
@@ -102,10 +126,11 @@ export async function getMongoTablesFromNetwork() {
     .collection("Collections")
     .find()
     .toArray();
+  const nftsMongo = await mongoDb.collection("NFTs").find().toArray();
 
   await mongoClient.close();
 
-  return { usersMongo, collectionsMongo };
+  return { usersMongo, collectionsMongo, nftsMongo };
 }
 
 export function getBatchSqlStatements(

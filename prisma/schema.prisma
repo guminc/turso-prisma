@@ -71,21 +71,20 @@ model MaxItem1155 {
 model Nft {
   id            String      @id @default(cuid())
   token_address String
-  token_id      String
-  attributes    String // JSON serialized as a string
-  block_minted  Int
-  contract_type String
-  description   String
-  image         String
-  image_url     String
-  metadata      String // JSON serialized as a string
-  name          String
-  network       String
-  old_image_url String
-  old_token_uri String
-  owner_of      String
-  token_id_int  Int
-  token_uri     String
+  token_id      Int
+  attributes    String? // JSON serialized as a string
+  block_minted  Int?
+  contract_type String?
+  description   String?
+  image         String?
+  image_url     String?
+  metadata      String? // JSON serialized as a string
+  name          String?
+  network       String?
+  old_image_url String?
+  old_token_uri String?
+  owner_of      String?
+  token_uri     String?
   open_rarity   OpenRarity?
   collection    Collection  @relation(fields: [collection_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
   collection_id String
@@ -124,9 +123,9 @@ model MintData {
 
 model OpenRarity {
   id                String @id @default(cuid())
-  rank              Int
-  score             Float
-  unique_attributes Int
+  rank              Int?
+  score             Float?
+  unique_attributes Int?
   nft               Nft    @relation(fields: [nft_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
   nft_id            String @unique
 
