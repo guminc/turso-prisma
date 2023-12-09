@@ -2793,29 +2793,13 @@ export const NftOrderByWithRelationInputSchema: z.ZodType<Prisma.NftOrderByWithR
 
 export const NftWhereUniqueInputSchema: z.ZodType<Prisma.NftWhereUniqueInput> =
   z
-    .union([
-      z.object({
-        id: z.string().cuid(),
-        token_id_collection_id: z.lazy(
-          () => NftToken_idCollection_idCompoundUniqueInputSchema
-        ),
-      }),
-      z.object({
-        id: z.string().cuid(),
-      }),
-      z.object({
-        token_id_collection_id: z.lazy(
-          () => NftToken_idCollection_idCompoundUniqueInputSchema
-        ),
-      }),
-    ])
+    .object({
+      id: z.string().cuid(),
+    })
     .and(
       z
         .object({
           id: z.string().cuid().optional(),
-          token_id_collection_id: z
-            .lazy(() => NftToken_idCollection_idCompoundUniqueInputSchema)
-            .optional(),
           AND: z
             .union([
               z.lazy(() => NftWhereInputSchema),
@@ -12889,14 +12873,6 @@ export const NftOwner1155OrderByRelationAggregateInputSchema: z.ZodType<Prisma.N
   z
     .object({
       _count: z.lazy(() => SortOrderSchema).optional(),
-    })
-    .strict();
-
-export const NftToken_idCollection_idCompoundUniqueInputSchema: z.ZodType<Prisma.NftToken_idCollection_idCompoundUniqueInput> =
-  z
-    .object({
-      token_id: z.number(),
-      collection_id: z.string(),
     })
     .strict();
 
