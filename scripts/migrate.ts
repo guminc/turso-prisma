@@ -280,15 +280,10 @@ async function main() {
         });
         if (!user) {
           console.log(
-            "User",
+            "Error: User",
             cleanedCollection.creator_address,
-            "does not exist, creating User ..."
+            "does not exist."
           );
-          await prisma.user.create({
-            data: cleanUserForSqlite({
-              address: cleanedCollection.creator_address,
-            }),
-          });
         }
       }
       cleanedCollections.push(cleanedCollection);

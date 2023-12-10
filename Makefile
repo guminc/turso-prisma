@@ -5,7 +5,7 @@
 export
 
 # Default target
-all: migrate-users-to-prod
+all: migrate-to-prod
 
 create-migration:
 	npx prisma migrate dev
@@ -24,7 +24,7 @@ dump-mongo-nfts:
 	mongodump --collection=NFTs --forceTableScan --uri $$MONGO_URI
 
 convert-bson-to-json:
-	for file in ./dump/scatter/*.bson; do \
+	for file in ./dump/Scatter/*.bson; do \
 		bsondump --outFile "$${file%.bson}.json" "$$file"; \
 	done
 
@@ -45,8 +45,20 @@ wipe-local:
 seed-prod:
 	turso db shell --location iad $$REMOTE_DB_NAME < ./dump.sql
 
+create-prod:
+	turso db create $$REMOTE_DB_NAME --from-file ./prisma/dev.db
+
+destroy-prod:
+	yes | turso db destroy $$REMOTE_DB_NAME
+
 seed-prod-rust:
-	node --max_old_space_size=8024 --require ts-node/register ./scripts/migrate.ts --source=$(source) --write=prod
+	./scripts/rust/target/release/upload ./dump/User.sql
+	./scripts/rust/target/release/upload ./dump/Collection.sql
+	./scripts/rust/target/release/upload ./dump/MintData.sql
+	./scripts/rust/target/release/upload ./dump/MaxItem1155.sql
+	./scripts/rust/target/release/upload ./dump/Nft.sql
+	./scripts/rust/target/release/upload ./dump/OpenRarity.sql
+	./scripts/rust/target/release/upload ./dump/NftOwner1155.sql
 
 reset-local:
 	$(MAKE) wipe-local
@@ -58,18 +70,26 @@ seed-local-tables:
 build-rust-binary:
 	cargo build --release --manifest-path ./scripts/rust/Cargo.toml
 
-migrate-users-to-prod:
+migrate-to-prod:
 	./scripts/echo.sh
 	@if [ "$(source)" = "file" ]; then \
 	    $(MAKE) dump-mongo-everything; \
 		$(MAKE) convert-bson-to-json; \
 	fi
-	$(MAKE) reset-local; \
-	$(MAKE) build-rust-binary; \
-	$(MAKE) seed-local-tables; \
-	$(MAKE) dump-local; \
-	$(MAKE) wipe-prod; \
-	$(MAKE) seed-prod; \
+	@if [ "$(write)" = "rust" ]; then \
+		$(MAKE) reset-local; \
+		$(MAKE) build-rust-binary; \
+		$(MAKE) seed-local-tables; \
+		$(MAKE) wipe-prod; \
+		$(MAKE) migrate-prod; \
+		$(MAKE) seed-prod-rust; \
+	fi
+	else \
+		$(MAKE) reset-local; \
+		$(MAKE) build-rust-binary; \
+		$(MAKE) seed-local-tables; \
+		$(MAKE) destroy-prod; \
+		$(MAKE) create-prod; \
 
 dump-local:
 	sqlite3 ./prisma/dev.db '.output ./dump.sql' '.dump'

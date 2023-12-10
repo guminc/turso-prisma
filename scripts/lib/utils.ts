@@ -140,8 +140,9 @@ export function saveBatchSqlStatements(
   let batchCount = 0;
   let batchSql = "";
   let batchSize = 10000;
-  const outputPath = path.join(os.tmpdir(), `${tableName}.sql`);
+  const outputPath = path.join("./dump/", `${tableName}.sql`);
 
+  fs.writeFileSync(outputPath, "", "utf8");
   objects.forEach((cleanedObj, index) => {
     const keys = Object.keys(cleanedObj);
     const columns = keys.join(", ");
@@ -194,7 +195,7 @@ export async function writeWithRustClient(
 
       rustProcess.on("close", (code) => {
         console.log(`Rust process exited with code ${code}`);
-        fs.unlinkSync(tempFilePath);
+        // fs.unlinkSync(tempFilePath);
         resolve(code);
       });
     });

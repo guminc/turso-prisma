@@ -277,9 +277,6 @@ CREATE UNIQUE INDEX "Collection_token_address_network_key" ON "Collection"("toke
 CREATE UNIQUE INDEX "MaxItem1155_token_id_collection_id_key" ON "MaxItem1155"("token_id", "collection_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Nft_token_id_collection_id_key" ON "Nft"("token_id", "collection_id");
-
--- CreateIndex
 CREATE UNIQUE INDEX "NftOwner1155_owner_of_nft_id_key" ON "NftOwner1155"("owner_of", "nft_id");
 
 -- CreateIndex
