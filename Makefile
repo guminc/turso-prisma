@@ -83,13 +83,13 @@ migrate-to-prod:
 		$(MAKE) wipe-prod; \
 		$(MAKE) migrate-prod; \
 		$(MAKE) seed-prod-rust; \
-	fi
 	else \
 		$(MAKE) reset-local; \
 		$(MAKE) build-rust-binary; \
 		$(MAKE) seed-local-tables; \
 		$(MAKE) destroy-prod; \
 		$(MAKE) create-prod; \
+	fi
 
 dump-local:
 	sqlite3 ./prisma/dev.db '.output ./dump.sql' '.dump'
