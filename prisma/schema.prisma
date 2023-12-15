@@ -21,7 +21,7 @@ model Collection {
   name                   String?
   max_items              Int?
   symbol                 String?
-  creator_address        String?
+  creator_address        String? ///@zod.import(["import { getAddress } from 'ethers'"]).custom.use(z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }))
   is_hidden              Boolean?
   sort_order             Int?
   is_mint_active         Boolean?
@@ -35,7 +35,7 @@ model Collection {
   slug                   String?
   mint_info              String? // JSON serialized as a string
   socials                String? // JSON serialized as a string
-  token_address          String?
+  token_address          String? ///@zod.import(["import { getAddress } from 'ethers'"]).custom.use(z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }))
   trait_counts           String? // JSON serialized as a string
   avatar_uri             String?
   banner_uri             String?
@@ -71,9 +71,10 @@ model MaxItem1155 {
   @@unique([token_id, collection_id])
 }
 
+/// @zod.import(["import { getAddress } from 'ethers'"])
 model Nft {
   id                String         @id @default(cuid())
-  token_address     String
+  token_address     String ///@zod.import(["import { getAddress } from 'ethers'"]).custom.use(z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }))
   token_id          Int
   attributes        String? // JSON serialized as a string
   block_minted      Int?
@@ -86,7 +87,7 @@ model Nft {
   network           String?
   old_image_url     String?
   old_token_uri     String?
-  owner_of          String?
+  owner_of          String? ///@zod.import(["import { getAddress } from 'ethers'"]).custom.use(z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }))
   token_uri         String?
   log_index         Int?
   transaction_index Int?
@@ -104,7 +105,7 @@ model Nft {
 
 model NftOwner1155 {
   id       String @id @default(cuid())
-  owner_of String
+  owner_of String ///@zod.import(["import { getAddress } from 'ethers'"]).custom.use(z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }))
   quantity Int
   nft      Nft    @relation(fields: [nft_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
   nft_id   String
