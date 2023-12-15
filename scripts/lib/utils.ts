@@ -1,10 +1,74 @@
+import { spawn } from "child_process";
 import fs from "fs";
 import path from "path";
-import os from "os";
-import { spawn } from "child_process";
+import readline from "readline";
 
-import { BSON } from "bson";
 import { MongoClient } from "mongodb";
+
+const MONGO_URI = process.env.MONGO_URI || "";
+const DATABASE_NAME = "Scatter";
+let mongoClient = new MongoClient(MONGO_URI);
+
+function convertMongoTypes(obj: any): any {
+  for (const key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      const value = obj[key];
+
+      if (typeof value === "object" && value !== null) {
+        // Check for MongoDB specific types and convert
+        if ("$numberInt" in value) {
+          obj[key] = parseInt(value["$numberInt"], 10);
+        } else if ("$numberLong" in value) {
+          obj[key] = parseInt(value["$numberLong"], 10);
+        } else if ("$numberDouble" in value) {
+          obj[key] = parseFloat(value["$numberDouble"]);
+        } else if ("$date" in value) {
+          if (
+            typeof value["$date"] === "object" &&
+            "$numberLong" in value["$date"]
+          ) {
+            obj[key] = new Date(parseInt(value["$date"]["$numberLong"], 10));
+          } else {
+            obj[key] = new Date(value["$date"]);
+          }
+        } else {
+          // Recurse into object
+          convertMongoTypes(value);
+        }
+      }
+    }
+  }
+  return obj;
+}
+
+function readAndParseJsonFile(filePath: string): Promise<Document[]> {
+  return new Promise((resolve, reject) => {
+    const jsonArray: Document[] = [];
+    const fileStream = fs.createReadStream(filePath, { encoding: "utf8" });
+    const rl = readline.createInterface({
+      input: fileStream,
+      crlfDelay: Infinity,
+    });
+
+    rl.on("line", (line) => {
+      if (line.trim() === "") return; // Skip empty lines
+      try {
+        const jsonObj = JSON.parse(line);
+        jsonArray.push(convertMongoTypes(jsonObj));
+      } catch (error) {
+        reject(error);
+      }
+    });
+
+    rl.on("close", () => {
+      resolve(jsonArray);
+    });
+
+    rl.on("error", (error) => {
+      reject(error);
+    });
+  });
+}
 
 export function parseArgs() {
   const args = process.argv.slice(2); // Remove the first two default arguments
@@ -20,71 +84,48 @@ export function parseArgs() {
   return parsedArgs;
 }
 
-export function getMongoTablesFromFile() {
-  let usersMongo: BSON.Document[] = [];
-  let collectionsMongo: BSON.Document[] = [];
+export async function getMongoTableFromFileByName(table: string) {
+  const pathToJson = path.join(__dirname, `../../dump/Scatter/${table}.json`);
 
-  const pathToUsersBson = path.join(__dirname, "../../dump/Scatter/Users.bson");
-  const pathToCollectionsBson = path.join(
-    __dirname,
-    "../../dump/Scatter/Collections.bson"
-  );
-
-  if (!fs.existsSync(pathToUsersBson)) {
-    throw new Error("Users.bson file not found at path: " + pathToUsersBson);
+  if (!fs.existsSync(pathToJson)) {
+    throw new Error(`${table}.json file not found at path: ` + pathToJson);
   }
 
-  if (!fs.existsSync(pathToCollectionsBson)) {
+  return readAndParseJsonFile(pathToJson);
+}
+
+// Reminder to update make to turn to json
+export async function getMongoTablesFromFile() {
+  const pathToUsersJson = path.join(__dirname, "../../dump/Scatter/Users.json");
+  const pathToCollectionsJson = path.join(
+    __dirname,
+    "../../dump/Scatter/Collections.json"
+  );
+  const pathToNftsJson = path.join(__dirname, "../../dump/Scatter/NFTs.json");
+
+  if (!fs.existsSync(pathToUsersJson)) {
+    throw new Error("Users.json file not found at path: " + pathToUsersJson);
+  }
+
+  if (!fs.existsSync(pathToCollectionsJson)) {
     throw new Error(
-      "Collections.bson file not found at path: " + pathToCollectionsBson
+      "Collections.json file not found at path: " + pathToCollectionsJson
     );
   }
 
-  const userbuffer = fs.readFileSync(pathToUsersBson);
-  const collectionBuffer = fs.readFileSync(pathToCollectionsBson);
-
-  let offset = 0;
-  let i = 0;
-
-  while (offset < userbuffer.length) {
-    // Read the size of the next document
-    const size = userbuffer.readInt32LE(offset);
-    // Extract the document's buffer using subarray
-    const documentBuffer = userbuffer.subarray(offset, offset + size);
-
-    // Deserialize the document
-    const document = BSON.deserialize(documentBuffer);
-
-    usersMongo.push(document);
-
-    process.stdout.write(`\rCount: ${++i}`);
-
-    // Move to the next document
-    offset += size;
+  if (!fs.existsSync(pathToNftsJson)) {
+    throw new Error("NFTs.json file not found at path: " + pathToNftsJson);
   }
 
-  offset = 0;
-  i = 0;
+  const usersMongo = await readAndParseJsonFile(pathToUsersJson);
+  const collectionsMongo = await readAndParseJsonFile(pathToCollectionsJson);
+  const nftsMongo = await readAndParseJsonFile(pathToNftsJson);
 
-  while (offset < collectionBuffer.length) {
-    // Read the size of the next document
-    const size = collectionBuffer.readInt32LE(offset);
-    // Extract the document's buffer using subarray
-    const documentBuffer = collectionBuffer.subarray(offset, offset + size);
-    // Deserialize the document
-    const document = BSON.deserialize(documentBuffer);
+  return { usersMongo, collectionsMongo, nftsMongo };
+}
 
-    collectionsMongo.push(document);
-
-    process.stdout.write(`\rCount: ${++i}`);
-
-    // Move to the next document
-    offset += size;
-  }
-
-  process.stdout.write("\n");
-
-  return { usersMongo, collectionsMongo };
+export async function getMongoTableFromNetworkByName(table: string) {
+  return mongoClient.db(DATABASE_NAME).collection(table).find().toArray();
 }
 
 export async function getMongoTablesFromNetwork() {
@@ -102,18 +143,24 @@ export async function getMongoTablesFromNetwork() {
     .collection("Collections")
     .find()
     .toArray();
+  const nftsMongo = await mongoDb.collection("NFTs").find().toArray();
 
   await mongoClient.close();
 
-  return { usersMongo, collectionsMongo };
+  return { usersMongo, collectionsMongo, nftsMongo };
 }
 
-export function getBatchSqlStatements(
+export function saveBatchSqlStatements(
   objects: Object[],
   tableName: string
 ): string {
-  let statements: string[] = [];
-  objects.forEach((cleanedObj) => {
+  let batchCount = 0;
+  let batchSql = "";
+  let batchSize = 10000;
+  const outputPath = path.join("./dump/", `${tableName}.sql`);
+
+  fs.writeFileSync(outputPath, "", "utf8");
+  objects.forEach((cleanedObj, index) => {
     const keys = Object.keys(cleanedObj);
     const columns = keys.join(", ");
     const values = Object.values(cleanedObj).map((value) => {
@@ -127,19 +174,27 @@ export function getBatchSqlStatements(
         ? `'${value.replace(/'/g, "''")}'`
         : value;
     });
-    statements.push(`INSERT INTO ${tableName} (${columns}) VALUES (${values})`);
+    const insertStatement = `INSERT INTO ${tableName} (${columns}) VALUES (${values});\n`;
+
+    batchSql += insertStatement;
+
+    if ((index + 1) % batchSize === 0 || index === objects.length - 1) {
+      // Write the batch to a file
+      fs.appendFileSync(outputPath, batchSql);
+      batchCount++;
+      batchSql = "";
+    }
   });
-  return statements.join(";\n");
+  return outputPath;
 }
 
 export async function writeWithRustClient(
-  batchStatements: string[],
+  batchStatementPaths: string[],
   db: string
 ) {
   let arg = db == "local" ? "--local-db" : "";
-  for (let i = 0; i < batchStatements.length; i++) {
-    const tempFilePath = path.join(os.tmpdir(), "batch.sql");
-    fs.writeFileSync(tempFilePath, batchStatements[i]);
+  for (let i = 0; i < batchStatementPaths.length; i++) {
+    const tempFilePath = batchStatementPaths[i];
     await new Promise((resolve, reject) => {
       const rustProcess = spawn("./scripts/rust/target/release/upload", [
         tempFilePath,
@@ -157,7 +212,7 @@ export async function writeWithRustClient(
 
       rustProcess.on("close", (code) => {
         console.log(`Rust process exited with code ${code}`);
-        fs.unlinkSync(tempFilePath);
+        // fs.unlinkSync(tempFilePath);
         resolve(code);
       });
     });

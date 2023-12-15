@@ -21,7 +21,7 @@ model Collection {
   name                   String?
   max_items              Int?
   symbol                 String?
-  creator_address        String?
+  creator_address        String? ///@zod.import(["import { getAddress } from 'ethers'"]).custom.use(z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }))
   is_hidden              Boolean?
   sort_order             Int?
   is_mint_active         Boolean?
@@ -35,7 +35,7 @@ model Collection {
   slug                   String?
   mint_info              String? // JSON serialized as a string
   socials                String? // JSON serialized as a string
-  token_address          String?
+  token_address          String? ///@zod.import(["import { getAddress } from 'ethers'"]).custom.use(z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }))
   trait_counts           String? // JSON serialized as a string
   avatar_uri             String?
   banner_uri             String?
@@ -46,6 +46,7 @@ model Collection {
   twitter                String?
   website                String?
   discord                String?
+  network                String?
   num_items              Int?
   num_owners             Int?
   last_refreshed         DateTime?
@@ -56,42 +57,60 @@ model Collection {
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
+
+  @@unique([token_address, network])
 }
 
 model MaxItem1155 {
   id            String     @id @default(cuid())
   token_id      Int
   max_supply    Int
-  collection    Collection @relation(fields: [collection_id], references: [id])
+  collection    Collection @relation(fields: [collection_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
   collection_id String
 
   @@unique([token_id, collection_id])
 }
 
+/// @zod.import(["import { getAddress } from 'ethers'"])
 model Nft {
-  id            String      @id @default(cuid())
-  token_address String
-  token_id      String
-  attributes    String // JSON serialized as a string
-  block_minted  Int
-  contract_type String
-  description   String
-  image         String
-  image_url     String
-  metadata      String // JSON serialized as a string
-  name          String
-  network       String
-  old_image_url String
-  old_token_uri String
-  owner_of      String
-  token_id_int  Int
-  token_uri     String
-  open_rarity   OpenRarity?
-  collection    Collection  @relation(fields: [collection_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  collection_id String
+  id                String         @id @default(cuid())
+  token_address     String ///@zod.import(["import { getAddress } from 'ethers'"]).custom.use(z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }))
+  token_id          Int
+  attributes        String? // JSON serialized as a string
+  block_minted      Int?
+  contract_type     String?
+  description       String?
+  image             String?
+  image_url         String?
+  metadata          String? // JSON serialized as a string
+  name              String?
+  network           String?
+  old_image_url     String?
+  old_token_uri     String?
+  owner_of          String? ///@zod.import(["import { getAddress } from 'ethers'"]).custom.use(z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }))
+  token_uri         String?
+  log_index         Int?
+  transaction_index Int?
+  open_rarity       OpenRarity?
+  nft_owner_1155    NftOwner1155[]
+  collection        Collection     @relation(fields: [collection_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  collection_id     String
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
+
+  //TODO: figure out what is causing constraint error when this is active
+  //@@unique([token_id, collection_id])
+}
+
+model NftOwner1155 {
+  id       String @id @default(cuid())
+  owner_of String ///@zod.import(["import { getAddress } from 'ethers'"]).custom.use(z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }))
+  quantity Int
+  nft      Nft    @relation(fields: [nft_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  nft_id   String
+
+  @@unique([owner_of, nft_id])
 }
 
 model MintData {
@@ -124,9 +143,9 @@ model MintData {
 
 model OpenRarity {
   id                String @id @default(cuid())
-  rank              Int
-  score             Float
-  unique_attributes Int
+  rank              Int?
+  score             Float?
+  unique_attributes Int?
   nft               Nft    @relation(fields: [nft_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
   nft_id            String @unique
 

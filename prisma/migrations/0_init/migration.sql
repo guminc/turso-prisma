@@ -29,6 +29,7 @@ CREATE TABLE "Collection" (
     "twitter" TEXT,
     "website" TEXT,
     "discord" TEXT,
+    "network" TEXT,
     "num_items" INTEGER,
     "num_owners" INTEGER,
     "last_refreshed" DATETIME,
@@ -43,32 +44,42 @@ CREATE TABLE "MaxItem1155" (
     "token_id" INTEGER NOT NULL,
     "max_supply" INTEGER NOT NULL,
     "collection_id" TEXT NOT NULL,
-    CONSTRAINT "MaxItem1155_collection_id_fkey" FOREIGN KEY ("collection_id") REFERENCES "Collection" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "MaxItem1155_collection_id_fkey" FOREIGN KEY ("collection_id") REFERENCES "Collection" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
 CREATE TABLE "Nft" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "token_address" TEXT NOT NULL,
-    "token_id" TEXT NOT NULL,
-    "attributes" TEXT NOT NULL,
-    "block_minted" INTEGER NOT NULL,
-    "contract_type" TEXT NOT NULL,
-    "description" TEXT NOT NULL,
-    "image" TEXT NOT NULL,
-    "image_url" TEXT NOT NULL,
-    "metadata" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "network" TEXT NOT NULL,
-    "old_image_url" TEXT NOT NULL,
-    "old_token_uri" TEXT NOT NULL,
-    "owner_of" TEXT NOT NULL,
-    "token_id_int" INTEGER NOT NULL,
-    "token_uri" TEXT NOT NULL,
+    "token_id" INTEGER NOT NULL,
+    "attributes" TEXT,
+    "block_minted" INTEGER,
+    "contract_type" TEXT,
+    "description" TEXT,
+    "image" TEXT,
+    "image_url" TEXT,
+    "metadata" TEXT,
+    "name" TEXT,
+    "network" TEXT,
+    "old_image_url" TEXT,
+    "old_token_uri" TEXT,
+    "owner_of" TEXT,
+    "token_uri" TEXT,
+    "log_index" INTEGER,
+    "transaction_index" INTEGER,
     "collection_id" TEXT NOT NULL,
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" DATETIME NOT NULL,
     CONSTRAINT "Nft_collection_id_fkey" FOREIGN KEY ("collection_id") REFERENCES "Collection" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "NftOwner1155" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "owner_of" TEXT NOT NULL,
+    "quantity" INTEGER NOT NULL,
+    "nft_id" TEXT NOT NULL,
+    CONSTRAINT "NftOwner1155_nft_id_fkey" FOREIGN KEY ("nft_id") REFERENCES "Nft" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -102,9 +113,9 @@ CREATE TABLE "MintData" (
 -- CreateTable
 CREATE TABLE "OpenRarity" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "rank" INTEGER NOT NULL,
-    "score" REAL NOT NULL,
-    "unique_attributes" INTEGER NOT NULL,
+    "rank" INTEGER,
+    "score" REAL,
+    "unique_attributes" INTEGER,
     "nft_id" TEXT NOT NULL,
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" DATETIME NOT NULL,
@@ -260,7 +271,13 @@ CREATE TABLE "_RoleToUser" (
 );
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Collection_token_address_network_key" ON "Collection"("token_address", "network");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "MaxItem1155_token_id_collection_id_key" ON "MaxItem1155"("token_id", "collection_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "NftOwner1155_owner_of_nft_id_key" ON "NftOwner1155"("owner_of", "nft_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "MintData_collection_id_key" ON "MintData"("collection_id");
