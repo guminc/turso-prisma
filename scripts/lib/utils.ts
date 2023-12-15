@@ -1,10 +1,74 @@
+import { spawn } from "child_process";
 import fs from "fs";
 import path from "path";
 import readline from "readline";
-import os from "os";
-import { spawn } from "child_process";
 
 import { MongoClient } from "mongodb";
+
+const MONGO_URI = process.env.MONGO_URI || "";
+const DATABASE_NAME = "Scatter";
+let mongoClient = new MongoClient(MONGO_URI);
+
+function convertMongoTypes(obj: any): any {
+  for (const key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      const value = obj[key];
+
+      if (typeof value === "object" && value !== null) {
+        // Check for MongoDB specific types and convert
+        if ("$numberInt" in value) {
+          obj[key] = parseInt(value["$numberInt"], 10);
+        } else if ("$numberLong" in value) {
+          obj[key] = parseInt(value["$numberLong"], 10);
+        } else if ("$numberDouble" in value) {
+          obj[key] = parseFloat(value["$numberDouble"]);
+        } else if ("$date" in value) {
+          if (
+            typeof value["$date"] === "object" &&
+            "$numberLong" in value["$date"]
+          ) {
+            obj[key] = new Date(parseInt(value["$date"]["$numberLong"], 10));
+          } else {
+            obj[key] = new Date(value["$date"]);
+          }
+        } else {
+          // Recurse into object
+          convertMongoTypes(value);
+        }
+      }
+    }
+  }
+  return obj;
+}
+
+function readAndParseJsonFile(filePath: string): Promise<Document[]> {
+  return new Promise((resolve, reject) => {
+    const jsonArray: Document[] = [];
+    const fileStream = fs.createReadStream(filePath, { encoding: "utf8" });
+    const rl = readline.createInterface({
+      input: fileStream,
+      crlfDelay: Infinity,
+    });
+
+    rl.on("line", (line) => {
+      if (line.trim() === "") return; // Skip empty lines
+      try {
+        const jsonObj = JSON.parse(line);
+        jsonArray.push(convertMongoTypes(jsonObj));
+      } catch (error) {
+        reject(error);
+      }
+    });
+
+    rl.on("close", () => {
+      resolve(jsonArray);
+    });
+
+    rl.on("error", (error) => {
+      reject(error);
+    });
+  });
+}
 
 export function parseArgs() {
   const args = process.argv.slice(2); // Remove the first two default arguments
@@ -18,6 +82,16 @@ export function parseArgs() {
   });
 
   return parsedArgs;
+}
+
+export async function getMongoTableFromFileByName(table: string) {
+  const pathToJson = path.join(__dirname, `../../dump/Scatter/${table}.json`);
+
+  if (!fs.existsSync(pathToJson)) {
+    throw new Error(`${table}.json file not found at path: ` + pathToJson);
+  }
+
+  return readAndParseJsonFile(pathToJson);
 }
 
 // Reminder to update make to turn to json
@@ -43,72 +117,15 @@ export async function getMongoTablesFromFile() {
     throw new Error("NFTs.json file not found at path: " + pathToNftsJson);
   }
 
-  function convertMongoTypes(obj: any): any {
-    for (const key in obj) {
-      if (Object.prototype.hasOwnProperty.call(obj, key)) {
-        const value = obj[key];
-
-        if (typeof value === "object" && value !== null) {
-          // Check for MongoDB specific types and convert
-          if ("$numberInt" in value) {
-            obj[key] = parseInt(value["$numberInt"], 10);
-          } else if ("$numberLong" in value) {
-            obj[key] = parseInt(value["$numberLong"], 10);
-          } else if ("$numberDouble" in value) {
-            obj[key] = parseFloat(value["$numberDouble"]);
-          } else if ("$date" in value) {
-            if (
-              typeof value["$date"] === "object" &&
-              "$numberLong" in value["$date"]
-            ) {
-              obj[key] = new Date(parseInt(value["$date"]["$numberLong"], 10));
-            } else {
-              obj[key] = new Date(value["$date"]);
-            }
-          } else {
-            // Recurse into object
-            convertMongoTypes(value);
-          }
-        }
-      }
-    }
-    return obj;
-  }
-
-  function readAndParseJsonFile(filePath: string): Promise<Document[]> {
-    return new Promise((resolve, reject) => {
-      const jsonArray: Document[] = [];
-      const fileStream = fs.createReadStream(filePath, { encoding: "utf8" });
-      const rl = readline.createInterface({
-        input: fileStream,
-        crlfDelay: Infinity,
-      });
-
-      rl.on("line", (line) => {
-        if (line.trim() === "") return; // Skip empty lines
-        try {
-          const jsonObj = JSON.parse(line);
-          jsonArray.push(convertMongoTypes(jsonObj));
-        } catch (error) {
-          reject(error);
-        }
-      });
-
-      rl.on("close", () => {
-        resolve(jsonArray);
-      });
-
-      rl.on("error", (error) => {
-        reject(error);
-      });
-    });
-  }
-
   const usersMongo = await readAndParseJsonFile(pathToUsersJson);
   const collectionsMongo = await readAndParseJsonFile(pathToCollectionsJson);
   const nftsMongo = await readAndParseJsonFile(pathToNftsJson);
 
   return { usersMongo, collectionsMongo, nftsMongo };
+}
+
+export async function getMongoTableFromNetworkByName(table: string) {
+  return mongoClient.db(DATABASE_NAME).collection(table).find().toArray();
 }
 
 export async function getMongoTablesFromNetwork() {

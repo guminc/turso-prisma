@@ -252,7 +252,12 @@ export const CollectionSchema = z.object({
   name: z.string().nullish(),
   max_items: z.number().int().nullish(),
   symbol: z.string().nullish(),
-  creator_address: z.string().nullish(),
+  creator_address: z
+    .string()
+    .refine((val) => getAddress(val), {
+      message: "is not a valid Ethereum address",
+    })
+    .nullish(),
   is_hidden: z.boolean().nullish(),
   sort_order: z.number().int().nullish(),
   is_mint_active: z.boolean().nullish(),
@@ -266,7 +271,12 @@ export const CollectionSchema = z.object({
   slug: z.string().nullish(),
   mint_info: z.string().nullish(),
   socials: z.string().nullish(),
-  token_address: z.string().nullish(),
+  token_address: z
+    .string()
+    .refine((val) => getAddress(val), {
+      message: "is not a valid Ethereum address",
+    })
+    .nullish(),
   trait_counts: z.string().nullish(),
   avatar_uri: z.string().nullish(),
   banner_uri: z.string().nullish(),
@@ -306,7 +316,11 @@ export type MaxItem1155 = z.infer<typeof MaxItem1155Schema>;
 
 export const NftSchema = z.object({
   id: z.string().cuid(),
-  token_address: z.string(),
+  token_address: z
+    .string()
+    .refine((val) => getAddress(val), {
+      message: "is not a valid Ethereum address",
+    }),
   token_id: z.number().int(),
   attributes: z.string().nullish(),
   block_minted: z.number().int().nullish(),
@@ -319,7 +333,12 @@ export const NftSchema = z.object({
   network: z.string().nullish(),
   old_image_url: z.string().nullish(),
   old_token_uri: z.string().nullish(),
-  owner_of: z.string().nullish(),
+  owner_of: z
+    .string()
+    .refine((val) => getAddress(val), {
+      message: "is not a valid Ethereum address",
+    })
+    .nullish(),
   token_uri: z.string().nullish(),
   log_index: z.number().int().nullish(),
   transaction_index: z.number().int().nullish(),
@@ -331,12 +350,24 @@ export const NftSchema = z.object({
 export type Nft = z.infer<typeof NftSchema>;
 
 /////////////////////////////////////////
+// NFT CUSTOM VALIDATORS SCHEMA
+/////////////////////////////////////////
+
+export const NftCustomValidatorsSchema = NftSchema;
+
+export type NftCustomValidators = z.infer<typeof NftCustomValidatorsSchema>;
+
+/////////////////////////////////////////
 // NFT OWNER 1155 SCHEMA
 /////////////////////////////////////////
 
 export const NftOwner1155Schema = z.object({
   id: z.string().cuid(),
-  owner_of: z.string(),
+  owner_of: z
+    .string()
+    .refine((val) => getAddress(val), {
+      message: "is not a valid Ethereum address",
+    }),
   quantity: z.number().int(),
   nft_id: z.string(),
 });
@@ -1792,7 +1823,14 @@ export const CollectionWhereUniqueInputSchema: z.ZodType<Prisma.CollectionWhereU
             .optional()
             .nullable(),
           creator_address: z
-            .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+            .union([
+              z.lazy(() => StringNullableFilterSchema),
+              z
+                .string()
+                .refine((val) => getAddress(val), {
+                  message: "is not a valid Ethereum address",
+                }),
+            ])
             .optional()
             .nullable(),
           is_hidden: z
@@ -1848,7 +1886,14 @@ export const CollectionWhereUniqueInputSchema: z.ZodType<Prisma.CollectionWhereU
             .optional()
             .nullable(),
           token_address: z
-            .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+            .union([
+              z.lazy(() => StringNullableFilterSchema),
+              z
+                .string()
+                .refine((val) => getAddress(val), {
+                  message: "is not a valid Ethereum address",
+                }),
+            ])
             .optional()
             .nullable(),
           trait_counts: z
@@ -2817,7 +2862,14 @@ export const NftWhereUniqueInputSchema: z.ZodType<Prisma.NftWhereUniqueInput> =
             ])
             .optional(),
           token_address: z
-            .union([z.lazy(() => StringFilterSchema), z.string()])
+            .union([
+              z.lazy(() => StringFilterSchema),
+              z
+                .string()
+                .refine((val) => getAddress(val), {
+                  message: "is not a valid Ethereum address",
+                }),
+            ])
             .optional(),
           token_id: z
             .union([z.lazy(() => IntFilterSchema), z.number().int()])
@@ -2867,7 +2919,14 @@ export const NftWhereUniqueInputSchema: z.ZodType<Prisma.NftWhereUniqueInput> =
             .optional()
             .nullable(),
           owner_of: z
-            .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+            .union([
+              z.lazy(() => StringNullableFilterSchema),
+              z
+                .string()
+                .refine((val) => getAddress(val), {
+                  message: "is not a valid Ethereum address",
+                }),
+            ])
             .optional()
             .nullable(),
           token_uri: z
@@ -3258,7 +3317,14 @@ export const NftOwner1155WhereUniqueInputSchema: z.ZodType<Prisma.NftOwner1155Wh
             ])
             .optional(),
           owner_of: z
-            .union([z.lazy(() => StringFilterSchema), z.string()])
+            .union([
+              z.lazy(() => StringFilterSchema),
+              z
+                .string()
+                .refine((val) => getAddress(val), {
+                  message: "is not a valid Ethereum address",
+                }),
+            ])
             .optional(),
           quantity: z
             .union([z.lazy(() => IntFilterSchema), z.number().int()])
@@ -6696,7 +6762,13 @@ export const CollectionCreateInputSchema: z.ZodType<Prisma.CollectionCreateInput
       slug: z.string().optional().nullable(),
       mint_info: z.string().optional().nullable(),
       socials: z.string().optional().nullable(),
-      token_address: z.string().optional().nullable(),
+      token_address: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        })
+        .optional()
+        .nullable(),
       trait_counts: z.string().optional().nullable(),
       avatar_uri: z.string().optional().nullable(),
       banner_uri: z.string().optional().nullable(),
@@ -6735,7 +6807,13 @@ export const CollectionUncheckedCreateInputSchema: z.ZodType<Prisma.CollectionUn
       name: z.string().optional().nullable(),
       max_items: z.number().int().optional().nullable(),
       symbol: z.string().optional().nullable(),
-      creator_address: z.string().optional().nullable(),
+      creator_address: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        })
+        .optional()
+        .nullable(),
       is_hidden: z.boolean().optional().nullable(),
       sort_order: z.number().int().optional().nullable(),
       is_mint_active: z.boolean().optional().nullable(),
@@ -6749,7 +6827,13 @@ export const CollectionUncheckedCreateInputSchema: z.ZodType<Prisma.CollectionUn
       slug: z.string().optional().nullable(),
       mint_info: z.string().optional().nullable(),
       socials: z.string().optional().nullable(),
-      token_address: z.string().optional().nullable(),
+      token_address: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        })
+        .optional()
+        .nullable(),
       trait_counts: z.string().optional().nullable(),
       avatar_uri: z.string().optional().nullable(),
       banner_uri: z.string().optional().nullable(),
@@ -6905,7 +6989,11 @@ export const CollectionUpdateInputSchema: z.ZodType<Prisma.CollectionUpdateInput
         .nullable(),
       token_address: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -7067,7 +7155,11 @@ export const CollectionUncheckedUpdateInputSchema: z.ZodType<Prisma.CollectionUn
         .nullable(),
       creator_address: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -7165,7 +7257,11 @@ export const CollectionUncheckedUpdateInputSchema: z.ZodType<Prisma.CollectionUn
         .nullable(),
       token_address: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -7419,7 +7515,11 @@ export const CollectionUpdateManyMutationInputSchema: z.ZodType<Prisma.Collectio
         .nullable(),
       token_address: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -7569,7 +7669,11 @@ export const CollectionUncheckedUpdateManyInputSchema: z.ZodType<Prisma.Collecti
         .nullable(),
       creator_address: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -7667,7 +7771,11 @@ export const CollectionUncheckedUpdateManyInputSchema: z.ZodType<Prisma.Collecti
         .nullable(),
       token_address: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -7924,7 +8032,11 @@ export const MaxItem1155UncheckedUpdateManyInputSchema: z.ZodType<Prisma.MaxItem
 export const NftCreateInputSchema: z.ZodType<Prisma.NftCreateInput> = z
   .object({
     id: z.string().cuid().optional(),
-    token_address: z.string(),
+    token_address: z
+      .string()
+      .refine((val) => getAddress(val), {
+        message: "is not a valid Ethereum address",
+      }),
     token_id: z.number().int(),
     attributes: z.string().optional().nullable(),
     block_minted: z.number().int().optional().nullable(),
@@ -7937,7 +8049,13 @@ export const NftCreateInputSchema: z.ZodType<Prisma.NftCreateInput> = z
     network: z.string().optional().nullable(),
     old_image_url: z.string().optional().nullable(),
     old_token_uri: z.string().optional().nullable(),
-    owner_of: z.string().optional().nullable(),
+    owner_of: z
+      .string()
+      .refine((val) => getAddress(val), {
+        message: "is not a valid Ethereum address",
+      })
+      .optional()
+      .nullable(),
     token_uri: z.string().optional().nullable(),
     log_index: z.number().int().optional().nullable(),
     transaction_index: z.number().int().optional().nullable(),
@@ -7957,7 +8075,11 @@ export const NftUncheckedCreateInputSchema: z.ZodType<Prisma.NftUncheckedCreateI
   z
     .object({
       id: z.string().cuid().optional(),
-      token_address: z.string(),
+      token_address: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        }),
       token_id: z.number().int(),
       attributes: z.string().optional().nullable(),
       block_minted: z.number().int().optional().nullable(),
@@ -7970,7 +8092,13 @@ export const NftUncheckedCreateInputSchema: z.ZodType<Prisma.NftUncheckedCreateI
       network: z.string().optional().nullable(),
       old_image_url: z.string().optional().nullable(),
       old_token_uri: z.string().optional().nullable(),
-      owner_of: z.string().optional().nullable(),
+      owner_of: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        })
+        .optional()
+        .nullable(),
       token_uri: z.string().optional().nullable(),
       log_index: z.number().int().optional().nullable(),
       transaction_index: z.number().int().optional().nullable(),
@@ -7995,7 +8123,14 @@ export const NftUpdateInputSchema: z.ZodType<Prisma.NftUpdateInput> = z
       ])
       .optional(),
     token_address: z
-      .union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+      .union([
+        z
+          .string()
+          .refine((val) => getAddress(val), {
+            message: "is not a valid Ethereum address",
+          }),
+        z.lazy(() => StringFieldUpdateOperationsInputSchema),
+      ])
       .optional(),
     token_id: z
       .union([
@@ -8082,7 +8217,11 @@ export const NftUpdateInputSchema: z.ZodType<Prisma.NftUpdateInput> = z
       .nullable(),
     owner_of: z
       .union([
-        z.string(),
+        z
+          .string()
+          .refine((val) => getAddress(val), {
+            message: "is not a valid Ethereum address",
+          }),
         z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
       ])
       .optional()
@@ -8143,7 +8282,11 @@ export const NftUncheckedUpdateInputSchema: z.ZodType<Prisma.NftUncheckedUpdateI
         .optional(),
       token_address: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -8232,7 +8375,11 @@ export const NftUncheckedUpdateInputSchema: z.ZodType<Prisma.NftUncheckedUpdateI
         .nullable(),
       owner_of: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -8296,7 +8443,11 @@ export const NftUpdateManyMutationInputSchema: z.ZodType<Prisma.NftUpdateManyMut
         .optional(),
       token_address: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -8385,7 +8536,11 @@ export const NftUpdateManyMutationInputSchema: z.ZodType<Prisma.NftUpdateManyMut
         .nullable(),
       owner_of: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -8437,7 +8592,11 @@ export const NftUncheckedUpdateManyInputSchema: z.ZodType<Prisma.NftUncheckedUpd
         .optional(),
       token_address: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -8526,7 +8685,11 @@ export const NftUncheckedUpdateManyInputSchema: z.ZodType<Prisma.NftUncheckedUpd
         .nullable(),
       owner_of: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -8577,7 +8740,11 @@ export const NftOwner1155CreateInputSchema: z.ZodType<Prisma.NftOwner1155CreateI
   z
     .object({
       id: z.string().cuid().optional(),
-      owner_of: z.string(),
+      owner_of: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        }),
       quantity: z.number().int(),
       nft: z.lazy(() => NftCreateNestedOneWithoutNft_owner_1155InputSchema),
     })
@@ -8587,7 +8754,11 @@ export const NftOwner1155UncheckedCreateInputSchema: z.ZodType<Prisma.NftOwner11
   z
     .object({
       id: z.string().cuid().optional(),
-      owner_of: z.string(),
+      owner_of: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        }),
       quantity: z.number().int(),
       nft_id: z.string(),
     })
@@ -8604,7 +8775,11 @@ export const NftOwner1155UpdateInputSchema: z.ZodType<Prisma.NftOwner1155UpdateI
         .optional(),
       owner_of: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -8631,7 +8806,11 @@ export const NftOwner1155UncheckedUpdateInputSchema: z.ZodType<Prisma.NftOwner11
         .optional(),
       owner_of: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -8661,7 +8840,11 @@ export const NftOwner1155UpdateManyMutationInputSchema: z.ZodType<Prisma.NftOwne
         .optional(),
       owner_of: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -8685,7 +8868,11 @@ export const NftOwner1155UncheckedUpdateManyInputSchema: z.ZodType<Prisma.NftOwn
         .optional(),
       owner_of: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -18162,7 +18349,11 @@ export const NftCreateWithoutCollectionInputSchema: z.ZodType<Prisma.NftCreateWi
   z
     .object({
       id: z.string().cuid().optional(),
-      token_address: z.string(),
+      token_address: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        }),
       token_id: z.number().int(),
       attributes: z.string().optional().nullable(),
       block_minted: z.number().int().optional().nullable(),
@@ -18175,7 +18366,13 @@ export const NftCreateWithoutCollectionInputSchema: z.ZodType<Prisma.NftCreateWi
       network: z.string().optional().nullable(),
       old_image_url: z.string().optional().nullable(),
       old_token_uri: z.string().optional().nullable(),
-      owner_of: z.string().optional().nullable(),
+      owner_of: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        })
+        .optional()
+        .nullable(),
       token_uri: z.string().optional().nullable(),
       log_index: z.number().int().optional().nullable(),
       transaction_index: z.number().int().optional().nullable(),
@@ -18194,7 +18391,11 @@ export const NftUncheckedCreateWithoutCollectionInputSchema: z.ZodType<Prisma.Nf
   z
     .object({
       id: z.string().cuid().optional(),
-      token_address: z.string(),
+      token_address: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        }),
       token_id: z.number().int(),
       attributes: z.string().optional().nullable(),
       block_minted: z.number().int().optional().nullable(),
@@ -18207,7 +18408,13 @@ export const NftUncheckedCreateWithoutCollectionInputSchema: z.ZodType<Prisma.Nf
       network: z.string().optional().nullable(),
       old_image_url: z.string().optional().nullable(),
       old_token_uri: z.string().optional().nullable(),
-      owner_of: z.string().optional().nullable(),
+      owner_of: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        })
+        .optional()
+        .nullable(),
       token_uri: z.string().optional().nullable(),
       log_index: z.number().int().optional().nullable(),
       transaction_index: z.number().int().optional().nullable(),
@@ -19044,7 +19251,13 @@ export const CollectionCreateWithoutMax_items_1155InputSchema: z.ZodType<Prisma.
       slug: z.string().optional().nullable(),
       mint_info: z.string().optional().nullable(),
       socials: z.string().optional().nullable(),
-      token_address: z.string().optional().nullable(),
+      token_address: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        })
+        .optional()
+        .nullable(),
       trait_counts: z.string().optional().nullable(),
       avatar_uri: z.string().optional().nullable(),
       banner_uri: z.string().optional().nullable(),
@@ -19080,7 +19293,13 @@ export const CollectionUncheckedCreateWithoutMax_items_1155InputSchema: z.ZodTyp
       name: z.string().optional().nullable(),
       max_items: z.number().int().optional().nullable(),
       symbol: z.string().optional().nullable(),
-      creator_address: z.string().optional().nullable(),
+      creator_address: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        })
+        .optional()
+        .nullable(),
       is_hidden: z.boolean().optional().nullable(),
       sort_order: z.number().int().optional().nullable(),
       is_mint_active: z.boolean().optional().nullable(),
@@ -19094,7 +19313,13 @@ export const CollectionUncheckedCreateWithoutMax_items_1155InputSchema: z.ZodTyp
       slug: z.string().optional().nullable(),
       mint_info: z.string().optional().nullable(),
       socials: z.string().optional().nullable(),
-      token_address: z.string().optional().nullable(),
+      token_address: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        })
+        .optional()
+        .nullable(),
       trait_counts: z.string().optional().nullable(),
       avatar_uri: z.string().optional().nullable(),
       banner_uri: z.string().optional().nullable(),
@@ -19282,7 +19507,11 @@ export const CollectionUpdateWithoutMax_items_1155InputSchema: z.ZodType<Prisma.
         .nullable(),
       token_address: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -19441,7 +19670,11 @@ export const CollectionUncheckedUpdateWithoutMax_items_1155InputSchema: z.ZodTyp
         .nullable(),
       creator_address: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -19539,7 +19772,11 @@ export const CollectionUncheckedUpdateWithoutMax_items_1155InputSchema: z.ZodTyp
         .nullable(),
       token_address: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -19704,7 +19941,11 @@ export const NftOwner1155CreateWithoutNftInputSchema: z.ZodType<Prisma.NftOwner1
   z
     .object({
       id: z.string().cuid().optional(),
-      owner_of: z.string(),
+      owner_of: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        }),
       quantity: z.number().int(),
     })
     .strict();
@@ -19713,7 +19954,11 @@ export const NftOwner1155UncheckedCreateWithoutNftInputSchema: z.ZodType<Prisma.
   z
     .object({
       id: z.string().cuid().optional(),
-      owner_of: z.string(),
+      owner_of: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        }),
       quantity: z.number().int(),
     })
     .strict();
@@ -19749,7 +19994,13 @@ export const CollectionCreateWithoutNftsInputSchema: z.ZodType<Prisma.Collection
       slug: z.string().optional().nullable(),
       mint_info: z.string().optional().nullable(),
       socials: z.string().optional().nullable(),
-      token_address: z.string().optional().nullable(),
+      token_address: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        })
+        .optional()
+        .nullable(),
       trait_counts: z.string().optional().nullable(),
       avatar_uri: z.string().optional().nullable(),
       banner_uri: z.string().optional().nullable(),
@@ -19785,7 +20036,13 @@ export const CollectionUncheckedCreateWithoutNftsInputSchema: z.ZodType<Prisma.C
       name: z.string().optional().nullable(),
       max_items: z.number().int().optional().nullable(),
       symbol: z.string().optional().nullable(),
-      creator_address: z.string().optional().nullable(),
+      creator_address: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        })
+        .optional()
+        .nullable(),
       is_hidden: z.boolean().optional().nullable(),
       sort_order: z.number().int().optional().nullable(),
       is_mint_active: z.boolean().optional().nullable(),
@@ -19799,7 +20056,13 @@ export const CollectionUncheckedCreateWithoutNftsInputSchema: z.ZodType<Prisma.C
       slug: z.string().optional().nullable(),
       mint_info: z.string().optional().nullable(),
       socials: z.string().optional().nullable(),
-      token_address: z.string().optional().nullable(),
+      token_address: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        })
+        .optional()
+        .nullable(),
       trait_counts: z.string().optional().nullable(),
       avatar_uri: z.string().optional().nullable(),
       banner_uri: z.string().optional().nullable(),
@@ -20172,7 +20435,11 @@ export const CollectionUpdateWithoutNftsInputSchema: z.ZodType<Prisma.Collection
         .nullable(),
       token_address: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -20331,7 +20598,11 @@ export const CollectionUncheckedUpdateWithoutNftsInputSchema: z.ZodType<Prisma.C
         .nullable(),
       creator_address: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -20429,7 +20700,11 @@ export const CollectionUncheckedUpdateWithoutNftsInputSchema: z.ZodType<Prisma.C
         .nullable(),
       token_address: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -20561,7 +20836,11 @@ export const NftCreateWithoutNft_owner_1155InputSchema: z.ZodType<Prisma.NftCrea
   z
     .object({
       id: z.string().cuid().optional(),
-      token_address: z.string(),
+      token_address: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        }),
       token_id: z.number().int(),
       attributes: z.string().optional().nullable(),
       block_minted: z.number().int().optional().nullable(),
@@ -20574,7 +20853,13 @@ export const NftCreateWithoutNft_owner_1155InputSchema: z.ZodType<Prisma.NftCrea
       network: z.string().optional().nullable(),
       old_image_url: z.string().optional().nullable(),
       old_token_uri: z.string().optional().nullable(),
-      owner_of: z.string().optional().nullable(),
+      owner_of: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        })
+        .optional()
+        .nullable(),
       token_uri: z.string().optional().nullable(),
       log_index: z.number().int().optional().nullable(),
       transaction_index: z.number().int().optional().nullable(),
@@ -20591,7 +20876,11 @@ export const NftUncheckedCreateWithoutNft_owner_1155InputSchema: z.ZodType<Prism
   z
     .object({
       id: z.string().cuid().optional(),
-      token_address: z.string(),
+      token_address: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        }),
       token_id: z.number().int(),
       attributes: z.string().optional().nullable(),
       block_minted: z.number().int().optional().nullable(),
@@ -20604,7 +20893,13 @@ export const NftUncheckedCreateWithoutNft_owner_1155InputSchema: z.ZodType<Prism
       network: z.string().optional().nullable(),
       old_image_url: z.string().optional().nullable(),
       old_token_uri: z.string().optional().nullable(),
-      owner_of: z.string().optional().nullable(),
+      owner_of: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        })
+        .optional()
+        .nullable(),
       token_uri: z.string().optional().nullable(),
       log_index: z.number().int().optional().nullable(),
       transaction_index: z.number().int().optional().nullable(),
@@ -20665,7 +20960,11 @@ export const NftUpdateWithoutNft_owner_1155InputSchema: z.ZodType<Prisma.NftUpda
         .optional(),
       token_address: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -20754,7 +21053,11 @@ export const NftUpdateWithoutNft_owner_1155InputSchema: z.ZodType<Prisma.NftUpda
         .nullable(),
       owner_of: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -20812,7 +21115,11 @@ export const NftUncheckedUpdateWithoutNft_owner_1155InputSchema: z.ZodType<Prism
         .optional(),
       token_address: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -20901,7 +21208,11 @@ export const NftUncheckedUpdateWithoutNft_owner_1155InputSchema: z.ZodType<Prism
         .nullable(),
       owner_of: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -20971,7 +21282,13 @@ export const CollectionCreateWithoutMint_dataInputSchema: z.ZodType<Prisma.Colle
       slug: z.string().optional().nullable(),
       mint_info: z.string().optional().nullable(),
       socials: z.string().optional().nullable(),
-      token_address: z.string().optional().nullable(),
+      token_address: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        })
+        .optional()
+        .nullable(),
       trait_counts: z.string().optional().nullable(),
       avatar_uri: z.string().optional().nullable(),
       banner_uri: z.string().optional().nullable(),
@@ -21007,7 +21324,13 @@ export const CollectionUncheckedCreateWithoutMint_dataInputSchema: z.ZodType<Pri
       name: z.string().optional().nullable(),
       max_items: z.number().int().optional().nullable(),
       symbol: z.string().optional().nullable(),
-      creator_address: z.string().optional().nullable(),
+      creator_address: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        })
+        .optional()
+        .nullable(),
       is_hidden: z.boolean().optional().nullable(),
       sort_order: z.number().int().optional().nullable(),
       is_mint_active: z.boolean().optional().nullable(),
@@ -21021,7 +21344,13 @@ export const CollectionUncheckedCreateWithoutMint_dataInputSchema: z.ZodType<Pri
       slug: z.string().optional().nullable(),
       mint_info: z.string().optional().nullable(),
       socials: z.string().optional().nullable(),
-      token_address: z.string().optional().nullable(),
+      token_address: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        })
+        .optional()
+        .nullable(),
       trait_counts: z.string().optional().nullable(),
       avatar_uri: z.string().optional().nullable(),
       banner_uri: z.string().optional().nullable(),
@@ -21209,7 +21538,11 @@ export const CollectionUpdateWithoutMint_dataInputSchema: z.ZodType<Prisma.Colle
         .nullable(),
       token_address: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -21368,7 +21701,11 @@ export const CollectionUncheckedUpdateWithoutMint_dataInputSchema: z.ZodType<Pri
         .nullable(),
       creator_address: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -21466,7 +21803,11 @@ export const CollectionUncheckedUpdateWithoutMint_dataInputSchema: z.ZodType<Pri
         .nullable(),
       token_address: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -21596,7 +21937,11 @@ export const NftCreateWithoutOpen_rarityInputSchema: z.ZodType<Prisma.NftCreateW
   z
     .object({
       id: z.string().cuid().optional(),
-      token_address: z.string(),
+      token_address: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        }),
       token_id: z.number().int(),
       attributes: z.string().optional().nullable(),
       block_minted: z.number().int().optional().nullable(),
@@ -21609,7 +21954,13 @@ export const NftCreateWithoutOpen_rarityInputSchema: z.ZodType<Prisma.NftCreateW
       network: z.string().optional().nullable(),
       old_image_url: z.string().optional().nullable(),
       old_token_uri: z.string().optional().nullable(),
-      owner_of: z.string().optional().nullable(),
+      owner_of: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        })
+        .optional()
+        .nullable(),
       token_uri: z.string().optional().nullable(),
       log_index: z.number().int().optional().nullable(),
       transaction_index: z.number().int().optional().nullable(),
@@ -21626,7 +21977,11 @@ export const NftUncheckedCreateWithoutOpen_rarityInputSchema: z.ZodType<Prisma.N
   z
     .object({
       id: z.string().cuid().optional(),
-      token_address: z.string(),
+      token_address: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        }),
       token_id: z.number().int(),
       attributes: z.string().optional().nullable(),
       block_minted: z.number().int().optional().nullable(),
@@ -21639,7 +21994,13 @@ export const NftUncheckedCreateWithoutOpen_rarityInputSchema: z.ZodType<Prisma.N
       network: z.string().optional().nullable(),
       old_image_url: z.string().optional().nullable(),
       old_token_uri: z.string().optional().nullable(),
-      owner_of: z.string().optional().nullable(),
+      owner_of: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        })
+        .optional()
+        .nullable(),
       token_uri: z.string().optional().nullable(),
       log_index: z.number().int().optional().nullable(),
       transaction_index: z.number().int().optional().nullable(),
@@ -21700,7 +22061,11 @@ export const NftUpdateWithoutOpen_rarityInputSchema: z.ZodType<Prisma.NftUpdateW
         .optional(),
       token_address: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -21789,7 +22154,11 @@ export const NftUpdateWithoutOpen_rarityInputSchema: z.ZodType<Prisma.NftUpdateW
         .nullable(),
       owner_of: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -21847,7 +22216,11 @@ export const NftUncheckedUpdateWithoutOpen_rarityInputSchema: z.ZodType<Prisma.N
         .optional(),
       token_address: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -21936,7 +22309,11 @@ export const NftUncheckedUpdateWithoutOpen_rarityInputSchema: z.ZodType<Prisma.N
         .nullable(),
       owner_of: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -22006,7 +22383,13 @@ export const CollectionCreateWithoutCreatorInputSchema: z.ZodType<Prisma.Collect
       slug: z.string().optional().nullable(),
       mint_info: z.string().optional().nullable(),
       socials: z.string().optional().nullable(),
-      token_address: z.string().optional().nullable(),
+      token_address: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        })
+        .optional()
+        .nullable(),
       trait_counts: z.string().optional().nullable(),
       avatar_uri: z.string().optional().nullable(),
       banner_uri: z.string().optional().nullable(),
@@ -22055,7 +22438,13 @@ export const CollectionUncheckedCreateWithoutCreatorInputSchema: z.ZodType<Prism
       slug: z.string().optional().nullable(),
       mint_info: z.string().optional().nullable(),
       socials: z.string().optional().nullable(),
-      token_address: z.string().optional().nullable(),
+      token_address: z
+        .string()
+        .refine((val) => getAddress(val), {
+          message: "is not a valid Ethereum address",
+        })
+        .optional()
+        .nullable(),
       trait_counts: z.string().optional().nullable(),
       avatar_uri: z.string().optional().nullable(),
       banner_uri: z.string().optional().nullable(),
@@ -25053,7 +25442,11 @@ export const NftUpdateWithoutCollectionInputSchema: z.ZodType<Prisma.NftUpdateWi
         .optional(),
       token_address: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -25142,7 +25535,11 @@ export const NftUpdateWithoutCollectionInputSchema: z.ZodType<Prisma.NftUpdateWi
         .nullable(),
       owner_of: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -25200,7 +25597,11 @@ export const NftUncheckedUpdateWithoutCollectionInputSchema: z.ZodType<Prisma.Nf
         .optional(),
       token_address: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -25289,7 +25690,11 @@ export const NftUncheckedUpdateWithoutCollectionInputSchema: z.ZodType<Prisma.Nf
         .nullable(),
       owner_of: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -25347,7 +25752,11 @@ export const NftUncheckedUpdateManyWithoutCollectionInputSchema: z.ZodType<Prism
         .optional(),
       token_address: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -25436,7 +25845,11 @@ export const NftUncheckedUpdateManyWithoutCollectionInputSchema: z.ZodType<Prism
         .nullable(),
       owner_of: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -25560,7 +25973,11 @@ export const NftOwner1155UpdateWithoutNftInputSchema: z.ZodType<Prisma.NftOwner1
         .optional(),
       owner_of: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -25584,7 +26001,11 @@ export const NftOwner1155UncheckedUpdateWithoutNftInputSchema: z.ZodType<Prisma.
         .optional(),
       owner_of: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -25608,7 +26029,11 @@ export const NftOwner1155UncheckedUpdateManyWithoutNftInputSchema: z.ZodType<Pri
         .optional(),
       owner_of: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -25744,7 +26169,11 @@ export const CollectionUpdateWithoutCreatorInputSchema: z.ZodType<Prisma.Collect
         .nullable(),
       token_address: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -25994,7 +26423,11 @@ export const CollectionUncheckedUpdateWithoutCreatorInputSchema: z.ZodType<Prism
         .nullable(),
       token_address: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -26248,7 +26681,11 @@ export const CollectionUncheckedUpdateManyWithoutCreatorInputSchema: z.ZodType<P
         .nullable(),
       token_address: z
         .union([
-          z.string(),
+          z
+            .string()
+            .refine((val) => getAddress(val), {
+              message: "is not a valid Ethereum address",
+            }),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()

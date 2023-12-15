@@ -5,7 +5,7 @@
 export
 
 # Default target
-all: migrate-to-prod
+all: main
 
 create-migration:
 	npx prisma migrate dev
@@ -14,27 +14,26 @@ create-migration:
 dump-mongo-everything:
 	mongodump --forceTableScan --uri $$MONGO_URI
 
-dump-mongo-users:
-	mongodump --collection=Users --forceTableScan --uri $$MONGO_URI
+# eg: make dump-mongo-collection collection=Users
+dump-mongo-collection:
+	mongodump --collection=$(collection) --forceTableScan --uri $$MONGO_URI
 
-dump-mongo-collections:
-	mongodump --collection=Collections --forceTableScan --uri $$MONGO_URI
-
-dump-mongo-nfts:
-	mongodump --collection=NFTs --forceTableScan --uri $$MONGO_URI
+# eg: make convert-single-bson-to-json collection=Users
+convert-single-bson-to-json:
+	bsondump --outFile ./dump/Scatter/$(collection).json ./dump/Scatter/$(collection).bson
 
 convert-bson-to-json:
 	for file in ./dump/Scatter/*.bson; do \
 		bsondump --outFile "$${file%.bson}.json" "$$file"; \
 	done
 
-migrate-prod:
+migrate-remote:
 	for file in ./prisma/migrations/*/*.sql; do \
 		turso db shell --location iad $$REMOTE_DB_NAME < $$file; \
 	done
 
 # running this twice as a hack to get around foreign keys constraints
-wipe-prod:
+wipe-remote:
 	node ./scripts/dropAllTables.js
 	node ./scripts/dropAllTables.js
 
@@ -42,16 +41,16 @@ wipe-local:
 	rm -rf ./prisma/dev.db
 	sqlite3 ./prisma/dev.db ".quit"
 
-seed-prod:
+seed-remote:
 	turso db shell --location iad $$REMOTE_DB_NAME < ./dump.sql
 
-create-prod:
+create-remote:
 	turso db create $$REMOTE_DB_NAME --from-file ./prisma/dev.db
 
-destroy-prod:
+destroy-remote:
 	yes | turso db destroy $$REMOTE_DB_NAME
 
-seed-prod-rust:
+seed-remote-rust:
 	./scripts/rust/target/release/upload ./dump/User.sql
 	./scripts/rust/target/release/upload ./dump/Collection.sql
 	./scripts/rust/target/release/upload ./dump/MintData.sql
@@ -70,27 +69,6 @@ seed-local-tables:
 build-rust-binary:
 	cargo build --release --manifest-path ./scripts/rust/Cargo.toml
 
-migrate-to-prod:
-	./scripts/echo.sh
-	@if [ "$(source)" = "file" ]; then \
-	    $(MAKE) dump-mongo-everything; \
-		$(MAKE) convert-bson-to-json; \
-	fi
-	@if [ "$(write)" = "rust" ]; then \
-		$(MAKE) reset-local; \
-		$(MAKE) build-rust-binary; \
-		$(MAKE) seed-local-tables; \
-		$(MAKE) wipe-prod; \
-		$(MAKE) migrate-prod; \
-		$(MAKE) seed-prod-rust; \
-	else \
-		$(MAKE) reset-local; \
-		$(MAKE) build-rust-binary; \
-		$(MAKE) seed-local-tables; \
-		$(MAKE) destroy-prod; \
-		$(MAKE) create-prod; \
-	fi
-
 dump-local:
 	sqlite3 ./prisma/dev.db '.output ./dump.sql' '.dump'
 
@@ -100,3 +78,28 @@ baseline:
 		--from-empty \
 		--to-schema-datamodel prisma/schema.prisma \
 		--script > prisma/migrations/0_init/migration.sql
+
+main:
+	./scripts/echo.sh
+
+# use source=network to fetch data in-memory
+# use source=file to dump data to disk
+	@if [ "$(source)" = "file" ]; then \
+		$(MAKE) dump-mongo-everything; \
+		$(MAKE) convert-bson-to-json; \
+	fi
+
+	$(MAKE) reset-local
+	$(MAKE) build-rust-binary
+	$(MAKE) seed-local-tables
+
+# use write=rust to delete and import each table individually using `turso db shell`
+# use write=prod to drop the whole table and recreate it based on the local prisma db
+	@if [ "$(write)" = "rust" ]; then \
+		$(MAKE) wipe-remote; \
+		$(MAKE) migrate-remote; \
+		$(MAKE) seed-remote-rust; \
+	else \
+		$(MAKE) destroy-remote; \
+		$(MAKE) create-remote; \
+	fi
