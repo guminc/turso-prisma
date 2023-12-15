@@ -149,8 +149,6 @@ function cleanNftForSqlite(
     ...nftMongo,
     id: cuid(),
     name: nftMongo.name ? String(nftMongo.name) : null,
-    collection_id: collection_id,
-    token_address: token_address,
     owner_of: nftMongo.owner_of ? ethers.getAddress(nftMongo.owner_of) : null,
     token_id: Number(nftMongo.token_id),
     attributes: JSON.stringify(nftMongo.attributes), // JSON serialized as a string
@@ -243,7 +241,8 @@ async function main() {
   console.time("Total Migration Duration");
 
   const args = parseArgs();
-  const source = args.source === "file" ? "file" : "network";
+  // read from mongodump by default
+  const source = args.source === "network" ? "network" : "file";
   const write = args.write === "prod" ? "prod" : "local";
 
   console.log("\nInitiating migration from:", source);
