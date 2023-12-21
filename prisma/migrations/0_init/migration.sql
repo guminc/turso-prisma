@@ -31,6 +31,7 @@ CREATE TABLE "Collection" (
     "discord" TEXT,
     "network" TEXT,
     "num_items" INTEGER,
+    "num_total_items" INTEGER,
     "num_owners" INTEGER,
     "last_refreshed" DATETIME,
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,

@@ -44,6 +44,7 @@ export const CollectionScalarFieldEnumSchema = z.enum([
   "discord",
   "network",
   "num_items",
+  "num_total_items",
   "num_owners",
   "last_refreshed",
   "created_at",
@@ -289,6 +290,7 @@ export const CollectionSchema = z.object({
   discord: z.string().nullish(),
   network: z.string().nullish(),
   num_items: z.number().int().nullish(),
+  num_total_items: z.number().int().nullish(),
   num_owners: z.number().int().nullish(),
   last_refreshed: z.coerce.date().nullish(),
   created_at: z.coerce.date(),
@@ -695,6 +697,7 @@ export const CollectionSelectSchema: z.ZodType<Prisma.CollectionSelect> = z
     discord: z.boolean().optional(),
     network: z.boolean().optional(),
     num_items: z.boolean().optional(),
+    num_total_items: z.boolean().optional(),
     num_owners: z.boolean().optional(),
     last_refreshed: z.boolean().optional(),
     created_at: z.boolean().optional(),
@@ -1525,6 +1528,10 @@ export const CollectionWhereInputSchema: z.ZodType<Prisma.CollectionWhereInput> 
         .union([z.lazy(() => IntNullableFilterSchema), z.number()])
         .optional()
         .nullable(),
+      num_total_items: z
+        .union([z.lazy(() => IntNullableFilterSchema), z.number()])
+        .optional()
+        .nullable(),
       num_owners: z
         .union([z.lazy(() => IntNullableFilterSchema), z.number()])
         .optional()
@@ -1744,6 +1751,12 @@ export const CollectionOrderByWithRelationInputSchema: z.ZodType<Prisma.Collecti
           z.lazy(() => SortOrderInputSchema),
         ])
         .optional(),
+      num_total_items: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
       num_owners: z
         .union([
           z.lazy(() => SortOrderSchema),
@@ -1941,6 +1954,10 @@ export const CollectionWhereUniqueInputSchema: z.ZodType<Prisma.CollectionWhereU
             .optional()
             .nullable(),
           num_items: z
+            .union([z.lazy(() => IntNullableFilterSchema), z.number().int()])
+            .optional()
+            .nullable(),
+          num_total_items: z
             .union([z.lazy(() => IntNullableFilterSchema), z.number().int()])
             .optional()
             .nullable(),
@@ -2162,6 +2179,12 @@ export const CollectionOrderByWithAggregationInputSchema: z.ZodType<Prisma.Colle
         ])
         .optional(),
       num_items: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      num_total_items: z
         .union([
           z.lazy(() => SortOrderSchema),
           z.lazy(() => SortOrderInputSchema),
@@ -2417,6 +2440,13 @@ export const CollectionScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.Co
         .optional()
         .nullable(),
       num_items: z
+        .union([
+          z.lazy(() => IntNullableWithAggregatesFilterSchema),
+          z.number(),
+        ])
+        .optional()
+        .nullable(),
+      num_total_items: z
         .union([
           z.lazy(() => IntNullableWithAggregatesFilterSchema),
           z.number(),
@@ -6781,6 +6811,7 @@ export const CollectionCreateInputSchema: z.ZodType<Prisma.CollectionCreateInput
       discord: z.string().optional().nullable(),
       network: z.string().optional().nullable(),
       num_items: z.number().int().optional().nullable(),
+      num_total_items: z.number().int().optional().nullable(),
       num_owners: z.number().int().optional().nullable(),
       last_refreshed: z.coerce.date().optional().nullable(),
       created_at: z.coerce.date().optional(),
@@ -6846,6 +6877,7 @@ export const CollectionUncheckedCreateInputSchema: z.ZodType<Prisma.CollectionUn
       discord: z.string().optional().nullable(),
       network: z.string().optional().nullable(),
       num_items: z.number().int().optional().nullable(),
+      num_total_items: z.number().int().optional().nullable(),
       num_owners: z.number().int().optional().nullable(),
       last_refreshed: z.coerce.date().optional().nullable(),
       created_at: z.coerce.date().optional(),
@@ -7076,6 +7108,13 @@ export const CollectionUpdateInputSchema: z.ZodType<Prisma.CollectionUpdateInput
         .optional()
         .nullable(),
       num_items: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      num_total_items: z
         .union([
           z.number().int(),
           z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
@@ -7350,6 +7389,13 @@ export const CollectionUncheckedUpdateInputSchema: z.ZodType<Prisma.CollectionUn
         ])
         .optional()
         .nullable(),
+      num_total_items: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
       num_owners: z
         .union([
           z.number().int(),
@@ -7608,6 +7654,13 @@ export const CollectionUpdateManyMutationInputSchema: z.ZodType<Prisma.Collectio
         ])
         .optional()
         .nullable(),
+      num_total_items: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
       num_owners: z
         .union([
           z.number().int(),
@@ -7858,6 +7911,13 @@ export const CollectionUncheckedUpdateManyInputSchema: z.ZodType<Prisma.Collecti
         .optional()
         .nullable(),
       num_items: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      num_total_items: z
         .union([
           z.number().int(),
           z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
@@ -12686,6 +12746,7 @@ export const CollectionCountOrderByAggregateInputSchema: z.ZodType<Prisma.Collec
       discord: z.lazy(() => SortOrderSchema).optional(),
       network: z.lazy(() => SortOrderSchema).optional(),
       num_items: z.lazy(() => SortOrderSchema).optional(),
+      num_total_items: z.lazy(() => SortOrderSchema).optional(),
       num_owners: z.lazy(() => SortOrderSchema).optional(),
       last_refreshed: z.lazy(() => SortOrderSchema).optional(),
       created_at: z.lazy(() => SortOrderSchema).optional(),
@@ -12701,6 +12762,7 @@ export const CollectionAvgOrderByAggregateInputSchema: z.ZodType<Prisma.Collecti
       contract_version: z.lazy(() => SortOrderSchema).optional(),
       royalties: z.lazy(() => SortOrderSchema).optional(),
       num_items: z.lazy(() => SortOrderSchema).optional(),
+      num_total_items: z.lazy(() => SortOrderSchema).optional(),
       num_owners: z.lazy(() => SortOrderSchema).optional(),
     })
     .strict();
@@ -12739,6 +12801,7 @@ export const CollectionMaxOrderByAggregateInputSchema: z.ZodType<Prisma.Collecti
       discord: z.lazy(() => SortOrderSchema).optional(),
       network: z.lazy(() => SortOrderSchema).optional(),
       num_items: z.lazy(() => SortOrderSchema).optional(),
+      num_total_items: z.lazy(() => SortOrderSchema).optional(),
       num_owners: z.lazy(() => SortOrderSchema).optional(),
       last_refreshed: z.lazy(() => SortOrderSchema).optional(),
       created_at: z.lazy(() => SortOrderSchema).optional(),
@@ -12780,6 +12843,7 @@ export const CollectionMinOrderByAggregateInputSchema: z.ZodType<Prisma.Collecti
       discord: z.lazy(() => SortOrderSchema).optional(),
       network: z.lazy(() => SortOrderSchema).optional(),
       num_items: z.lazy(() => SortOrderSchema).optional(),
+      num_total_items: z.lazy(() => SortOrderSchema).optional(),
       num_owners: z.lazy(() => SortOrderSchema).optional(),
       last_refreshed: z.lazy(() => SortOrderSchema).optional(),
       created_at: z.lazy(() => SortOrderSchema).optional(),
@@ -12795,6 +12859,7 @@ export const CollectionSumOrderByAggregateInputSchema: z.ZodType<Prisma.Collecti
       contract_version: z.lazy(() => SortOrderSchema).optional(),
       royalties: z.lazy(() => SortOrderSchema).optional(),
       num_items: z.lazy(() => SortOrderSchema).optional(),
+      num_total_items: z.lazy(() => SortOrderSchema).optional(),
       num_owners: z.lazy(() => SortOrderSchema).optional(),
     })
     .strict();
@@ -19270,6 +19335,7 @@ export const CollectionCreateWithoutMax_items_1155InputSchema: z.ZodType<Prisma.
       discord: z.string().optional().nullable(),
       network: z.string().optional().nullable(),
       num_items: z.number().int().optional().nullable(),
+      num_total_items: z.number().int().optional().nullable(),
       num_owners: z.number().int().optional().nullable(),
       last_refreshed: z.coerce.date().optional().nullable(),
       created_at: z.coerce.date().optional(),
@@ -19332,6 +19398,7 @@ export const CollectionUncheckedCreateWithoutMax_items_1155InputSchema: z.ZodTyp
       discord: z.string().optional().nullable(),
       network: z.string().optional().nullable(),
       num_items: z.number().int().optional().nullable(),
+      num_total_items: z.number().int().optional().nullable(),
       num_owners: z.number().int().optional().nullable(),
       last_refreshed: z.coerce.date().optional().nullable(),
       created_at: z.coerce.date().optional(),
@@ -19594,6 +19661,13 @@ export const CollectionUpdateWithoutMax_items_1155InputSchema: z.ZodType<Prisma.
         .optional()
         .nullable(),
       num_items: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      num_total_items: z
         .union([
           z.number().int(),
           z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
@@ -19865,6 +19939,13 @@ export const CollectionUncheckedUpdateWithoutMax_items_1155InputSchema: z.ZodTyp
         ])
         .optional()
         .nullable(),
+      num_total_items: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
       num_owners: z
         .union([
           z.number().int(),
@@ -20013,6 +20094,7 @@ export const CollectionCreateWithoutNftsInputSchema: z.ZodType<Prisma.Collection
       discord: z.string().optional().nullable(),
       network: z.string().optional().nullable(),
       num_items: z.number().int().optional().nullable(),
+      num_total_items: z.number().int().optional().nullable(),
       num_owners: z.number().int().optional().nullable(),
       last_refreshed: z.coerce.date().optional().nullable(),
       created_at: z.coerce.date().optional(),
@@ -20075,6 +20157,7 @@ export const CollectionUncheckedCreateWithoutNftsInputSchema: z.ZodType<Prisma.C
       discord: z.string().optional().nullable(),
       network: z.string().optional().nullable(),
       num_items: z.number().int().optional().nullable(),
+      num_total_items: z.number().int().optional().nullable(),
       num_owners: z.number().int().optional().nullable(),
       last_refreshed: z.coerce.date().optional().nullable(),
       created_at: z.coerce.date().optional(),
@@ -20528,6 +20611,13 @@ export const CollectionUpdateWithoutNftsInputSchema: z.ZodType<Prisma.Collection
         ])
         .optional()
         .nullable(),
+      num_total_items: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
       num_owners: z
         .union([
           z.number().int(),
@@ -20787,6 +20877,13 @@ export const CollectionUncheckedUpdateWithoutNftsInputSchema: z.ZodType<Prisma.C
         .optional()
         .nullable(),
       num_items: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      num_total_items: z
         .union([
           z.number().int(),
           z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
@@ -21301,6 +21398,7 @@ export const CollectionCreateWithoutMint_dataInputSchema: z.ZodType<Prisma.Colle
       discord: z.string().optional().nullable(),
       network: z.string().optional().nullable(),
       num_items: z.number().int().optional().nullable(),
+      num_total_items: z.number().int().optional().nullable(),
       num_owners: z.number().int().optional().nullable(),
       last_refreshed: z.coerce.date().optional().nullable(),
       created_at: z.coerce.date().optional(),
@@ -21363,6 +21461,7 @@ export const CollectionUncheckedCreateWithoutMint_dataInputSchema: z.ZodType<Pri
       discord: z.string().optional().nullable(),
       network: z.string().optional().nullable(),
       num_items: z.number().int().optional().nullable(),
+      num_total_items: z.number().int().optional().nullable(),
       num_owners: z.number().int().optional().nullable(),
       last_refreshed: z.coerce.date().optional().nullable(),
       created_at: z.coerce.date().optional(),
@@ -21631,6 +21730,13 @@ export const CollectionUpdateWithoutMint_dataInputSchema: z.ZodType<Prisma.Colle
         ])
         .optional()
         .nullable(),
+      num_total_items: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
       num_owners: z
         .union([
           z.number().int(),
@@ -21890,6 +21996,13 @@ export const CollectionUncheckedUpdateWithoutMint_dataInputSchema: z.ZodType<Pri
         .optional()
         .nullable(),
       num_items: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      num_total_items: z
         .union([
           z.number().int(),
           z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
@@ -22402,6 +22515,7 @@ export const CollectionCreateWithoutCreatorInputSchema: z.ZodType<Prisma.Collect
       discord: z.string().optional().nullable(),
       network: z.string().optional().nullable(),
       num_items: z.number().int().optional().nullable(),
+      num_total_items: z.number().int().optional().nullable(),
       num_owners: z.number().int().optional().nullable(),
       last_refreshed: z.coerce.date().optional().nullable(),
       created_at: z.coerce.date().optional(),
@@ -22457,6 +22571,7 @@ export const CollectionUncheckedCreateWithoutCreatorInputSchema: z.ZodType<Prism
       discord: z.string().optional().nullable(),
       network: z.string().optional().nullable(),
       num_items: z.number().int().optional().nullable(),
+      num_total_items: z.number().int().optional().nullable(),
       num_owners: z.number().int().optional().nullable(),
       last_refreshed: z.coerce.date().optional().nullable(),
       created_at: z.coerce.date().optional(),
@@ -22839,6 +22954,10 @@ export const CollectionScalarWhereInputSchema: z.ZodType<Prisma.CollectionScalar
         .optional()
         .nullable(),
       num_items: z
+        .union([z.lazy(() => IntNullableFilterSchema), z.number()])
+        .optional()
+        .nullable(),
+      num_total_items: z
         .union([z.lazy(() => IntNullableFilterSchema), z.number()])
         .optional()
         .nullable(),
@@ -26262,6 +26381,13 @@ export const CollectionUpdateWithoutCreatorInputSchema: z.ZodType<Prisma.Collect
         ])
         .optional()
         .nullable(),
+      num_total_items: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
       num_owners: z
         .union([
           z.number().int(),
@@ -26510,6 +26636,13 @@ export const CollectionUncheckedUpdateWithoutCreatorInputSchema: z.ZodType<Prism
         .optional()
         .nullable(),
       num_items: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      num_total_items: z
         .union([
           z.number().int(),
           z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
@@ -26768,6 +26901,13 @@ export const CollectionUncheckedUpdateManyWithoutCreatorInputSchema: z.ZodType<P
         .optional()
         .nullable(),
       num_items: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      num_total_items: z
         .union([
           z.number().int(),
           z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),

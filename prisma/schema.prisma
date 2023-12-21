@@ -48,6 +48,7 @@ model Collection {
   discord                String?
   network                String?
   num_items              Int?
+  num_total_items        Int?
   num_owners             Int?
   last_refreshed         DateTime?
   mint_data              MintData?
