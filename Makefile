@@ -17,6 +17,7 @@ dump-mongo-everything:
 # eg: make dump-mongo-collection collection=Users
 dump-mongo-collection:
 	mongodump --collection=$(collection) --forceTableScan --uri $$MONGO_URI
+	$(MAKE) convert-single-bson-to-json collection=$(collection)
 
 # eg: make convert-single-bson-to-json collection=Users
 convert-single-bson-to-json:

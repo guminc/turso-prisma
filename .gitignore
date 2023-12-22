@@ -3,4 +3,9 @@ dist/
 *.env
 prisma/dev.db*
 dump.sql
-dump/
+scripts/rust/target/
+invalidNfts.log
+# Ignore everything in the dump directory
+dump/*
+# But do not ignore dump/seed.sql
+!dump/seed.sql
