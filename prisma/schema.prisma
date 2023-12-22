@@ -137,7 +137,7 @@ model MintData {
   last_1m_decimal     Float?
   last_6m_decimal     Float?
   date_last_sale      DateTime? ///@zod.custom.use(z.coerce.string().nullish())
-  collection          Collection @relation(fields: [collection_id], references: [id])
+  collection          Collection @relation(fields: [collection_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
   collection_id       String     @unique
 
   created_at DateTime @default(now()) ///@zod.custom.use(z.coerce.string())
