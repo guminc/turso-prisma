@@ -48,6 +48,7 @@ model Collection {
   discord                String?
   network                String?
   num_items              Int?
+  num_total_items        Int?
   num_owners             Int?
   last_refreshed         DateTime?
   mint_data              MintData?
@@ -160,7 +161,7 @@ model User {
   avatar_uri  String? /// @zod.string.url({ message: "Invalid url" })
   banner_uri  String? /// @zod.string.url({ message: "Invalid url" })
   username    String? /// @zod.string.max(64, { message: "too lengthy" })
-  description String? /// @zod.string.max(512, { message: "too long" })
+  description String?
   ens         String?
   status      String  @default("pending")
 
@@ -290,10 +291,11 @@ model MintSaleTransaction {
   token_address    String
   value_decimal    Float
   value_raw        String
-  from             String
+  from_address     String
 
   created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+
+  @@unique([transaction_hash, from_address])
 }
 
 model InstarevealCollection {

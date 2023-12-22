@@ -44,6 +44,7 @@ export const CollectionScalarFieldEnumSchema = z.enum([
   "discord",
   "network",
   "num_items",
+  "num_total_items",
   "num_owners",
   "last_refreshed",
   "created_at",
@@ -207,9 +208,8 @@ export const MintSaleTransactionScalarFieldEnumSchema = z.enum([
   "token_address",
   "value_decimal",
   "value_raw",
-  "from",
+  "from_address",
   "created_at",
-  "updated_at",
 ]);
 
 export const InstarevealCollectionScalarFieldEnumSchema = z.enum([
@@ -289,6 +289,7 @@ export const CollectionSchema = z.object({
   discord: z.string().nullish(),
   network: z.string().nullish(),
   num_items: z.number().int().nullish(),
+  num_total_items: z.number().int().nullish(),
   num_owners: z.number().int().nullish(),
   last_refreshed: z.coerce.date().nullish(),
   created_at: z.coerce.date(),
@@ -436,7 +437,7 @@ export const UserSchema = z.object({
   avatar_uri: z.string().url({ message: "Invalid url" }).nullish(),
   banner_uri: z.string().url({ message: "Invalid url" }).nullish(),
   username: z.string().max(64, { message: "too lengthy" }).nullish(),
-  description: z.string().max(512, { message: "too long" }).nullish(),
+  description: z.string().nullish(),
   ens: z.string().nullish(),
   status: z.string(),
   email: z.string().nullish(),
@@ -572,9 +573,8 @@ export const MintSaleTransactionSchema = z.object({
   token_address: z.string(),
   value_decimal: z.number(),
   value_raw: z.string(),
-  from: z.string(),
+  from_address: z.string(),
   created_at: z.coerce.date(),
-  updated_at: z.coerce.date(),
 });
 
 export type MintSaleTransaction = z.infer<typeof MintSaleTransactionSchema>;
@@ -695,6 +695,7 @@ export const CollectionSelectSchema: z.ZodType<Prisma.CollectionSelect> = z
     discord: z.boolean().optional(),
     network: z.boolean().optional(),
     num_items: z.boolean().optional(),
+    num_total_items: z.boolean().optional(),
     num_owners: z.boolean().optional(),
     last_refreshed: z.boolean().optional(),
     created_at: z.boolean().optional(),
@@ -1340,9 +1341,8 @@ export const MintSaleTransactionSelectSchema: z.ZodType<Prisma.MintSaleTransacti
       token_address: z.boolean().optional(),
       value_decimal: z.boolean().optional(),
       value_raw: z.boolean().optional(),
-      from: z.boolean().optional(),
+      from_address: z.boolean().optional(),
       created_at: z.boolean().optional(),
-      updated_at: z.boolean().optional(),
     })
     .strict();
 
@@ -1522,6 +1522,10 @@ export const CollectionWhereInputSchema: z.ZodType<Prisma.CollectionWhereInput> 
         .optional()
         .nullable(),
       num_items: z
+        .union([z.lazy(() => IntNullableFilterSchema), z.number()])
+        .optional()
+        .nullable(),
+      num_total_items: z
         .union([z.lazy(() => IntNullableFilterSchema), z.number()])
         .optional()
         .nullable(),
@@ -1744,6 +1748,12 @@ export const CollectionOrderByWithRelationInputSchema: z.ZodType<Prisma.Collecti
           z.lazy(() => SortOrderInputSchema),
         ])
         .optional(),
+      num_total_items: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
       num_owners: z
         .union([
           z.lazy(() => SortOrderSchema),
@@ -1941,6 +1951,10 @@ export const CollectionWhereUniqueInputSchema: z.ZodType<Prisma.CollectionWhereU
             .optional()
             .nullable(),
           num_items: z
+            .union([z.lazy(() => IntNullableFilterSchema), z.number().int()])
+            .optional()
+            .nullable(),
+          num_total_items: z
             .union([z.lazy(() => IntNullableFilterSchema), z.number().int()])
             .optional()
             .nullable(),
@@ -2162,6 +2176,12 @@ export const CollectionOrderByWithAggregationInputSchema: z.ZodType<Prisma.Colle
         ])
         .optional(),
       num_items: z
+        .union([
+          z.lazy(() => SortOrderSchema),
+          z.lazy(() => SortOrderInputSchema),
+        ])
+        .optional(),
+      num_total_items: z
         .union([
           z.lazy(() => SortOrderSchema),
           z.lazy(() => SortOrderInputSchema),
@@ -2417,6 +2437,13 @@ export const CollectionScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.Co
         .optional()
         .nullable(),
       num_items: z
+        .union([
+          z.lazy(() => IntNullableWithAggregatesFilterSchema),
+          z.number(),
+        ])
+        .optional()
+        .nullable(),
+      num_total_items: z
         .union([
           z.lazy(() => IntNullableWithAggregatesFilterSchema),
           z.number(),
@@ -4507,10 +4534,7 @@ export const UserWhereUniqueInputSchema: z.ZodType<Prisma.UserWhereUniqueInput> 
             .optional()
             .nullable(),
           description: z
-            .union([
-              z.lazy(() => StringNullableFilterSchema),
-              z.string().max(512, { message: "too long" }),
-            ])
+            .union([z.lazy(() => StringNullableFilterSchema), z.string()])
             .optional()
             .nullable(),
           ens: z
@@ -6168,11 +6192,10 @@ export const MintSaleTransactionWhereInputSchema: z.ZodType<Prisma.MintSaleTrans
       value_raw: z
         .union([z.lazy(() => StringFilterSchema), z.string()])
         .optional(),
-      from: z.union([z.lazy(() => StringFilterSchema), z.string()]).optional(),
-      created_at: z
-        .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
+      from_address: z
+        .union([z.lazy(() => StringFilterSchema), z.string()])
         .optional(),
-      updated_at: z
+      created_at: z
         .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
         .optional(),
     })
@@ -6188,21 +6211,41 @@ export const MintSaleTransactionOrderByWithRelationInputSchema: z.ZodType<Prisma
       token_address: z.lazy(() => SortOrderSchema).optional(),
       value_decimal: z.lazy(() => SortOrderSchema).optional(),
       value_raw: z.lazy(() => SortOrderSchema).optional(),
-      from: z.lazy(() => SortOrderSchema).optional(),
+      from_address: z.lazy(() => SortOrderSchema).optional(),
       created_at: z.lazy(() => SortOrderSchema).optional(),
-      updated_at: z.lazy(() => SortOrderSchema).optional(),
     })
     .strict();
 
 export const MintSaleTransactionWhereUniqueInputSchema: z.ZodType<Prisma.MintSaleTransactionWhereUniqueInput> =
   z
-    .object({
-      id: z.string().cuid(),
-    })
+    .union([
+      z.object({
+        id: z.string().cuid(),
+        transaction_hash_from_address: z.lazy(
+          () =>
+            MintSaleTransactionTransaction_hashFrom_addressCompoundUniqueInputSchema
+        ),
+      }),
+      z.object({
+        id: z.string().cuid(),
+      }),
+      z.object({
+        transaction_hash_from_address: z.lazy(
+          () =>
+            MintSaleTransactionTransaction_hashFrom_addressCompoundUniqueInputSchema
+        ),
+      }),
+    ])
     .and(
       z
         .object({
           id: z.string().cuid().optional(),
+          transaction_hash_from_address: z
+            .lazy(
+              () =>
+                MintSaleTransactionTransaction_hashFrom_addressCompoundUniqueInputSchema
+            )
+            .optional(),
           AND: z
             .union([
               z.lazy(() => MintSaleTransactionWhereInputSchema),
@@ -6237,13 +6280,10 @@ export const MintSaleTransactionWhereUniqueInputSchema: z.ZodType<Prisma.MintSal
           value_raw: z
             .union([z.lazy(() => StringFilterSchema), z.string()])
             .optional(),
-          from: z
+          from_address: z
             .union([z.lazy(() => StringFilterSchema), z.string()])
             .optional(),
           created_at: z
-            .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
-            .optional(),
-          updated_at: z
             .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
             .optional(),
         })
@@ -6260,9 +6300,8 @@ export const MintSaleTransactionOrderByWithAggregationInputSchema: z.ZodType<Pri
       token_address: z.lazy(() => SortOrderSchema).optional(),
       value_decimal: z.lazy(() => SortOrderSchema).optional(),
       value_raw: z.lazy(() => SortOrderSchema).optional(),
-      from: z.lazy(() => SortOrderSchema).optional(),
+      from_address: z.lazy(() => SortOrderSchema).optional(),
       created_at: z.lazy(() => SortOrderSchema).optional(),
-      updated_at: z.lazy(() => SortOrderSchema).optional(),
       _count: z
         .lazy(() => MintSaleTransactionCountOrderByAggregateInputSchema)
         .optional(),
@@ -6328,16 +6367,10 @@ export const MintSaleTransactionScalarWhereWithAggregatesInputSchema: z.ZodType<
       value_raw: z
         .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
         .optional(),
-      from: z
+      from_address: z
         .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
         .optional(),
       created_at: z
-        .union([
-          z.lazy(() => DateTimeWithAggregatesFilterSchema),
-          z.coerce.date(),
-        ])
-        .optional(),
-      updated_at: z
         .union([
           z.lazy(() => DateTimeWithAggregatesFilterSchema),
           z.coerce.date(),
@@ -6781,6 +6814,7 @@ export const CollectionCreateInputSchema: z.ZodType<Prisma.CollectionCreateInput
       discord: z.string().optional().nullable(),
       network: z.string().optional().nullable(),
       num_items: z.number().int().optional().nullable(),
+      num_total_items: z.number().int().optional().nullable(),
       num_owners: z.number().int().optional().nullable(),
       last_refreshed: z.coerce.date().optional().nullable(),
       created_at: z.coerce.date().optional(),
@@ -6846,6 +6880,7 @@ export const CollectionUncheckedCreateInputSchema: z.ZodType<Prisma.CollectionUn
       discord: z.string().optional().nullable(),
       network: z.string().optional().nullable(),
       num_items: z.number().int().optional().nullable(),
+      num_total_items: z.number().int().optional().nullable(),
       num_owners: z.number().int().optional().nullable(),
       last_refreshed: z.coerce.date().optional().nullable(),
       created_at: z.coerce.date().optional(),
@@ -7076,6 +7111,13 @@ export const CollectionUpdateInputSchema: z.ZodType<Prisma.CollectionUpdateInput
         .optional()
         .nullable(),
       num_items: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      num_total_items: z
         .union([
           z.number().int(),
           z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
@@ -7350,6 +7392,13 @@ export const CollectionUncheckedUpdateInputSchema: z.ZodType<Prisma.CollectionUn
         ])
         .optional()
         .nullable(),
+      num_total_items: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
       num_owners: z
         .union([
           z.number().int(),
@@ -7608,6 +7657,13 @@ export const CollectionUpdateManyMutationInputSchema: z.ZodType<Prisma.Collectio
         ])
         .optional()
         .nullable(),
+      num_total_items: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
       num_owners: z
         .union([
           z.number().int(),
@@ -7858,6 +7914,13 @@ export const CollectionUncheckedUpdateManyInputSchema: z.ZodType<Prisma.Collecti
         .optional()
         .nullable(),
       num_items: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      num_total_items: z
         .union([
           z.number().int(),
           z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
@@ -9840,11 +9903,7 @@ export const UserCreateInputSchema: z.ZodType<Prisma.UserCreateInput> = z
       .max(64, { message: "too lengthy" })
       .optional()
       .nullable(),
-    description: z
-      .string()
-      .max(512, { message: "too long" })
-      .optional()
-      .nullable(),
+    description: z.string().optional().nullable(),
     ens: z.string().optional().nullable(),
     status: z.string().optional(),
     email: z.string().optional().nullable(),
@@ -9893,11 +9952,7 @@ export const UserUncheckedCreateInputSchema: z.ZodType<Prisma.UserUncheckedCreat
         .max(64, { message: "too lengthy" })
         .optional()
         .nullable(),
-      description: z
-        .string()
-        .max(512, { message: "too long" })
-        .optional()
-        .nullable(),
+      description: z.string().optional().nullable(),
       ens: z.string().optional().nullable(),
       status: z.string().optional(),
       email: z.string().optional().nullable(),
@@ -9967,7 +10022,7 @@ export const UserUpdateInputSchema: z.ZodType<Prisma.UserUpdateInput> = z
       .nullable(),
     description: z
       .union([
-        z.string().max(512, { message: "too long" }),
+        z.string(),
         z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
       ])
       .optional()
@@ -10062,7 +10117,7 @@ export const UserUncheckedUpdateInputSchema: z.ZodType<Prisma.UserUncheckedUpdat
         .nullable(),
       description: z
         .union([
-          z.string().max(512, { message: "too long" }),
+          z.string(),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -10164,7 +10219,7 @@ export const UserUpdateManyMutationInputSchema: z.ZodType<Prisma.UserUpdateManyM
         .nullable(),
       description: z
         .union([
-          z.string().max(512, { message: "too long" }),
+          z.string(),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -10246,7 +10301,7 @@ export const UserUncheckedUpdateManyInputSchema: z.ZodType<Prisma.UserUncheckedU
         .nullable(),
       description: z
         .union([
-          z.string().max(512, { message: "too long" }),
+          z.string(),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -11652,9 +11707,8 @@ export const MintSaleTransactionCreateInputSchema: z.ZodType<Prisma.MintSaleTran
       token_address: z.string(),
       value_decimal: z.number(),
       value_raw: z.string(),
-      from: z.string(),
+      from_address: z.string(),
       created_at: z.coerce.date().optional(),
-      updated_at: z.coerce.date().optional(),
     })
     .strict();
 
@@ -11668,9 +11722,8 @@ export const MintSaleTransactionUncheckedCreateInputSchema: z.ZodType<Prisma.Min
       token_address: z.string(),
       value_decimal: z.number(),
       value_raw: z.string(),
-      from: z.string(),
+      from_address: z.string(),
       created_at: z.coerce.date().optional(),
-      updated_at: z.coerce.date().optional(),
     })
     .strict();
 
@@ -11719,19 +11772,13 @@ export const MintSaleTransactionUpdateInputSchema: z.ZodType<Prisma.MintSaleTran
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
-      from: z
+      from_address: z
         .union([
           z.string(),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       created_at: z
-        .union([
-          z.coerce.date(),
-          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      updated_at: z
         .union([
           z.coerce.date(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
@@ -11785,19 +11832,13 @@ export const MintSaleTransactionUncheckedUpdateInputSchema: z.ZodType<Prisma.Min
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
-      from: z
+      from_address: z
         .union([
           z.string(),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       created_at: z
-        .union([
-          z.coerce.date(),
-          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      updated_at: z
         .union([
           z.coerce.date(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
@@ -11851,19 +11892,13 @@ export const MintSaleTransactionUpdateManyMutationInputSchema: z.ZodType<Prisma.
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
-      from: z
+      from_address: z
         .union([
           z.string(),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       created_at: z
-        .union([
-          z.coerce.date(),
-          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      updated_at: z
         .union([
           z.coerce.date(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
@@ -11917,19 +11952,13 @@ export const MintSaleTransactionUncheckedUpdateManyInputSchema: z.ZodType<Prisma
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
-      from: z
+      from_address: z
         .union([
           z.string(),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       created_at: z
-        .union([
-          z.coerce.date(),
-          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      updated_at: z
         .union([
           z.coerce.date(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
@@ -12686,6 +12715,7 @@ export const CollectionCountOrderByAggregateInputSchema: z.ZodType<Prisma.Collec
       discord: z.lazy(() => SortOrderSchema).optional(),
       network: z.lazy(() => SortOrderSchema).optional(),
       num_items: z.lazy(() => SortOrderSchema).optional(),
+      num_total_items: z.lazy(() => SortOrderSchema).optional(),
       num_owners: z.lazy(() => SortOrderSchema).optional(),
       last_refreshed: z.lazy(() => SortOrderSchema).optional(),
       created_at: z.lazy(() => SortOrderSchema).optional(),
@@ -12701,6 +12731,7 @@ export const CollectionAvgOrderByAggregateInputSchema: z.ZodType<Prisma.Collecti
       contract_version: z.lazy(() => SortOrderSchema).optional(),
       royalties: z.lazy(() => SortOrderSchema).optional(),
       num_items: z.lazy(() => SortOrderSchema).optional(),
+      num_total_items: z.lazy(() => SortOrderSchema).optional(),
       num_owners: z.lazy(() => SortOrderSchema).optional(),
     })
     .strict();
@@ -12739,6 +12770,7 @@ export const CollectionMaxOrderByAggregateInputSchema: z.ZodType<Prisma.Collecti
       discord: z.lazy(() => SortOrderSchema).optional(),
       network: z.lazy(() => SortOrderSchema).optional(),
       num_items: z.lazy(() => SortOrderSchema).optional(),
+      num_total_items: z.lazy(() => SortOrderSchema).optional(),
       num_owners: z.lazy(() => SortOrderSchema).optional(),
       last_refreshed: z.lazy(() => SortOrderSchema).optional(),
       created_at: z.lazy(() => SortOrderSchema).optional(),
@@ -12780,6 +12812,7 @@ export const CollectionMinOrderByAggregateInputSchema: z.ZodType<Prisma.Collecti
       discord: z.lazy(() => SortOrderSchema).optional(),
       network: z.lazy(() => SortOrderSchema).optional(),
       num_items: z.lazy(() => SortOrderSchema).optional(),
+      num_total_items: z.lazy(() => SortOrderSchema).optional(),
       num_owners: z.lazy(() => SortOrderSchema).optional(),
       last_refreshed: z.lazy(() => SortOrderSchema).optional(),
       created_at: z.lazy(() => SortOrderSchema).optional(),
@@ -12795,6 +12828,7 @@ export const CollectionSumOrderByAggregateInputSchema: z.ZodType<Prisma.Collecti
       contract_version: z.lazy(() => SortOrderSchema).optional(),
       royalties: z.lazy(() => SortOrderSchema).optional(),
       num_items: z.lazy(() => SortOrderSchema).optional(),
+      num_total_items: z.lazy(() => SortOrderSchema).optional(),
       num_owners: z.lazy(() => SortOrderSchema).optional(),
     })
     .strict();
@@ -14007,6 +14041,14 @@ export const FloatFilterSchema: z.ZodType<Prisma.FloatFilter> = z
   })
   .strict();
 
+export const MintSaleTransactionTransaction_hashFrom_addressCompoundUniqueInputSchema: z.ZodType<Prisma.MintSaleTransactionTransaction_hashFrom_addressCompoundUniqueInput> =
+  z
+    .object({
+      transaction_hash: z.string(),
+      from_address: z.string(),
+    })
+    .strict();
+
 export const MintSaleTransactionCountOrderByAggregateInputSchema: z.ZodType<Prisma.MintSaleTransactionCountOrderByAggregateInput> =
   z
     .object({
@@ -14017,9 +14059,8 @@ export const MintSaleTransactionCountOrderByAggregateInputSchema: z.ZodType<Pris
       token_address: z.lazy(() => SortOrderSchema).optional(),
       value_decimal: z.lazy(() => SortOrderSchema).optional(),
       value_raw: z.lazy(() => SortOrderSchema).optional(),
-      from: z.lazy(() => SortOrderSchema).optional(),
+      from_address: z.lazy(() => SortOrderSchema).optional(),
       created_at: z.lazy(() => SortOrderSchema).optional(),
-      updated_at: z.lazy(() => SortOrderSchema).optional(),
     })
     .strict();
 
@@ -14041,9 +14082,8 @@ export const MintSaleTransactionMaxOrderByAggregateInputSchema: z.ZodType<Prisma
       token_address: z.lazy(() => SortOrderSchema).optional(),
       value_decimal: z.lazy(() => SortOrderSchema).optional(),
       value_raw: z.lazy(() => SortOrderSchema).optional(),
-      from: z.lazy(() => SortOrderSchema).optional(),
+      from_address: z.lazy(() => SortOrderSchema).optional(),
       created_at: z.lazy(() => SortOrderSchema).optional(),
-      updated_at: z.lazy(() => SortOrderSchema).optional(),
     })
     .strict();
 
@@ -14057,9 +14097,8 @@ export const MintSaleTransactionMinOrderByAggregateInputSchema: z.ZodType<Prisma
       token_address: z.lazy(() => SortOrderSchema).optional(),
       value_decimal: z.lazy(() => SortOrderSchema).optional(),
       value_raw: z.lazy(() => SortOrderSchema).optional(),
-      from: z.lazy(() => SortOrderSchema).optional(),
+      from_address: z.lazy(() => SortOrderSchema).optional(),
       created_at: z.lazy(() => SortOrderSchema).optional(),
-      updated_at: z.lazy(() => SortOrderSchema).optional(),
     })
     .strict();
 
@@ -18254,11 +18293,7 @@ export const UserCreateWithoutCollectionsInputSchema: z.ZodType<Prisma.UserCreat
         .max(64, { message: "too lengthy" })
         .optional()
         .nullable(),
-      description: z
-        .string()
-        .max(512, { message: "too long" })
-        .optional()
-        .nullable(),
+      description: z.string().optional().nullable(),
       ens: z.string().optional().nullable(),
       status: z.string().optional(),
       email: z.string().optional().nullable(),
@@ -18306,11 +18341,7 @@ export const UserUncheckedCreateWithoutCollectionsInputSchema: z.ZodType<Prisma.
         .max(64, { message: "too lengthy" })
         .optional()
         .nullable(),
-      description: z
-        .string()
-        .max(512, { message: "too long" })
-        .optional()
-        .nullable(),
+      description: z.string().optional().nullable(),
       ens: z.string().optional().nullable(),
       status: z.string().optional(),
       email: z.string().optional().nullable(),
@@ -18877,7 +18908,7 @@ export const UserUpdateWithoutCollectionsInputSchema: z.ZodType<Prisma.UserUpdat
         .nullable(),
       description: z
         .union([
-          z.string().max(512, { message: "too long" }),
+          z.string(),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -18974,7 +19005,7 @@ export const UserUncheckedUpdateWithoutCollectionsInputSchema: z.ZodType<Prisma.
         .nullable(),
       description: z
         .union([
-          z.string().max(512, { message: "too long" }),
+          z.string(),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -19270,6 +19301,7 @@ export const CollectionCreateWithoutMax_items_1155InputSchema: z.ZodType<Prisma.
       discord: z.string().optional().nullable(),
       network: z.string().optional().nullable(),
       num_items: z.number().int().optional().nullable(),
+      num_total_items: z.number().int().optional().nullable(),
       num_owners: z.number().int().optional().nullable(),
       last_refreshed: z.coerce.date().optional().nullable(),
       created_at: z.coerce.date().optional(),
@@ -19332,6 +19364,7 @@ export const CollectionUncheckedCreateWithoutMax_items_1155InputSchema: z.ZodTyp
       discord: z.string().optional().nullable(),
       network: z.string().optional().nullable(),
       num_items: z.number().int().optional().nullable(),
+      num_total_items: z.number().int().optional().nullable(),
       num_owners: z.number().int().optional().nullable(),
       last_refreshed: z.coerce.date().optional().nullable(),
       created_at: z.coerce.date().optional(),
@@ -19594,6 +19627,13 @@ export const CollectionUpdateWithoutMax_items_1155InputSchema: z.ZodType<Prisma.
         .optional()
         .nullable(),
       num_items: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      num_total_items: z
         .union([
           z.number().int(),
           z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
@@ -19865,6 +19905,13 @@ export const CollectionUncheckedUpdateWithoutMax_items_1155InputSchema: z.ZodTyp
         ])
         .optional()
         .nullable(),
+      num_total_items: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
       num_owners: z
         .union([
           z.number().int(),
@@ -20013,6 +20060,7 @@ export const CollectionCreateWithoutNftsInputSchema: z.ZodType<Prisma.Collection
       discord: z.string().optional().nullable(),
       network: z.string().optional().nullable(),
       num_items: z.number().int().optional().nullable(),
+      num_total_items: z.number().int().optional().nullable(),
       num_owners: z.number().int().optional().nullable(),
       last_refreshed: z.coerce.date().optional().nullable(),
       created_at: z.coerce.date().optional(),
@@ -20075,6 +20123,7 @@ export const CollectionUncheckedCreateWithoutNftsInputSchema: z.ZodType<Prisma.C
       discord: z.string().optional().nullable(),
       network: z.string().optional().nullable(),
       num_items: z.number().int().optional().nullable(),
+      num_total_items: z.number().int().optional().nullable(),
       num_owners: z.number().int().optional().nullable(),
       last_refreshed: z.coerce.date().optional().nullable(),
       created_at: z.coerce.date().optional(),
@@ -20528,6 +20577,13 @@ export const CollectionUpdateWithoutNftsInputSchema: z.ZodType<Prisma.Collection
         ])
         .optional()
         .nullable(),
+      num_total_items: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
       num_owners: z
         .union([
           z.number().int(),
@@ -20787,6 +20843,13 @@ export const CollectionUncheckedUpdateWithoutNftsInputSchema: z.ZodType<Prisma.C
         .optional()
         .nullable(),
       num_items: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      num_total_items: z
         .union([
           z.number().int(),
           z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
@@ -21301,6 +21364,7 @@ export const CollectionCreateWithoutMint_dataInputSchema: z.ZodType<Prisma.Colle
       discord: z.string().optional().nullable(),
       network: z.string().optional().nullable(),
       num_items: z.number().int().optional().nullable(),
+      num_total_items: z.number().int().optional().nullable(),
       num_owners: z.number().int().optional().nullable(),
       last_refreshed: z.coerce.date().optional().nullable(),
       created_at: z.coerce.date().optional(),
@@ -21363,6 +21427,7 @@ export const CollectionUncheckedCreateWithoutMint_dataInputSchema: z.ZodType<Pri
       discord: z.string().optional().nullable(),
       network: z.string().optional().nullable(),
       num_items: z.number().int().optional().nullable(),
+      num_total_items: z.number().int().optional().nullable(),
       num_owners: z.number().int().optional().nullable(),
       last_refreshed: z.coerce.date().optional().nullable(),
       created_at: z.coerce.date().optional(),
@@ -21631,6 +21696,13 @@ export const CollectionUpdateWithoutMint_dataInputSchema: z.ZodType<Prisma.Colle
         ])
         .optional()
         .nullable(),
+      num_total_items: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
       num_owners: z
         .union([
           z.number().int(),
@@ -21890,6 +21962,13 @@ export const CollectionUncheckedUpdateWithoutMint_dataInputSchema: z.ZodType<Pri
         .optional()
         .nullable(),
       num_items: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      num_total_items: z
         .union([
           z.number().int(),
           z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
@@ -22402,6 +22481,7 @@ export const CollectionCreateWithoutCreatorInputSchema: z.ZodType<Prisma.Collect
       discord: z.string().optional().nullable(),
       network: z.string().optional().nullable(),
       num_items: z.number().int().optional().nullable(),
+      num_total_items: z.number().int().optional().nullable(),
       num_owners: z.number().int().optional().nullable(),
       last_refreshed: z.coerce.date().optional().nullable(),
       created_at: z.coerce.date().optional(),
@@ -22457,6 +22537,7 @@ export const CollectionUncheckedCreateWithoutCreatorInputSchema: z.ZodType<Prism
       discord: z.string().optional().nullable(),
       network: z.string().optional().nullable(),
       num_items: z.number().int().optional().nullable(),
+      num_total_items: z.number().int().optional().nullable(),
       num_owners: z.number().int().optional().nullable(),
       last_refreshed: z.coerce.date().optional().nullable(),
       created_at: z.coerce.date().optional(),
@@ -22839,6 +22920,10 @@ export const CollectionScalarWhereInputSchema: z.ZodType<Prisma.CollectionScalar
         .optional()
         .nullable(),
       num_items: z
+        .union([z.lazy(() => IntNullableFilterSchema), z.number()])
+        .optional()
+        .nullable(),
+      num_total_items: z
         .union([z.lazy(() => IntNullableFilterSchema), z.number()])
         .optional()
         .nullable(),
@@ -23241,11 +23326,7 @@ export const UserCreateWithoutConnectionsInputSchema: z.ZodType<Prisma.UserCreat
         .max(64, { message: "too lengthy" })
         .optional()
         .nullable(),
-      description: z
-        .string()
-        .max(512, { message: "too long" })
-        .optional()
-        .nullable(),
+      description: z.string().optional().nullable(),
       ens: z.string().optional().nullable(),
       status: z.string().optional(),
       email: z.string().optional().nullable(),
@@ -23293,11 +23374,7 @@ export const UserUncheckedCreateWithoutConnectionsInputSchema: z.ZodType<Prisma.
         .max(64, { message: "too lengthy" })
         .optional()
         .nullable(),
-      description: z
-        .string()
-        .max(512, { message: "too long" })
-        .optional()
-        .nullable(),
+      description: z.string().optional().nullable(),
       ens: z.string().optional().nullable(),
       status: z.string().optional(),
       email: z.string().optional().nullable(),
@@ -23402,7 +23479,7 @@ export const UserUpdateWithoutConnectionsInputSchema: z.ZodType<Prisma.UserUpdat
         .nullable(),
       description: z
         .union([
-          z.string().max(512, { message: "too long" }),
+          z.string(),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -23499,7 +23576,7 @@ export const UserUncheckedUpdateWithoutConnectionsInputSchema: z.ZodType<Prisma.
         .nullable(),
       description: z
         .union([
-          z.string().max(512, { message: "too long" }),
+          z.string(),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -23580,11 +23657,7 @@ export const UserCreateWithoutPasswordInputSchema: z.ZodType<Prisma.UserCreateWi
         .max(64, { message: "too lengthy" })
         .optional()
         .nullable(),
-      description: z
-        .string()
-        .max(512, { message: "too long" })
-        .optional()
-        .nullable(),
+      description: z.string().optional().nullable(),
       ens: z.string().optional().nullable(),
       status: z.string().optional(),
       email: z.string().optional().nullable(),
@@ -23632,11 +23705,7 @@ export const UserUncheckedCreateWithoutPasswordInputSchema: z.ZodType<Prisma.Use
         .max(64, { message: "too lengthy" })
         .optional()
         .nullable(),
-      description: z
-        .string()
-        .max(512, { message: "too long" })
-        .optional()
-        .nullable(),
+      description: z.string().optional().nullable(),
       ens: z.string().optional().nullable(),
       status: z.string().optional(),
       email: z.string().optional().nullable(),
@@ -23741,7 +23810,7 @@ export const UserUpdateWithoutPasswordInputSchema: z.ZodType<Prisma.UserUpdateWi
         .nullable(),
       description: z
         .union([
-          z.string().max(512, { message: "too long" }),
+          z.string(),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -23838,7 +23907,7 @@ export const UserUncheckedUpdateWithoutPasswordInputSchema: z.ZodType<Prisma.Use
         .nullable(),
       description: z
         .union([
-          z.string().max(512, { message: "too long" }),
+          z.string(),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -23995,11 +24064,7 @@ export const UserCreateWithoutWalletsInputSchema: z.ZodType<Prisma.UserCreateWit
         .max(64, { message: "too lengthy" })
         .optional()
         .nullable(),
-      description: z
-        .string()
-        .max(512, { message: "too long" })
-        .optional()
-        .nullable(),
+      description: z.string().optional().nullable(),
       ens: z.string().optional().nullable(),
       status: z.string().optional(),
       email: z.string().optional().nullable(),
@@ -24047,11 +24112,7 @@ export const UserUncheckedCreateWithoutWalletsInputSchema: z.ZodType<Prisma.User
         .max(64, { message: "too lengthy" })
         .optional()
         .nullable(),
-      description: z
-        .string()
-        .max(512, { message: "too long" })
-        .optional()
-        .nullable(),
+      description: z.string().optional().nullable(),
       ens: z.string().optional().nullable(),
       status: z.string().optional(),
       email: z.string().optional().nullable(),
@@ -24234,7 +24295,7 @@ export const UserUpdateWithoutWalletsInputSchema: z.ZodType<Prisma.UserUpdateWit
         .nullable(),
       description: z
         .union([
-          z.string().max(512, { message: "too long" }),
+          z.string(),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -24331,7 +24392,7 @@ export const UserUncheckedUpdateWithoutWalletsInputSchema: z.ZodType<Prisma.User
         .nullable(),
       description: z
         .union([
-          z.string().max(512, { message: "too long" }),
+          z.string(),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -24573,11 +24634,7 @@ export const UserCreateWithoutSessionsInputSchema: z.ZodType<Prisma.UserCreateWi
         .max(64, { message: "too lengthy" })
         .optional()
         .nullable(),
-      description: z
-        .string()
-        .max(512, { message: "too long" })
-        .optional()
-        .nullable(),
+      description: z.string().optional().nullable(),
       ens: z.string().optional().nullable(),
       status: z.string().optional(),
       email: z.string().optional().nullable(),
@@ -24625,11 +24682,7 @@ export const UserUncheckedCreateWithoutSessionsInputSchema: z.ZodType<Prisma.Use
         .max(64, { message: "too lengthy" })
         .optional()
         .nullable(),
-      description: z
-        .string()
-        .max(512, { message: "too long" })
-        .optional()
-        .nullable(),
+      description: z.string().optional().nullable(),
       ens: z.string().optional().nullable(),
       status: z.string().optional(),
       email: z.string().optional().nullable(),
@@ -24769,7 +24822,7 @@ export const UserUpdateWithoutSessionsInputSchema: z.ZodType<Prisma.UserUpdateWi
         .nullable(),
       description: z
         .union([
-          z.string().max(512, { message: "too long" }),
+          z.string(),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -24866,7 +24919,7 @@ export const UserUncheckedUpdateWithoutSessionsInputSchema: z.ZodType<Prisma.Use
         .nullable(),
       description: z
         .union([
-          z.string().max(512, { message: "too long" }),
+          z.string(),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -25127,11 +25180,7 @@ export const UserCreateWithoutRolesInputSchema: z.ZodType<Prisma.UserCreateWitho
         .max(64, { message: "too lengthy" })
         .optional()
         .nullable(),
-      description: z
-        .string()
-        .max(512, { message: "too long" })
-        .optional()
-        .nullable(),
+      description: z.string().optional().nullable(),
       ens: z.string().optional().nullable(),
       status: z.string().optional(),
       email: z.string().optional().nullable(),
@@ -25179,11 +25228,7 @@ export const UserUncheckedCreateWithoutRolesInputSchema: z.ZodType<Prisma.UserUn
         .max(64, { message: "too lengthy" })
         .optional()
         .nullable(),
-      description: z
-        .string()
-        .max(512, { message: "too long" })
-        .optional()
-        .nullable(),
+      description: z.string().optional().nullable(),
       ens: z.string().optional().nullable(),
       status: z.string().optional(),
       email: z.string().optional().nullable(),
@@ -26262,6 +26307,13 @@ export const CollectionUpdateWithoutCreatorInputSchema: z.ZodType<Prisma.Collect
         ])
         .optional()
         .nullable(),
+      num_total_items: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
       num_owners: z
         .union([
           z.number().int(),
@@ -26510,6 +26562,13 @@ export const CollectionUncheckedUpdateWithoutCreatorInputSchema: z.ZodType<Prism
         .optional()
         .nullable(),
       num_items: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      num_total_items: z
         .union([
           z.number().int(),
           z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
@@ -26768,6 +26827,13 @@ export const CollectionUncheckedUpdateManyWithoutCreatorInputSchema: z.ZodType<P
         .optional()
         .nullable(),
       num_items: z
+        .union([
+          z.number().int(),
+          z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      num_total_items: z
         .union([
           z.number().int(),
           z.lazy(() => NullableIntFieldUpdateOperationsInputSchema),
@@ -27775,7 +27841,7 @@ export const UserUpdateWithoutRolesInputSchema: z.ZodType<Prisma.UserUpdateWitho
         .nullable(),
       description: z
         .union([
-          z.string().max(512, { message: "too long" }),
+          z.string(),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -27872,7 +27938,7 @@ export const UserUncheckedUpdateWithoutRolesInputSchema: z.ZodType<Prisma.UserUn
         .nullable(),
       description: z
         .union([
-          z.string().max(512, { message: "too long" }),
+          z.string(),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -27971,7 +28037,7 @@ export const UserUncheckedUpdateManyWithoutRolesInputSchema: z.ZodType<Prisma.Us
         .nullable(),
       description: z
         .union([
-          z.string().max(512, { message: "too long" }),
+          z.string(),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
