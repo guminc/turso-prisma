@@ -208,9 +208,8 @@ export const MintSaleTransactionScalarFieldEnumSchema = z.enum([
   "token_address",
   "value_decimal",
   "value_raw",
-  "from",
+  "from_address",
   "created_at",
-  "updated_at",
 ]);
 
 export const InstarevealCollectionScalarFieldEnumSchema = z.enum([
@@ -574,9 +573,8 @@ export const MintSaleTransactionSchema = z.object({
   token_address: z.string(),
   value_decimal: z.number(),
   value_raw: z.string(),
-  from: z.string(),
+  from_address: z.string(),
   created_at: z.coerce.date(),
-  updated_at: z.coerce.date(),
 });
 
 export type MintSaleTransaction = z.infer<typeof MintSaleTransactionSchema>;
@@ -1343,9 +1341,8 @@ export const MintSaleTransactionSelectSchema: z.ZodType<Prisma.MintSaleTransacti
       token_address: z.boolean().optional(),
       value_decimal: z.boolean().optional(),
       value_raw: z.boolean().optional(),
-      from: z.boolean().optional(),
+      from_address: z.boolean().optional(),
       created_at: z.boolean().optional(),
-      updated_at: z.boolean().optional(),
     })
     .strict();
 
@@ -6195,11 +6192,10 @@ export const MintSaleTransactionWhereInputSchema: z.ZodType<Prisma.MintSaleTrans
       value_raw: z
         .union([z.lazy(() => StringFilterSchema), z.string()])
         .optional(),
-      from: z.union([z.lazy(() => StringFilterSchema), z.string()]).optional(),
-      created_at: z
-        .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
+      from_address: z
+        .union([z.lazy(() => StringFilterSchema), z.string()])
         .optional(),
-      updated_at: z
+      created_at: z
         .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
         .optional(),
     })
@@ -6215,9 +6211,8 @@ export const MintSaleTransactionOrderByWithRelationInputSchema: z.ZodType<Prisma
       token_address: z.lazy(() => SortOrderSchema).optional(),
       value_decimal: z.lazy(() => SortOrderSchema).optional(),
       value_raw: z.lazy(() => SortOrderSchema).optional(),
-      from: z.lazy(() => SortOrderSchema).optional(),
+      from_address: z.lazy(() => SortOrderSchema).optional(),
       created_at: z.lazy(() => SortOrderSchema).optional(),
-      updated_at: z.lazy(() => SortOrderSchema).optional(),
     })
     .strict();
 
@@ -6226,16 +6221,18 @@ export const MintSaleTransactionWhereUniqueInputSchema: z.ZodType<Prisma.MintSal
     .union([
       z.object({
         id: z.string().cuid(),
-        transaction_hash_from: z.lazy(
-          () => MintSaleTransactionTransaction_hashFromCompoundUniqueInputSchema
+        transaction_hash_from_address: z.lazy(
+          () =>
+            MintSaleTransactionTransaction_hashFrom_addressCompoundUniqueInputSchema
         ),
       }),
       z.object({
         id: z.string().cuid(),
       }),
       z.object({
-        transaction_hash_from: z.lazy(
-          () => MintSaleTransactionTransaction_hashFromCompoundUniqueInputSchema
+        transaction_hash_from_address: z.lazy(
+          () =>
+            MintSaleTransactionTransaction_hashFrom_addressCompoundUniqueInputSchema
         ),
       }),
     ])
@@ -6243,10 +6240,10 @@ export const MintSaleTransactionWhereUniqueInputSchema: z.ZodType<Prisma.MintSal
       z
         .object({
           id: z.string().cuid().optional(),
-          transaction_hash_from: z
+          transaction_hash_from_address: z
             .lazy(
               () =>
-                MintSaleTransactionTransaction_hashFromCompoundUniqueInputSchema
+                MintSaleTransactionTransaction_hashFrom_addressCompoundUniqueInputSchema
             )
             .optional(),
           AND: z
@@ -6283,13 +6280,10 @@ export const MintSaleTransactionWhereUniqueInputSchema: z.ZodType<Prisma.MintSal
           value_raw: z
             .union([z.lazy(() => StringFilterSchema), z.string()])
             .optional(),
-          from: z
+          from_address: z
             .union([z.lazy(() => StringFilterSchema), z.string()])
             .optional(),
           created_at: z
-            .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
-            .optional(),
-          updated_at: z
             .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
             .optional(),
         })
@@ -6306,9 +6300,8 @@ export const MintSaleTransactionOrderByWithAggregationInputSchema: z.ZodType<Pri
       token_address: z.lazy(() => SortOrderSchema).optional(),
       value_decimal: z.lazy(() => SortOrderSchema).optional(),
       value_raw: z.lazy(() => SortOrderSchema).optional(),
-      from: z.lazy(() => SortOrderSchema).optional(),
+      from_address: z.lazy(() => SortOrderSchema).optional(),
       created_at: z.lazy(() => SortOrderSchema).optional(),
-      updated_at: z.lazy(() => SortOrderSchema).optional(),
       _count: z
         .lazy(() => MintSaleTransactionCountOrderByAggregateInputSchema)
         .optional(),
@@ -6374,16 +6367,10 @@ export const MintSaleTransactionScalarWhereWithAggregatesInputSchema: z.ZodType<
       value_raw: z
         .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
         .optional(),
-      from: z
+      from_address: z
         .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
         .optional(),
       created_at: z
-        .union([
-          z.lazy(() => DateTimeWithAggregatesFilterSchema),
-          z.coerce.date(),
-        ])
-        .optional(),
-      updated_at: z
         .union([
           z.lazy(() => DateTimeWithAggregatesFilterSchema),
           z.coerce.date(),
@@ -11720,9 +11707,8 @@ export const MintSaleTransactionCreateInputSchema: z.ZodType<Prisma.MintSaleTran
       token_address: z.string(),
       value_decimal: z.number(),
       value_raw: z.string(),
-      from: z.string(),
+      from_address: z.string(),
       created_at: z.coerce.date().optional(),
-      updated_at: z.coerce.date().optional(),
     })
     .strict();
 
@@ -11736,9 +11722,8 @@ export const MintSaleTransactionUncheckedCreateInputSchema: z.ZodType<Prisma.Min
       token_address: z.string(),
       value_decimal: z.number(),
       value_raw: z.string(),
-      from: z.string(),
+      from_address: z.string(),
       created_at: z.coerce.date().optional(),
-      updated_at: z.coerce.date().optional(),
     })
     .strict();
 
@@ -11787,19 +11772,13 @@ export const MintSaleTransactionUpdateInputSchema: z.ZodType<Prisma.MintSaleTran
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
-      from: z
+      from_address: z
         .union([
           z.string(),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       created_at: z
-        .union([
-          z.coerce.date(),
-          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      updated_at: z
         .union([
           z.coerce.date(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
@@ -11853,19 +11832,13 @@ export const MintSaleTransactionUncheckedUpdateInputSchema: z.ZodType<Prisma.Min
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
-      from: z
+      from_address: z
         .union([
           z.string(),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       created_at: z
-        .union([
-          z.coerce.date(),
-          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      updated_at: z
         .union([
           z.coerce.date(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
@@ -11919,19 +11892,13 @@ export const MintSaleTransactionUpdateManyMutationInputSchema: z.ZodType<Prisma.
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
-      from: z
+      from_address: z
         .union([
           z.string(),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       created_at: z
-        .union([
-          z.coerce.date(),
-          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      updated_at: z
         .union([
           z.coerce.date(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
@@ -11985,19 +11952,13 @@ export const MintSaleTransactionUncheckedUpdateManyInputSchema: z.ZodType<Prisma
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
-      from: z
+      from_address: z
         .union([
           z.string(),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       created_at: z
-        .union([
-          z.coerce.date(),
-          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      updated_at: z
         .union([
           z.coerce.date(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
@@ -14080,11 +14041,11 @@ export const FloatFilterSchema: z.ZodType<Prisma.FloatFilter> = z
   })
   .strict();
 
-export const MintSaleTransactionTransaction_hashFromCompoundUniqueInputSchema: z.ZodType<Prisma.MintSaleTransactionTransaction_hashFromCompoundUniqueInput> =
+export const MintSaleTransactionTransaction_hashFrom_addressCompoundUniqueInputSchema: z.ZodType<Prisma.MintSaleTransactionTransaction_hashFrom_addressCompoundUniqueInput> =
   z
     .object({
       transaction_hash: z.string(),
-      from: z.string(),
+      from_address: z.string(),
     })
     .strict();
 
@@ -14098,9 +14059,8 @@ export const MintSaleTransactionCountOrderByAggregateInputSchema: z.ZodType<Pris
       token_address: z.lazy(() => SortOrderSchema).optional(),
       value_decimal: z.lazy(() => SortOrderSchema).optional(),
       value_raw: z.lazy(() => SortOrderSchema).optional(),
-      from: z.lazy(() => SortOrderSchema).optional(),
+      from_address: z.lazy(() => SortOrderSchema).optional(),
       created_at: z.lazy(() => SortOrderSchema).optional(),
-      updated_at: z.lazy(() => SortOrderSchema).optional(),
     })
     .strict();
 
@@ -14122,9 +14082,8 @@ export const MintSaleTransactionMaxOrderByAggregateInputSchema: z.ZodType<Prisma
       token_address: z.lazy(() => SortOrderSchema).optional(),
       value_decimal: z.lazy(() => SortOrderSchema).optional(),
       value_raw: z.lazy(() => SortOrderSchema).optional(),
-      from: z.lazy(() => SortOrderSchema).optional(),
+      from_address: z.lazy(() => SortOrderSchema).optional(),
       created_at: z.lazy(() => SortOrderSchema).optional(),
-      updated_at: z.lazy(() => SortOrderSchema).optional(),
     })
     .strict();
 
@@ -14138,9 +14097,8 @@ export const MintSaleTransactionMinOrderByAggregateInputSchema: z.ZodType<Prisma
       token_address: z.lazy(() => SortOrderSchema).optional(),
       value_decimal: z.lazy(() => SortOrderSchema).optional(),
       value_raw: z.lazy(() => SortOrderSchema).optional(),
-      from: z.lazy(() => SortOrderSchema).optional(),
+      from_address: z.lazy(() => SortOrderSchema).optional(),
       created_at: z.lazy(() => SortOrderSchema).optional(),
-      updated_at: z.lazy(() => SortOrderSchema).optional(),
     })
     .strict();
 

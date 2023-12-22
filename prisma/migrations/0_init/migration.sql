@@ -224,9 +224,8 @@ CREATE TABLE "MintSaleTransaction" (
     "token_address" TEXT NOT NULL,
     "value_decimal" REAL NOT NULL,
     "value_raw" TEXT NOT NULL,
-    "from" TEXT NOT NULL,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL
+    "from_address" TEXT NOT NULL,
+    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- CreateTable
@@ -332,7 +331,7 @@ CREATE UNIQUE INDEX "Permission_action_entity_access_key" ON "Permission"("actio
 CREATE UNIQUE INDEX "Role_name_key" ON "Role"("name");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "MintSaleTransaction_transaction_hash_from_key" ON "MintSaleTransaction"("transaction_hash", "from");
+CREATE UNIQUE INDEX "MintSaleTransaction_transaction_hash_from_address_key" ON "MintSaleTransaction"("transaction_hash", "from_address");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "_PermissionToRole_AB_unique" ON "_PermissionToRole"("A", "B");

@@ -291,12 +291,11 @@ model MintSaleTransaction {
   token_address    String
   value_decimal    Float
   value_raw        String
-  from             String
+  from_address     String
 
   created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
 
-  @@unique([transaction_hash, from])
+  @@unique([transaction_hash, from_address])
 }
 
 model InstarevealCollection {
