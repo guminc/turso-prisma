@@ -438,7 +438,7 @@ export const UserSchema = z.object({
   avatar_uri: z.string().url({ message: "Invalid url" }).nullish(),
   banner_uri: z.string().url({ message: "Invalid url" }).nullish(),
   username: z.string().max(64, { message: "too lengthy" }).nullish(),
-  description: z.string().max(512, { message: "too long" }).nullish(),
+  description: z.string().nullish(),
   ens: z.string().nullish(),
   status: z.string(),
   email: z.string().nullish(),
@@ -4537,10 +4537,7 @@ export const UserWhereUniqueInputSchema: z.ZodType<Prisma.UserWhereUniqueInput> 
             .optional()
             .nullable(),
           description: z
-            .union([
-              z.lazy(() => StringNullableFilterSchema),
-              z.string().max(512, { message: "too long" }),
-            ])
+            .union([z.lazy(() => StringNullableFilterSchema), z.string()])
             .optional()
             .nullable(),
           ens: z
@@ -6226,13 +6223,32 @@ export const MintSaleTransactionOrderByWithRelationInputSchema: z.ZodType<Prisma
 
 export const MintSaleTransactionWhereUniqueInputSchema: z.ZodType<Prisma.MintSaleTransactionWhereUniqueInput> =
   z
-    .object({
-      id: z.string().cuid(),
-    })
+    .union([
+      z.object({
+        id: z.string().cuid(),
+        transaction_hash_from: z.lazy(
+          () => MintSaleTransactionTransaction_hashFromCompoundUniqueInputSchema
+        ),
+      }),
+      z.object({
+        id: z.string().cuid(),
+      }),
+      z.object({
+        transaction_hash_from: z.lazy(
+          () => MintSaleTransactionTransaction_hashFromCompoundUniqueInputSchema
+        ),
+      }),
+    ])
     .and(
       z
         .object({
           id: z.string().cuid().optional(),
+          transaction_hash_from: z
+            .lazy(
+              () =>
+                MintSaleTransactionTransaction_hashFromCompoundUniqueInputSchema
+            )
+            .optional(),
           AND: z
             .union([
               z.lazy(() => MintSaleTransactionWhereInputSchema),
@@ -9900,11 +9916,7 @@ export const UserCreateInputSchema: z.ZodType<Prisma.UserCreateInput> = z
       .max(64, { message: "too lengthy" })
       .optional()
       .nullable(),
-    description: z
-      .string()
-      .max(512, { message: "too long" })
-      .optional()
-      .nullable(),
+    description: z.string().optional().nullable(),
     ens: z.string().optional().nullable(),
     status: z.string().optional(),
     email: z.string().optional().nullable(),
@@ -9953,11 +9965,7 @@ export const UserUncheckedCreateInputSchema: z.ZodType<Prisma.UserUncheckedCreat
         .max(64, { message: "too lengthy" })
         .optional()
         .nullable(),
-      description: z
-        .string()
-        .max(512, { message: "too long" })
-        .optional()
-        .nullable(),
+      description: z.string().optional().nullable(),
       ens: z.string().optional().nullable(),
       status: z.string().optional(),
       email: z.string().optional().nullable(),
@@ -10027,7 +10035,7 @@ export const UserUpdateInputSchema: z.ZodType<Prisma.UserUpdateInput> = z
       .nullable(),
     description: z
       .union([
-        z.string().max(512, { message: "too long" }),
+        z.string(),
         z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
       ])
       .optional()
@@ -10122,7 +10130,7 @@ export const UserUncheckedUpdateInputSchema: z.ZodType<Prisma.UserUncheckedUpdat
         .nullable(),
       description: z
         .union([
-          z.string().max(512, { message: "too long" }),
+          z.string(),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -10224,7 +10232,7 @@ export const UserUpdateManyMutationInputSchema: z.ZodType<Prisma.UserUpdateManyM
         .nullable(),
       description: z
         .union([
-          z.string().max(512, { message: "too long" }),
+          z.string(),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -10306,7 +10314,7 @@ export const UserUncheckedUpdateManyInputSchema: z.ZodType<Prisma.UserUncheckedU
         .nullable(),
       description: z
         .union([
-          z.string().max(512, { message: "too long" }),
+          z.string(),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -14071,6 +14079,14 @@ export const FloatFilterSchema: z.ZodType<Prisma.FloatFilter> = z
       .optional(),
   })
   .strict();
+
+export const MintSaleTransactionTransaction_hashFromCompoundUniqueInputSchema: z.ZodType<Prisma.MintSaleTransactionTransaction_hashFromCompoundUniqueInput> =
+  z
+    .object({
+      transaction_hash: z.string(),
+      from: z.string(),
+    })
+    .strict();
 
 export const MintSaleTransactionCountOrderByAggregateInputSchema: z.ZodType<Prisma.MintSaleTransactionCountOrderByAggregateInput> =
   z
@@ -18319,11 +18335,7 @@ export const UserCreateWithoutCollectionsInputSchema: z.ZodType<Prisma.UserCreat
         .max(64, { message: "too lengthy" })
         .optional()
         .nullable(),
-      description: z
-        .string()
-        .max(512, { message: "too long" })
-        .optional()
-        .nullable(),
+      description: z.string().optional().nullable(),
       ens: z.string().optional().nullable(),
       status: z.string().optional(),
       email: z.string().optional().nullable(),
@@ -18371,11 +18383,7 @@ export const UserUncheckedCreateWithoutCollectionsInputSchema: z.ZodType<Prisma.
         .max(64, { message: "too lengthy" })
         .optional()
         .nullable(),
-      description: z
-        .string()
-        .max(512, { message: "too long" })
-        .optional()
-        .nullable(),
+      description: z.string().optional().nullable(),
       ens: z.string().optional().nullable(),
       status: z.string().optional(),
       email: z.string().optional().nullable(),
@@ -18942,7 +18950,7 @@ export const UserUpdateWithoutCollectionsInputSchema: z.ZodType<Prisma.UserUpdat
         .nullable(),
       description: z
         .union([
-          z.string().max(512, { message: "too long" }),
+          z.string(),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -19039,7 +19047,7 @@ export const UserUncheckedUpdateWithoutCollectionsInputSchema: z.ZodType<Prisma.
         .nullable(),
       description: z
         .union([
-          z.string().max(512, { message: "too long" }),
+          z.string(),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -23360,11 +23368,7 @@ export const UserCreateWithoutConnectionsInputSchema: z.ZodType<Prisma.UserCreat
         .max(64, { message: "too lengthy" })
         .optional()
         .nullable(),
-      description: z
-        .string()
-        .max(512, { message: "too long" })
-        .optional()
-        .nullable(),
+      description: z.string().optional().nullable(),
       ens: z.string().optional().nullable(),
       status: z.string().optional(),
       email: z.string().optional().nullable(),
@@ -23412,11 +23416,7 @@ export const UserUncheckedCreateWithoutConnectionsInputSchema: z.ZodType<Prisma.
         .max(64, { message: "too lengthy" })
         .optional()
         .nullable(),
-      description: z
-        .string()
-        .max(512, { message: "too long" })
-        .optional()
-        .nullable(),
+      description: z.string().optional().nullable(),
       ens: z.string().optional().nullable(),
       status: z.string().optional(),
       email: z.string().optional().nullable(),
@@ -23521,7 +23521,7 @@ export const UserUpdateWithoutConnectionsInputSchema: z.ZodType<Prisma.UserUpdat
         .nullable(),
       description: z
         .union([
-          z.string().max(512, { message: "too long" }),
+          z.string(),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -23618,7 +23618,7 @@ export const UserUncheckedUpdateWithoutConnectionsInputSchema: z.ZodType<Prisma.
         .nullable(),
       description: z
         .union([
-          z.string().max(512, { message: "too long" }),
+          z.string(),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -23699,11 +23699,7 @@ export const UserCreateWithoutPasswordInputSchema: z.ZodType<Prisma.UserCreateWi
         .max(64, { message: "too lengthy" })
         .optional()
         .nullable(),
-      description: z
-        .string()
-        .max(512, { message: "too long" })
-        .optional()
-        .nullable(),
+      description: z.string().optional().nullable(),
       ens: z.string().optional().nullable(),
       status: z.string().optional(),
       email: z.string().optional().nullable(),
@@ -23751,11 +23747,7 @@ export const UserUncheckedCreateWithoutPasswordInputSchema: z.ZodType<Prisma.Use
         .max(64, { message: "too lengthy" })
         .optional()
         .nullable(),
-      description: z
-        .string()
-        .max(512, { message: "too long" })
-        .optional()
-        .nullable(),
+      description: z.string().optional().nullable(),
       ens: z.string().optional().nullable(),
       status: z.string().optional(),
       email: z.string().optional().nullable(),
@@ -23860,7 +23852,7 @@ export const UserUpdateWithoutPasswordInputSchema: z.ZodType<Prisma.UserUpdateWi
         .nullable(),
       description: z
         .union([
-          z.string().max(512, { message: "too long" }),
+          z.string(),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -23957,7 +23949,7 @@ export const UserUncheckedUpdateWithoutPasswordInputSchema: z.ZodType<Prisma.Use
         .nullable(),
       description: z
         .union([
-          z.string().max(512, { message: "too long" }),
+          z.string(),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -24114,11 +24106,7 @@ export const UserCreateWithoutWalletsInputSchema: z.ZodType<Prisma.UserCreateWit
         .max(64, { message: "too lengthy" })
         .optional()
         .nullable(),
-      description: z
-        .string()
-        .max(512, { message: "too long" })
-        .optional()
-        .nullable(),
+      description: z.string().optional().nullable(),
       ens: z.string().optional().nullable(),
       status: z.string().optional(),
       email: z.string().optional().nullable(),
@@ -24166,11 +24154,7 @@ export const UserUncheckedCreateWithoutWalletsInputSchema: z.ZodType<Prisma.User
         .max(64, { message: "too lengthy" })
         .optional()
         .nullable(),
-      description: z
-        .string()
-        .max(512, { message: "too long" })
-        .optional()
-        .nullable(),
+      description: z.string().optional().nullable(),
       ens: z.string().optional().nullable(),
       status: z.string().optional(),
       email: z.string().optional().nullable(),
@@ -24353,7 +24337,7 @@ export const UserUpdateWithoutWalletsInputSchema: z.ZodType<Prisma.UserUpdateWit
         .nullable(),
       description: z
         .union([
-          z.string().max(512, { message: "too long" }),
+          z.string(),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -24450,7 +24434,7 @@ export const UserUncheckedUpdateWithoutWalletsInputSchema: z.ZodType<Prisma.User
         .nullable(),
       description: z
         .union([
-          z.string().max(512, { message: "too long" }),
+          z.string(),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -24692,11 +24676,7 @@ export const UserCreateWithoutSessionsInputSchema: z.ZodType<Prisma.UserCreateWi
         .max(64, { message: "too lengthy" })
         .optional()
         .nullable(),
-      description: z
-        .string()
-        .max(512, { message: "too long" })
-        .optional()
-        .nullable(),
+      description: z.string().optional().nullable(),
       ens: z.string().optional().nullable(),
       status: z.string().optional(),
       email: z.string().optional().nullable(),
@@ -24744,11 +24724,7 @@ export const UserUncheckedCreateWithoutSessionsInputSchema: z.ZodType<Prisma.Use
         .max(64, { message: "too lengthy" })
         .optional()
         .nullable(),
-      description: z
-        .string()
-        .max(512, { message: "too long" })
-        .optional()
-        .nullable(),
+      description: z.string().optional().nullable(),
       ens: z.string().optional().nullable(),
       status: z.string().optional(),
       email: z.string().optional().nullable(),
@@ -24888,7 +24864,7 @@ export const UserUpdateWithoutSessionsInputSchema: z.ZodType<Prisma.UserUpdateWi
         .nullable(),
       description: z
         .union([
-          z.string().max(512, { message: "too long" }),
+          z.string(),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -24985,7 +24961,7 @@ export const UserUncheckedUpdateWithoutSessionsInputSchema: z.ZodType<Prisma.Use
         .nullable(),
       description: z
         .union([
-          z.string().max(512, { message: "too long" }),
+          z.string(),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -25246,11 +25222,7 @@ export const UserCreateWithoutRolesInputSchema: z.ZodType<Prisma.UserCreateWitho
         .max(64, { message: "too lengthy" })
         .optional()
         .nullable(),
-      description: z
-        .string()
-        .max(512, { message: "too long" })
-        .optional()
-        .nullable(),
+      description: z.string().optional().nullable(),
       ens: z.string().optional().nullable(),
       status: z.string().optional(),
       email: z.string().optional().nullable(),
@@ -25298,11 +25270,7 @@ export const UserUncheckedCreateWithoutRolesInputSchema: z.ZodType<Prisma.UserUn
         .max(64, { message: "too lengthy" })
         .optional()
         .nullable(),
-      description: z
-        .string()
-        .max(512, { message: "too long" })
-        .optional()
-        .nullable(),
+      description: z.string().optional().nullable(),
       ens: z.string().optional().nullable(),
       status: z.string().optional(),
       email: z.string().optional().nullable(),
@@ -27915,7 +27883,7 @@ export const UserUpdateWithoutRolesInputSchema: z.ZodType<Prisma.UserUpdateWitho
         .nullable(),
       description: z
         .union([
-          z.string().max(512, { message: "too long" }),
+          z.string(),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -28012,7 +27980,7 @@ export const UserUncheckedUpdateWithoutRolesInputSchema: z.ZodType<Prisma.UserUn
         .nullable(),
       description: z
         .union([
-          z.string().max(512, { message: "too long" }),
+          z.string(),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -28111,7 +28079,7 @@ export const UserUncheckedUpdateManyWithoutRolesInputSchema: z.ZodType<Prisma.Us
         .nullable(),
       description: z
         .union([
-          z.string().max(512, { message: "too long" }),
+          z.string(),
           z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
         .optional()

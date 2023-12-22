@@ -332,6 +332,9 @@ CREATE UNIQUE INDEX "Permission_action_entity_access_key" ON "Permission"("actio
 CREATE UNIQUE INDEX "Role_name_key" ON "Role"("name");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "MintSaleTransaction_transaction_hash_from_key" ON "MintSaleTransaction"("transaction_hash", "from");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "_PermissionToRole_AB_unique" ON "_PermissionToRole"("A", "B");
 
 -- CreateIndex
