@@ -126,12 +126,12 @@ CREATE TABLE "OpenRarity" (
 -- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "avatar_uri" TEXT,
-    "banner_uri" TEXT,
     "username" TEXT,
-    "description" TEXT,
     "ens" TEXT,
     "status" TEXT NOT NULL DEFAULT 'pending',
+    "avatar_uri" TEXT,
+    "banner_uri" TEXT,
+    "description" TEXT,
     "email" TEXT,
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" DATETIME NOT NULL
