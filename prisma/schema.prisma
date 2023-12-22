@@ -17,7 +17,7 @@ datasource db {
 }
 
 model Collection {
-  id                     String        @id @default(cuid())
+  id                     String   @id @default(cuid())
   name                   String?
   max_items              Int?
   symbol                 String?
@@ -45,19 +45,23 @@ model Collection {
   twitter                String?
   website                String?
   discord                String?
-  chain                  Chain         @relation(fields: [chain_id], references: [id])
+  chain                  Chain    @relation(fields: [chain_id], references: [id])
   chain_id               Int
   num_items              Int?
   num_owners             Int?
-  last_refreshed         DateTime?
-  mint_data              MintData?
-  creator                Wallet?       @relation(fields: [creator_address], references: [address], onDelete: Cascade, onUpdate: Cascade)
-  creator_address        String? ///@zod.import(["import { getAddress } from 'ethers'"]).custom.use(z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }))
-  nfts                   Nft[]
-  max_items_1155         MaxItem1155[]
 
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  mint_data    MintData @relation(fields: [mint_data_id], references: [id])
+  mint_data_id String   @unique
+
+  creator         Wallet?       @relation(fields: [creator_address], references: [address], onDelete: Cascade, onUpdate: Cascade)
+  creator_address String? ///@zod.import(["import { getAddress } from 'ethers'"]).custom.use(z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }))
+  nfts            Nft[]
+  max_items_1155  MaxItem1155[]
+
+  // last_refreshed DateTime? ///@zod.custom.use(z.coerce.string().nullish().refine((date) => date ? date.toISOString() : null))
+  last_refreshed DateTime? ///@zod.custom.use(z.coerce.string())
+  created_at     DateTime  @default(now()) ///@zod.custom.use(z.coerce.string())
+  updated_at     DateTime  @updatedAt ///@zod.custom.use(z.coerce.string())
 
   @@unique([address, chain_id])
 }
@@ -115,9 +119,9 @@ model NftOwner1155 {
 }
 
 model MintData {
-  id                  String     @id @default(cuid())
+  id                  String      @id @default(cuid())
   block_last_mint     Int?
-  date_last_mint      DateTime?
+  date_last_mint      DateTime? ///@zod.custom.use(z.coerce.string().nullish())
   mints_last_1h       Int?
   mints_last_12h      Int?
   mints_last_24h      Int?
@@ -134,12 +138,12 @@ model MintData {
   last_7d_decimal     Float?
   last_1m_decimal     Float?
   last_6m_decimal     Float?
-  date_last_sale      DateTime?
-  collection          Collection @relation(fields: [collection_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  collection_id       String     @unique
+  date_last_sale      DateTime? ///@zod.custom.use(z.coerce.string().nullish())
+  collection          Collection? @relation
+  collection_id       String      @unique
 
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  created_at DateTime @default(now()) ///@zod.custom.use(z.coerce.string())
+  updated_at DateTime @updatedAt ///@zod.custom.use(z.coerce.string())
 }
 
 model OpenRarity {
