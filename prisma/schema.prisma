@@ -45,14 +45,12 @@ model Collection {
   twitter                String?
   website                String?
   discord                String?
-  chain                  Chain    @relation(fields: [chain_id], references: [id])
   chain_id               Int
   num_items              Int?
   num_owners             Int?
 
-  mint_data    MintData @relation(fields: [mint_data_id], references: [id])
-  mint_data_id String   @unique
-
+  mint_data       MintData?
+  chain           Chain         @relation(fields: [chain_id], references: [id])
   creator         Wallet?       @relation(fields: [creator_address], references: [address], onDelete: Cascade, onUpdate: Cascade)
   creator_address String? ///@zod.import(["import { getAddress } from 'ethers'"]).custom.use(z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }))
   nfts            Nft[]
@@ -119,7 +117,7 @@ model NftOwner1155 {
 }
 
 model MintData {
-  id                  String      @id @default(cuid())
+  id                  String     @id @default(cuid())
   block_last_mint     Int?
   date_last_mint      DateTime? ///@zod.custom.use(z.coerce.string().nullish())
   mints_last_1h       Int?
@@ -139,8 +137,8 @@ model MintData {
   last_1m_decimal     Float?
   last_6m_decimal     Float?
   date_last_sale      DateTime? ///@zod.custom.use(z.coerce.string().nullish())
-  collection          Collection? @relation
-  collection_id       String      @unique
+  collection          Collection @relation(fields: [collection_id], references: [id])
+  collection_id       String     @unique
 
   created_at DateTime @default(now()) ///@zod.custom.use(z.coerce.string())
   updated_at DateTime @updatedAt ///@zod.custom.use(z.coerce.string())

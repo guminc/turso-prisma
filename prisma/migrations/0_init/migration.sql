@@ -31,11 +31,13 @@ CREATE TABLE "Collection" (
     "chain_id" INTEGER NOT NULL,
     "num_items" INTEGER,
     "num_owners" INTEGER,
-    "last_refreshed" DATETIME,
+    "mint_data_id" TEXT NOT NULL,
     "creator_address" TEXT,
+    "last_refreshed" DATETIME,
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" DATETIME NOT NULL,
     CONSTRAINT "Collection_chain_id_fkey" FOREIGN KEY ("chain_id") REFERENCES "Chain" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "Collection_mint_data_id_fkey" FOREIGN KEY ("mint_data_id") REFERENCES "MintData" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT "Collection_creator_address_fkey" FOREIGN KEY ("creator_address") REFERENCES "Wallet" ("address") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -107,8 +109,7 @@ CREATE TABLE "MintData" (
     "date_last_sale" DATETIME,
     "collection_id" TEXT NOT NULL,
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL,
-    CONSTRAINT "MintData_collection_id_fkey" FOREIGN KEY ("collection_id") REFERENCES "Collection" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "updated_at" DATETIME NOT NULL
 );
 
 -- CreateTable
@@ -269,6 +270,9 @@ CREATE TABLE "_RoleToUser" (
     CONSTRAINT "_RoleToUser_A_fkey" FOREIGN KEY ("A") REFERENCES "Role" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT "_RoleToUser_B_fkey" FOREIGN KEY ("B") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Collection_mint_data_id_key" ON "Collection"("mint_data_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Collection_address_chain_id_key" ON "Collection"("address", "chain_id");

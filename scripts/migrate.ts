@@ -295,7 +295,7 @@ async function main() {
     await seedInitialData(write);
     await writeUsersToDb(source, write);
     const cleanedCollections = await writeCollectionsToDb(source, write);
-    await writeNftsToDb(source, write, cleanedCollections);
+    // await writeNftsToDb(source, write, cleanedCollections);
   } catch (error) {
     console.error(error);
     process.exit(1);
@@ -356,6 +356,7 @@ async function writeCollectionsToDb(source: ISourceArg, write: IWriteArg) {
 
     const [cleanedCollection, cleanedMintData, cleanedMaxItem1155] =
       cleanCollectionForSqlite(collection);
+
     if (cleanedCollection != null && cleanedCollection.creator_address) {
       const wallet = await prisma.wallet.findFirst({
         where: { address: cleanedCollection.creator_address },
@@ -367,6 +368,7 @@ async function writeCollectionsToDb(source: ISourceArg, write: IWriteArg) {
         );
       }
     }
+
     cleanedCollections.push(cleanedCollection);
     cleanedMintDatas.push(cleanedMintData);
     cleanedMaxItem1155s.push(...cleanedMaxItem1155);

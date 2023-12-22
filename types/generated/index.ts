@@ -44,8 +44,9 @@ export const CollectionScalarFieldEnumSchema = z.enum([
   "chain_id",
   "num_items",
   "num_owners",
-  "last_refreshed",
+  "mint_data_id",
   "creator_address",
+  "last_refreshed",
   "created_at",
   "updated_at",
 ]);
@@ -283,15 +284,16 @@ export const CollectionSchema = z.object({
   chain_id: z.number().int(),
   num_items: z.number().int().nullish(),
   num_owners: z.number().int().nullish(),
-  last_refreshed: z.coerce.date().nullish(),
+  mint_data_id: z.string(),
   creator_address: z
     .string()
     .refine((val) => getAddress(val), {
       message: "is not a valid Ethereum address",
     })
     .nullish(),
-  created_at: z.coerce.date(),
-  updated_at: z.coerce.date(),
+  last_refreshed: z.coerce.string().nullish(),
+  created_at: z.coerce.string(),
+  updated_at: z.coerce.string(),
 });
 
 export type Collection = z.infer<typeof CollectionSchema>;
@@ -380,7 +382,7 @@ export type NftOwner1155 = z.infer<typeof NftOwner1155Schema>;
 export const MintDataSchema = z.object({
   id: z.string().cuid(),
   block_last_mint: z.number().int().nullish(),
-  date_last_mint: z.coerce.date().nullish(),
+  date_last_mint: z.coerce.string().nullish().nullish(),
   mints_last_1h: z.number().int().nullish(),
   mints_last_12h: z.number().int().nullish(),
   mints_last_24h: z.number().int().nullish(),
@@ -397,10 +399,10 @@ export const MintDataSchema = z.object({
   last_7d_decimal: z.number().nullish(),
   last_1m_decimal: z.number().nullish(),
   last_6m_decimal: z.number().nullish(),
-  date_last_sale: z.coerce.date().nullish(),
+  date_last_sale: z.coerce.string().nullish().nullish(),
   collection_id: z.string(),
-  created_at: z.coerce.date(),
-  updated_at: z.coerce.date(),
+  created_at: z.coerce.string(),
+  updated_at: z.coerce.string(),
 });
 
 export type MintData = z.infer<typeof MintDataSchema>;
@@ -700,8 +702,9 @@ export const CollectionSelectSchema: z.ZodType<Prisma.CollectionSelect> = z
     chain_id: z.boolean().optional(),
     num_items: z.boolean().optional(),
     num_owners: z.boolean().optional(),
-    last_refreshed: z.boolean().optional(),
+    mint_data_id: z.boolean().optional(),
     creator_address: z.boolean().optional(),
+    last_refreshed: z.boolean().optional(),
     created_at: z.boolean().optional(),
     updated_at: z.boolean().optional(),
     chain: z.union([z.boolean(), z.lazy(() => ChainArgsSchema)]).optional(),
@@ -1534,12 +1537,15 @@ export const CollectionWhereInputSchema: z.ZodType<Prisma.CollectionWhereInput> 
         .union([z.lazy(() => IntNullableFilterSchema), z.number()])
         .optional()
         .nullable(),
-      last_refreshed: z
-        .union([z.lazy(() => DateTimeNullableFilterSchema), z.coerce.date()])
-        .optional()
-        .nullable(),
+      mint_data_id: z
+        .union([z.lazy(() => StringFilterSchema), z.string()])
+        .optional(),
       creator_address: z
         .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+        .optional()
+        .nullable(),
+      last_refreshed: z
+        .union([z.lazy(() => DateTimeNullableFilterSchema), z.coerce.date()])
         .optional()
         .nullable(),
       created_at: z
@@ -1556,11 +1562,10 @@ export const CollectionWhereInputSchema: z.ZodType<Prisma.CollectionWhereInput> 
         .optional(),
       mint_data: z
         .union([
-          z.lazy(() => MintDataNullableRelationFilterSchema),
+          z.lazy(() => MintDataRelationFilterSchema),
           z.lazy(() => MintDataWhereInputSchema),
         ])
-        .optional()
-        .nullable(),
+        .optional(),
       creator: z
         .union([
           z.lazy(() => WalletNullableRelationFilterSchema),
@@ -1754,13 +1759,14 @@ export const CollectionOrderByWithRelationInputSchema: z.ZodType<Prisma.Collecti
           z.lazy(() => SortOrderInputSchema),
         ])
         .optional(),
-      last_refreshed: z
+      mint_data_id: z.lazy(() => SortOrderSchema).optional(),
+      creator_address: z
         .union([
           z.lazy(() => SortOrderSchema),
           z.lazy(() => SortOrderInputSchema),
         ])
         .optional(),
-      creator_address: z
+      last_refreshed: z
         .union([
           z.lazy(() => SortOrderSchema),
           z.lazy(() => SortOrderInputSchema),
@@ -1785,12 +1791,32 @@ export const CollectionWhereUniqueInputSchema: z.ZodType<Prisma.CollectionWhereU
     .union([
       z.object({
         id: z.string().cuid(),
+        mint_data_id: z.string(),
         address_chain_id: z.lazy(
           () => CollectionAddressChain_idCompoundUniqueInputSchema
         ),
       }),
       z.object({
         id: z.string().cuid(),
+        mint_data_id: z.string(),
+      }),
+      z.object({
+        id: z.string().cuid(),
+        address_chain_id: z.lazy(
+          () => CollectionAddressChain_idCompoundUniqueInputSchema
+        ),
+      }),
+      z.object({
+        id: z.string().cuid(),
+      }),
+      z.object({
+        mint_data_id: z.string(),
+        address_chain_id: z.lazy(
+          () => CollectionAddressChain_idCompoundUniqueInputSchema
+        ),
+      }),
+      z.object({
+        mint_data_id: z.string(),
       }),
       z.object({
         address_chain_id: z.lazy(
@@ -1802,6 +1828,7 @@ export const CollectionWhereUniqueInputSchema: z.ZodType<Prisma.CollectionWhereU
       z
         .object({
           id: z.string().cuid().optional(),
+          mint_data_id: z.string().optional(),
           address_chain_id: z
             .lazy(() => CollectionAddressChain_idCompoundUniqueInputSchema)
             .optional(),
@@ -1947,13 +1974,6 @@ export const CollectionWhereUniqueInputSchema: z.ZodType<Prisma.CollectionWhereU
             .union([z.lazy(() => IntNullableFilterSchema), z.number().int()])
             .optional()
             .nullable(),
-          last_refreshed: z
-            .union([
-              z.lazy(() => DateTimeNullableFilterSchema),
-              z.coerce.date(),
-            ])
-            .optional()
-            .nullable(),
           creator_address: z
             .union([
               z.lazy(() => StringNullableFilterSchema),
@@ -1965,11 +1985,18 @@ export const CollectionWhereUniqueInputSchema: z.ZodType<Prisma.CollectionWhereU
             ])
             .optional()
             .nullable(),
+          last_refreshed: z
+            .union([
+              z.lazy(() => DateTimeNullableFilterSchema),
+              z.coerce.string(),
+            ])
+            .optional()
+            .nullable(),
           created_at: z
-            .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
+            .union([z.lazy(() => DateTimeFilterSchema), z.coerce.string()])
             .optional(),
           updated_at: z
-            .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
+            .union([z.lazy(() => DateTimeFilterSchema), z.coerce.string()])
             .optional(),
           chain: z
             .union([
@@ -1979,11 +2006,10 @@ export const CollectionWhereUniqueInputSchema: z.ZodType<Prisma.CollectionWhereU
             .optional(),
           mint_data: z
             .union([
-              z.lazy(() => MintDataNullableRelationFilterSchema),
+              z.lazy(() => MintDataRelationFilterSchema),
               z.lazy(() => MintDataWhereInputSchema),
             ])
-            .optional()
-            .nullable(),
+            .optional(),
           creator: z
             .union([
               z.lazy(() => WalletNullableRelationFilterSchema),
@@ -2178,13 +2204,14 @@ export const CollectionOrderByWithAggregationInputSchema: z.ZodType<Prisma.Colle
           z.lazy(() => SortOrderInputSchema),
         ])
         .optional(),
-      last_refreshed: z
+      mint_data_id: z.lazy(() => SortOrderSchema).optional(),
+      creator_address: z
         .union([
           z.lazy(() => SortOrderSchema),
           z.lazy(() => SortOrderInputSchema),
         ])
         .optional(),
-      creator_address: z
+      last_refreshed: z
         .union([
           z.lazy(() => SortOrderSchema),
           z.lazy(() => SortOrderInputSchema),
@@ -2430,17 +2457,20 @@ export const CollectionScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.Co
         ])
         .optional()
         .nullable(),
-      last_refreshed: z
-        .union([
-          z.lazy(() => DateTimeNullableWithAggregatesFilterSchema),
-          z.coerce.date(),
-        ])
-        .optional()
-        .nullable(),
+      mint_data_id: z
+        .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
+        .optional(),
       creator_address: z
         .union([
           z.lazy(() => StringNullableWithAggregatesFilterSchema),
           z.string(),
+        ])
+        .optional()
+        .nullable(),
+      last_refreshed: z
+        .union([
+          z.lazy(() => DateTimeNullableWithAggregatesFilterSchema),
+          z.coerce.date(),
         ])
         .optional()
         .nullable(),
@@ -3510,10 +3540,11 @@ export const MintDataWhereInputSchema: z.ZodType<Prisma.MintDataWhereInput> = z
       .optional(),
     collection: z
       .union([
-        z.lazy(() => CollectionRelationFilterSchema),
+        z.lazy(() => CollectionNullableRelationFilterSchema),
         z.lazy(() => CollectionWhereInputSchema),
       ])
-      .optional(),
+      .optional()
+      .nullable(),
   })
   .strict();
 
@@ -3686,7 +3717,7 @@ export const MintDataWhereUniqueInputSchema: z.ZodType<Prisma.MintDataWhereUniqu
           date_last_mint: z
             .union([
               z.lazy(() => DateTimeNullableFilterSchema),
-              z.coerce.date(),
+              z.coerce.string().nullish(),
             ])
             .optional()
             .nullable(),
@@ -3757,22 +3788,23 @@ export const MintDataWhereUniqueInputSchema: z.ZodType<Prisma.MintDataWhereUniqu
           date_last_sale: z
             .union([
               z.lazy(() => DateTimeNullableFilterSchema),
-              z.coerce.date(),
+              z.coerce.string().nullish(),
             ])
             .optional()
             .nullable(),
           created_at: z
-            .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
+            .union([z.lazy(() => DateTimeFilterSchema), z.coerce.string()])
             .optional(),
           updated_at: z
-            .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
+            .union([z.lazy(() => DateTimeFilterSchema), z.coerce.string()])
             .optional(),
           collection: z
             .union([
-              z.lazy(() => CollectionRelationFilterSchema),
+              z.lazy(() => CollectionNullableRelationFilterSchema),
               z.lazy(() => CollectionWhereInputSchema),
             ])
-            .optional(),
+            .optional()
+            .nullable(),
         })
         .strict()
     );
@@ -6820,13 +6852,13 @@ export const CollectionCreateInputSchema: z.ZodType<Prisma.CollectionCreateInput
       discord: z.string().optional().nullable(),
       num_items: z.number().int().optional().nullable(),
       num_owners: z.number().int().optional().nullable(),
-      last_refreshed: z.coerce.date().optional().nullable(),
-      created_at: z.coerce.date().optional(),
-      updated_at: z.coerce.date().optional(),
+      last_refreshed: z.coerce.string().optional().nullable(),
+      created_at: z.coerce.string().optional(),
+      updated_at: z.coerce.string().optional(),
       chain: z.lazy(() => ChainCreateNestedOneWithoutCollectionInputSchema),
-      mint_data: z
-        .lazy(() => MintDataCreateNestedOneWithoutCollectionInputSchema)
-        .optional(),
+      mint_data: z.lazy(
+        () => MintDataCreateNestedOneWithoutCollectionInputSchema
+      ),
       creator: z
         .lazy(() => WalletCreateNestedOneWithoutCollectionsInputSchema)
         .optional(),
@@ -6879,7 +6911,7 @@ export const CollectionUncheckedCreateInputSchema: z.ZodType<Prisma.CollectionUn
       chain_id: z.number().int(),
       num_items: z.number().int().optional().nullable(),
       num_owners: z.number().int().optional().nullable(),
-      last_refreshed: z.coerce.date().optional().nullable(),
+      mint_data_id: z.string(),
       creator_address: z
         .string()
         .refine((val) => getAddress(val), {
@@ -6887,13 +6919,9 @@ export const CollectionUncheckedCreateInputSchema: z.ZodType<Prisma.CollectionUn
         })
         .optional()
         .nullable(),
-      created_at: z.coerce.date().optional(),
-      updated_at: z.coerce.date().optional(),
-      mint_data: z
-        .lazy(
-          () => MintDataUncheckedCreateNestedOneWithoutCollectionInputSchema
-        )
-        .optional(),
+      last_refreshed: z.coerce.string().optional().nullable(),
+      created_at: z.coerce.string().optional(),
+      updated_at: z.coerce.string().optional(),
       nfts: z
         .lazy(() => NftUncheckedCreateNestedManyWithoutCollectionInputSchema)
         .optional(),
@@ -7123,20 +7151,20 @@ export const CollectionUpdateInputSchema: z.ZodType<Prisma.CollectionUpdateInput
         .nullable(),
       last_refreshed: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional()
         .nullable(),
       created_at: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       updated_at: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -7144,7 +7172,7 @@ export const CollectionUpdateInputSchema: z.ZodType<Prisma.CollectionUpdateInput
         .lazy(() => ChainUpdateOneRequiredWithoutCollectionNestedInputSchema)
         .optional(),
       mint_data: z
-        .lazy(() => MintDataUpdateOneWithoutCollectionNestedInputSchema)
+        .lazy(() => MintDataUpdateOneRequiredWithoutCollectionNestedInputSchema)
         .optional(),
       creator: z
         .lazy(() => WalletUpdateOneWithoutCollectionsNestedInputSchema)
@@ -7380,13 +7408,12 @@ export const CollectionUncheckedUpdateInputSchema: z.ZodType<Prisma.CollectionUn
         ])
         .optional()
         .nullable(),
-      last_refreshed: z
+      mint_data_id: z
         .union([
-          z.coerce.date(),
-          z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
-        .optional()
-        .nullable(),
+        .optional(),
       creator_address: z
         .union([
           z
@@ -7398,22 +7425,24 @@ export const CollectionUncheckedUpdateInputSchema: z.ZodType<Prisma.CollectionUn
         ])
         .optional()
         .nullable(),
+      last_refreshed: z
+        .union([
+          z.coerce.string(),
+          z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
       created_at: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       updated_at: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
-      mint_data: z
-        .lazy(
-          () => MintDataUncheckedUpdateOneWithoutCollectionNestedInputSchema
-        )
         .optional(),
       nfts: z
         .lazy(() => NftUncheckedUpdateManyWithoutCollectionNestedInputSchema)
@@ -7644,20 +7673,20 @@ export const CollectionUpdateManyMutationInputSchema: z.ZodType<Prisma.Collectio
         .nullable(),
       last_refreshed: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional()
         .nullable(),
       created_at: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       updated_at: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -7886,13 +7915,12 @@ export const CollectionUncheckedUpdateManyInputSchema: z.ZodType<Prisma.Collecti
         ])
         .optional()
         .nullable(),
-      last_refreshed: z
+      mint_data_id: z
         .union([
-          z.coerce.date(),
-          z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
-        .optional()
-        .nullable(),
+        .optional(),
       creator_address: z
         .union([
           z
@@ -7904,15 +7932,22 @@ export const CollectionUncheckedUpdateManyInputSchema: z.ZodType<Prisma.Collecti
         ])
         .optional()
         .nullable(),
+      last_refreshed: z
+        .union([
+          z.coerce.string(),
+          z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
       created_at: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       updated_at: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -8922,7 +8957,7 @@ export const MintDataCreateInputSchema: z.ZodType<Prisma.MintDataCreateInput> =
     .object({
       id: z.string().cuid().optional(),
       block_last_mint: z.number().int().optional().nullable(),
-      date_last_mint: z.coerce.date().optional().nullable(),
+      date_last_mint: z.coerce.string().nullish().optional().nullable(),
       mints_last_1h: z.number().int().optional().nullable(),
       mints_last_12h: z.number().int().optional().nullable(),
       mints_last_24h: z.number().int().optional().nullable(),
@@ -8939,12 +8974,13 @@ export const MintDataCreateInputSchema: z.ZodType<Prisma.MintDataCreateInput> =
       last_7d_decimal: z.number().optional().nullable(),
       last_1m_decimal: z.number().optional().nullable(),
       last_6m_decimal: z.number().optional().nullable(),
-      date_last_sale: z.coerce.date().optional().nullable(),
-      created_at: z.coerce.date().optional(),
-      updated_at: z.coerce.date().optional(),
-      collection: z.lazy(
-        () => CollectionCreateNestedOneWithoutMint_dataInputSchema
-      ),
+      date_last_sale: z.coerce.string().nullish().optional().nullable(),
+      collection_id: z.string(),
+      created_at: z.coerce.string().optional(),
+      updated_at: z.coerce.string().optional(),
+      collection: z
+        .lazy(() => CollectionCreateNestedOneWithoutMint_dataInputSchema)
+        .optional(),
     })
     .strict();
 
@@ -8953,7 +8989,7 @@ export const MintDataUncheckedCreateInputSchema: z.ZodType<Prisma.MintDataUnchec
     .object({
       id: z.string().cuid().optional(),
       block_last_mint: z.number().int().optional().nullable(),
-      date_last_mint: z.coerce.date().optional().nullable(),
+      date_last_mint: z.coerce.string().nullish().optional().nullable(),
       mints_last_1h: z.number().int().optional().nullable(),
       mints_last_12h: z.number().int().optional().nullable(),
       mints_last_24h: z.number().int().optional().nullable(),
@@ -8970,10 +9006,15 @@ export const MintDataUncheckedCreateInputSchema: z.ZodType<Prisma.MintDataUnchec
       last_7d_decimal: z.number().optional().nullable(),
       last_1m_decimal: z.number().optional().nullable(),
       last_6m_decimal: z.number().optional().nullable(),
-      date_last_sale: z.coerce.date().optional().nullable(),
+      date_last_sale: z.coerce.string().nullish().optional().nullable(),
       collection_id: z.string(),
-      created_at: z.coerce.date().optional(),
-      updated_at: z.coerce.date().optional(),
+      created_at: z.coerce.string().optional(),
+      updated_at: z.coerce.string().optional(),
+      collection: z
+        .lazy(
+          () => CollectionUncheckedCreateNestedOneWithoutMint_dataInputSchema
+        )
+        .optional(),
     })
     .strict();
 
@@ -8995,7 +9036,7 @@ export const MintDataUpdateInputSchema: z.ZodType<Prisma.MintDataUpdateInput> =
         .nullable(),
       date_last_mint: z
         .union([
-          z.coerce.date(),
+          z.coerce.string().nullish(),
           z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -9114,27 +9155,31 @@ export const MintDataUpdateInputSchema: z.ZodType<Prisma.MintDataUpdateInput> =
         .nullable(),
       date_last_sale: z
         .union([
-          z.coerce.date(),
+          z.coerce.string().nullish(),
           z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional()
         .nullable(),
+      collection_id: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
       created_at: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       updated_at: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       collection: z
-        .lazy(
-          () => CollectionUpdateOneRequiredWithoutMint_dataNestedInputSchema
-        )
+        .lazy(() => CollectionUpdateOneWithoutMint_dataNestedInputSchema)
         .optional(),
     })
     .strict();
@@ -9157,7 +9202,7 @@ export const MintDataUncheckedUpdateInputSchema: z.ZodType<Prisma.MintDataUnchec
         .nullable(),
       date_last_mint: z
         .union([
-          z.coerce.date(),
+          z.coerce.string().nullish(),
           z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -9276,7 +9321,7 @@ export const MintDataUncheckedUpdateInputSchema: z.ZodType<Prisma.MintDataUnchec
         .nullable(),
       date_last_sale: z
         .union([
-          z.coerce.date(),
+          z.coerce.string().nullish(),
           z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -9289,15 +9334,20 @@ export const MintDataUncheckedUpdateInputSchema: z.ZodType<Prisma.MintDataUnchec
         .optional(),
       created_at: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       updated_at: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
+        .optional(),
+      collection: z
+        .lazy(
+          () => CollectionUncheckedUpdateOneWithoutMint_dataNestedInputSchema
+        )
         .optional(),
     })
     .strict();
@@ -9320,7 +9370,7 @@ export const MintDataUpdateManyMutationInputSchema: z.ZodType<Prisma.MintDataUpd
         .nullable(),
       date_last_mint: z
         .union([
-          z.coerce.date(),
+          z.coerce.string().nullish(),
           z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -9439,20 +9489,26 @@ export const MintDataUpdateManyMutationInputSchema: z.ZodType<Prisma.MintDataUpd
         .nullable(),
       date_last_sale: z
         .union([
-          z.coerce.date(),
+          z.coerce.string().nullish(),
           z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional()
         .nullable(),
+      collection_id: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
       created_at: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       updated_at: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -9477,7 +9533,7 @@ export const MintDataUncheckedUpdateManyInputSchema: z.ZodType<Prisma.MintDataUn
         .nullable(),
       date_last_mint: z
         .union([
-          z.coerce.date(),
+          z.coerce.string().nullish(),
           z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -9596,7 +9652,7 @@ export const MintDataUncheckedUpdateManyInputSchema: z.ZodType<Prisma.MintDataUn
         .nullable(),
       date_last_sale: z
         .union([
-          z.coerce.date(),
+          z.coerce.string().nullish(),
           z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -9609,13 +9665,13 @@ export const MintDataUncheckedUpdateManyInputSchema: z.ZodType<Prisma.MintDataUn
         .optional(),
       created_at: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       updated_at: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -12629,17 +12685,11 @@ export const ChainRelationFilterSchema: z.ZodType<Prisma.ChainRelationFilter> =
     })
     .strict();
 
-export const MintDataNullableRelationFilterSchema: z.ZodType<Prisma.MintDataNullableRelationFilter> =
+export const MintDataRelationFilterSchema: z.ZodType<Prisma.MintDataRelationFilter> =
   z
     .object({
-      is: z
-        .lazy(() => MintDataWhereInputSchema)
-        .optional()
-        .nullable(),
-      isNot: z
-        .lazy(() => MintDataWhereInputSchema)
-        .optional()
-        .nullable(),
+      is: z.lazy(() => MintDataWhereInputSchema).optional(),
+      isNot: z.lazy(() => MintDataWhereInputSchema).optional(),
     })
     .strict();
 
@@ -12738,8 +12788,9 @@ export const CollectionCountOrderByAggregateInputSchema: z.ZodType<Prisma.Collec
       chain_id: z.lazy(() => SortOrderSchema).optional(),
       num_items: z.lazy(() => SortOrderSchema).optional(),
       num_owners: z.lazy(() => SortOrderSchema).optional(),
-      last_refreshed: z.lazy(() => SortOrderSchema).optional(),
+      mint_data_id: z.lazy(() => SortOrderSchema).optional(),
       creator_address: z.lazy(() => SortOrderSchema).optional(),
+      last_refreshed: z.lazy(() => SortOrderSchema).optional(),
       created_at: z.lazy(() => SortOrderSchema).optional(),
       updated_at: z.lazy(() => SortOrderSchema).optional(),
     })
@@ -12792,8 +12843,9 @@ export const CollectionMaxOrderByAggregateInputSchema: z.ZodType<Prisma.Collecti
       chain_id: z.lazy(() => SortOrderSchema).optional(),
       num_items: z.lazy(() => SortOrderSchema).optional(),
       num_owners: z.lazy(() => SortOrderSchema).optional(),
-      last_refreshed: z.lazy(() => SortOrderSchema).optional(),
+      mint_data_id: z.lazy(() => SortOrderSchema).optional(),
       creator_address: z.lazy(() => SortOrderSchema).optional(),
+      last_refreshed: z.lazy(() => SortOrderSchema).optional(),
       created_at: z.lazy(() => SortOrderSchema).optional(),
       updated_at: z.lazy(() => SortOrderSchema).optional(),
     })
@@ -12833,8 +12885,9 @@ export const CollectionMinOrderByAggregateInputSchema: z.ZodType<Prisma.Collecti
       chain_id: z.lazy(() => SortOrderSchema).optional(),
       num_items: z.lazy(() => SortOrderSchema).optional(),
       num_owners: z.lazy(() => SortOrderSchema).optional(),
-      last_refreshed: z.lazy(() => SortOrderSchema).optional(),
+      mint_data_id: z.lazy(() => SortOrderSchema).optional(),
       creator_address: z.lazy(() => SortOrderSchema).optional(),
+      last_refreshed: z.lazy(() => SortOrderSchema).optional(),
       created_at: z.lazy(() => SortOrderSchema).optional(),
       updated_at: z.lazy(() => SortOrderSchema).optional(),
     })
@@ -13276,6 +13329,20 @@ export const FloatNullableFilterSchema: z.ZodType<Prisma.FloatNullableFilter> =
       gte: z.number().optional(),
       not: z
         .union([z.number(), z.lazy(() => NestedFloatNullableFilterSchema)])
+        .optional()
+        .nullable(),
+    })
+    .strict();
+
+export const CollectionNullableRelationFilterSchema: z.ZodType<Prisma.CollectionNullableRelationFilter> =
+  z
+    .object({
+      is: z
+        .lazy(() => CollectionWhereInputSchema)
+        .optional()
+        .nullable(),
+      isNot: z
+        .lazy(() => CollectionWhereInputSchema)
         .optional()
         .nullable(),
     })
@@ -14341,22 +14408,6 @@ export const MaxItem1155CreateNestedManyWithoutCollectionInputSchema: z.ZodType<
     })
     .strict();
 
-export const MintDataUncheckedCreateNestedOneWithoutCollectionInputSchema: z.ZodType<Prisma.MintDataUncheckedCreateNestedOneWithoutCollectionInput> =
-  z
-    .object({
-      create: z
-        .union([
-          z.lazy(() => MintDataCreateWithoutCollectionInputSchema),
-          z.lazy(() => MintDataUncheckedCreateWithoutCollectionInputSchema),
-        ])
-        .optional(),
-      connectOrCreate: z
-        .lazy(() => MintDataCreateOrConnectWithoutCollectionInputSchema)
-        .optional(),
-      connect: z.lazy(() => MintDataWhereUniqueInputSchema).optional(),
-    })
-    .strict();
-
 export const NftUncheckedCreateNestedManyWithoutCollectionInputSchema: z.ZodType<Prisma.NftUncheckedCreateNestedManyWithoutCollectionInput> =
   z
     .object({
@@ -14483,7 +14534,7 @@ export const ChainUpdateOneRequiredWithoutCollectionNestedInputSchema: z.ZodType
     })
     .strict();
 
-export const MintDataUpdateOneWithoutCollectionNestedInputSchema: z.ZodType<Prisma.MintDataUpdateOneWithoutCollectionNestedInput> =
+export const MintDataUpdateOneRequiredWithoutCollectionNestedInputSchema: z.ZodType<Prisma.MintDataUpdateOneRequiredWithoutCollectionNestedInput> =
   z
     .object({
       create: z
@@ -14497,12 +14548,6 @@ export const MintDataUpdateOneWithoutCollectionNestedInputSchema: z.ZodType<Pris
         .optional(),
       upsert: z
         .lazy(() => MintDataUpsertWithoutCollectionInputSchema)
-        .optional(),
-      disconnect: z
-        .union([z.boolean(), z.lazy(() => MintDataWhereInputSchema)])
-        .optional(),
-      delete: z
-        .union([z.boolean(), z.lazy(() => MintDataWhereInputSchema)])
         .optional(),
       connect: z.lazy(() => MintDataWhereUniqueInputSchema).optional(),
       update: z
@@ -14721,40 +14766,6 @@ export const IntFieldUpdateOperationsInputSchema: z.ZodType<Prisma.IntFieldUpdat
       decrement: z.number().optional(),
       multiply: z.number().optional(),
       divide: z.number().optional(),
-    })
-    .strict();
-
-export const MintDataUncheckedUpdateOneWithoutCollectionNestedInputSchema: z.ZodType<Prisma.MintDataUncheckedUpdateOneWithoutCollectionNestedInput> =
-  z
-    .object({
-      create: z
-        .union([
-          z.lazy(() => MintDataCreateWithoutCollectionInputSchema),
-          z.lazy(() => MintDataUncheckedCreateWithoutCollectionInputSchema),
-        ])
-        .optional(),
-      connectOrCreate: z
-        .lazy(() => MintDataCreateOrConnectWithoutCollectionInputSchema)
-        .optional(),
-      upsert: z
-        .lazy(() => MintDataUpsertWithoutCollectionInputSchema)
-        .optional(),
-      disconnect: z
-        .union([z.boolean(), z.lazy(() => MintDataWhereInputSchema)])
-        .optional(),
-      delete: z
-        .union([z.boolean(), z.lazy(() => MintDataWhereInputSchema)])
-        .optional(),
-      connect: z.lazy(() => MintDataWhereUniqueInputSchema).optional(),
-      update: z
-        .union([
-          z.lazy(
-            () => MintDataUpdateToOneWithWhereWithoutCollectionInputSchema
-          ),
-          z.lazy(() => MintDataUpdateWithoutCollectionInputSchema),
-          z.lazy(() => MintDataUncheckedUpdateWithoutCollectionInputSchema),
-        ])
-        .optional(),
     })
     .strict();
 
@@ -15378,6 +15389,22 @@ export const CollectionCreateNestedOneWithoutMint_dataInputSchema: z.ZodType<Pri
     })
     .strict();
 
+export const CollectionUncheckedCreateNestedOneWithoutMint_dataInputSchema: z.ZodType<Prisma.CollectionUncheckedCreateNestedOneWithoutMint_dataInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => CollectionCreateWithoutMint_dataInputSchema),
+          z.lazy(() => CollectionUncheckedCreateWithoutMint_dataInputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .lazy(() => CollectionCreateOrConnectWithoutMint_dataInputSchema)
+        .optional(),
+      connect: z.lazy(() => CollectionWhereUniqueInputSchema).optional(),
+    })
+    .strict();
+
 export const NullableFloatFieldUpdateOperationsInputSchema: z.ZodType<Prisma.NullableFloatFieldUpdateOperationsInput> =
   z
     .object({
@@ -15389,7 +15416,7 @@ export const NullableFloatFieldUpdateOperationsInputSchema: z.ZodType<Prisma.Nul
     })
     .strict();
 
-export const CollectionUpdateOneRequiredWithoutMint_dataNestedInputSchema: z.ZodType<Prisma.CollectionUpdateOneRequiredWithoutMint_dataNestedInput> =
+export const CollectionUpdateOneWithoutMint_dataNestedInputSchema: z.ZodType<Prisma.CollectionUpdateOneWithoutMint_dataNestedInput> =
   z
     .object({
       create: z
@@ -15403,6 +15430,46 @@ export const CollectionUpdateOneRequiredWithoutMint_dataNestedInputSchema: z.Zod
         .optional(),
       upsert: z
         .lazy(() => CollectionUpsertWithoutMint_dataInputSchema)
+        .optional(),
+      disconnect: z
+        .union([z.boolean(), z.lazy(() => CollectionWhereInputSchema)])
+        .optional(),
+      delete: z
+        .union([z.boolean(), z.lazy(() => CollectionWhereInputSchema)])
+        .optional(),
+      connect: z.lazy(() => CollectionWhereUniqueInputSchema).optional(),
+      update: z
+        .union([
+          z.lazy(
+            () => CollectionUpdateToOneWithWhereWithoutMint_dataInputSchema
+          ),
+          z.lazy(() => CollectionUpdateWithoutMint_dataInputSchema),
+          z.lazy(() => CollectionUncheckedUpdateWithoutMint_dataInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const CollectionUncheckedUpdateOneWithoutMint_dataNestedInputSchema: z.ZodType<Prisma.CollectionUncheckedUpdateOneWithoutMint_dataNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => CollectionCreateWithoutMint_dataInputSchema),
+          z.lazy(() => CollectionUncheckedCreateWithoutMint_dataInputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .lazy(() => CollectionCreateOrConnectWithoutMint_dataInputSchema)
+        .optional(),
+      upsert: z
+        .lazy(() => CollectionUpsertWithoutMint_dataInputSchema)
+        .optional(),
+      disconnect: z
+        .union([z.boolean(), z.lazy(() => CollectionWhereInputSchema)])
+        .optional(),
+      delete: z
+        .union([z.boolean(), z.lazy(() => CollectionWhereInputSchema)])
         .optional(),
       connect: z.lazy(() => CollectionWhereUniqueInputSchema).optional(),
       update: z
@@ -18507,7 +18574,7 @@ export const MintDataCreateWithoutCollectionInputSchema: z.ZodType<Prisma.MintDa
     .object({
       id: z.string().cuid().optional(),
       block_last_mint: z.number().int().optional().nullable(),
-      date_last_mint: z.coerce.date().optional().nullable(),
+      date_last_mint: z.coerce.string().nullish().optional().nullable(),
       mints_last_1h: z.number().int().optional().nullable(),
       mints_last_12h: z.number().int().optional().nullable(),
       mints_last_24h: z.number().int().optional().nullable(),
@@ -18524,9 +18591,10 @@ export const MintDataCreateWithoutCollectionInputSchema: z.ZodType<Prisma.MintDa
       last_7d_decimal: z.number().optional().nullable(),
       last_1m_decimal: z.number().optional().nullable(),
       last_6m_decimal: z.number().optional().nullable(),
-      date_last_sale: z.coerce.date().optional().nullable(),
-      created_at: z.coerce.date().optional(),
-      updated_at: z.coerce.date().optional(),
+      date_last_sale: z.coerce.string().nullish().optional().nullable(),
+      collection_id: z.string(),
+      created_at: z.coerce.string().optional(),
+      updated_at: z.coerce.string().optional(),
     })
     .strict();
 
@@ -18535,7 +18603,7 @@ export const MintDataUncheckedCreateWithoutCollectionInputSchema: z.ZodType<Pris
     .object({
       id: z.string().cuid().optional(),
       block_last_mint: z.number().int().optional().nullable(),
-      date_last_mint: z.coerce.date().optional().nullable(),
+      date_last_mint: z.coerce.string().nullish().optional().nullable(),
       mints_last_1h: z.number().int().optional().nullable(),
       mints_last_12h: z.number().int().optional().nullable(),
       mints_last_24h: z.number().int().optional().nullable(),
@@ -18552,9 +18620,10 @@ export const MintDataUncheckedCreateWithoutCollectionInputSchema: z.ZodType<Pris
       last_7d_decimal: z.number().optional().nullable(),
       last_1m_decimal: z.number().optional().nullable(),
       last_6m_decimal: z.number().optional().nullable(),
-      date_last_sale: z.coerce.date().optional().nullable(),
-      created_at: z.coerce.date().optional(),
-      updated_at: z.coerce.date().optional(),
+      date_last_sale: z.coerce.string().nullish().optional().nullable(),
+      collection_id: z.string(),
+      created_at: z.coerce.string().optional(),
+      updated_at: z.coerce.string().optional(),
     })
     .strict();
 
@@ -18916,7 +18985,7 @@ export const MintDataUpdateWithoutCollectionInputSchema: z.ZodType<Prisma.MintDa
         .nullable(),
       date_last_mint: z
         .union([
-          z.coerce.date(),
+          z.coerce.string().nullish(),
           z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -19035,20 +19104,26 @@ export const MintDataUpdateWithoutCollectionInputSchema: z.ZodType<Prisma.MintDa
         .nullable(),
       date_last_sale: z
         .union([
-          z.coerce.date(),
+          z.coerce.string().nullish(),
           z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional()
         .nullable(),
+      collection_id: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
       created_at: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       updated_at: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -19073,7 +19148,7 @@ export const MintDataUncheckedUpdateWithoutCollectionInputSchema: z.ZodType<Pris
         .nullable(),
       date_last_mint: z
         .union([
-          z.coerce.date(),
+          z.coerce.string().nullish(),
           z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional()
@@ -19192,20 +19267,26 @@ export const MintDataUncheckedUpdateWithoutCollectionInputSchema: z.ZodType<Pris
         .nullable(),
       date_last_sale: z
         .union([
-          z.coerce.date(),
+          z.coerce.string().nullish(),
           z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional()
         .nullable(),
+      collection_id: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
       created_at: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       updated_at: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -19571,13 +19652,13 @@ export const CollectionCreateWithoutMax_items_1155InputSchema: z.ZodType<Prisma.
       discord: z.string().optional().nullable(),
       num_items: z.number().int().optional().nullable(),
       num_owners: z.number().int().optional().nullable(),
-      last_refreshed: z.coerce.date().optional().nullable(),
-      created_at: z.coerce.date().optional(),
-      updated_at: z.coerce.date().optional(),
+      last_refreshed: z.coerce.string().optional().nullable(),
+      created_at: z.coerce.string().optional(),
+      updated_at: z.coerce.string().optional(),
       chain: z.lazy(() => ChainCreateNestedOneWithoutCollectionInputSchema),
-      mint_data: z
-        .lazy(() => MintDataCreateNestedOneWithoutCollectionInputSchema)
-        .optional(),
+      mint_data: z.lazy(
+        () => MintDataCreateNestedOneWithoutCollectionInputSchema
+      ),
       creator: z
         .lazy(() => WalletCreateNestedOneWithoutCollectionsInputSchema)
         .optional(),
@@ -19627,7 +19708,7 @@ export const CollectionUncheckedCreateWithoutMax_items_1155InputSchema: z.ZodTyp
       chain_id: z.number().int(),
       num_items: z.number().int().optional().nullable(),
       num_owners: z.number().int().optional().nullable(),
-      last_refreshed: z.coerce.date().optional().nullable(),
+      mint_data_id: z.string(),
       creator_address: z
         .string()
         .refine((val) => getAddress(val), {
@@ -19635,13 +19716,9 @@ export const CollectionUncheckedCreateWithoutMax_items_1155InputSchema: z.ZodTyp
         })
         .optional()
         .nullable(),
-      created_at: z.coerce.date().optional(),
-      updated_at: z.coerce.date().optional(),
-      mint_data: z
-        .lazy(
-          () => MintDataUncheckedCreateNestedOneWithoutCollectionInputSchema
-        )
-        .optional(),
+      last_refreshed: z.coerce.string().optional().nullable(),
+      created_at: z.coerce.string().optional(),
+      updated_at: z.coerce.string().optional(),
       nfts: z
         .lazy(() => NftUncheckedCreateNestedManyWithoutCollectionInputSchema)
         .optional(),
@@ -19903,20 +19980,20 @@ export const CollectionUpdateWithoutMax_items_1155InputSchema: z.ZodType<Prisma.
         .nullable(),
       last_refreshed: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional()
         .nullable(),
       created_at: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       updated_at: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -19924,7 +20001,7 @@ export const CollectionUpdateWithoutMax_items_1155InputSchema: z.ZodType<Prisma.
         .lazy(() => ChainUpdateOneRequiredWithoutCollectionNestedInputSchema)
         .optional(),
       mint_data: z
-        .lazy(() => MintDataUpdateOneWithoutCollectionNestedInputSchema)
+        .lazy(() => MintDataUpdateOneRequiredWithoutCollectionNestedInputSchema)
         .optional(),
       creator: z
         .lazy(() => WalletUpdateOneWithoutCollectionsNestedInputSchema)
@@ -20157,13 +20234,12 @@ export const CollectionUncheckedUpdateWithoutMax_items_1155InputSchema: z.ZodTyp
         ])
         .optional()
         .nullable(),
-      last_refreshed: z
+      mint_data_id: z
         .union([
-          z.coerce.date(),
-          z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
-        .optional()
-        .nullable(),
+        .optional(),
       creator_address: z
         .union([
           z
@@ -20175,22 +20251,24 @@ export const CollectionUncheckedUpdateWithoutMax_items_1155InputSchema: z.ZodTyp
         ])
         .optional()
         .nullable(),
+      last_refreshed: z
+        .union([
+          z.coerce.string(),
+          z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
       created_at: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       updated_at: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
-      mint_data: z
-        .lazy(
-          () => MintDataUncheckedUpdateOneWithoutCollectionNestedInputSchema
-        )
         .optional(),
       nfts: z
         .lazy(() => NftUncheckedUpdateManyWithoutCollectionNestedInputSchema)
@@ -20309,13 +20387,13 @@ export const CollectionCreateWithoutNftsInputSchema: z.ZodType<Prisma.Collection
       discord: z.string().optional().nullable(),
       num_items: z.number().int().optional().nullable(),
       num_owners: z.number().int().optional().nullable(),
-      last_refreshed: z.coerce.date().optional().nullable(),
-      created_at: z.coerce.date().optional(),
-      updated_at: z.coerce.date().optional(),
+      last_refreshed: z.coerce.string().optional().nullable(),
+      created_at: z.coerce.string().optional(),
+      updated_at: z.coerce.string().optional(),
       chain: z.lazy(() => ChainCreateNestedOneWithoutCollectionInputSchema),
-      mint_data: z
-        .lazy(() => MintDataCreateNestedOneWithoutCollectionInputSchema)
-        .optional(),
+      mint_data: z.lazy(
+        () => MintDataCreateNestedOneWithoutCollectionInputSchema
+      ),
       creator: z
         .lazy(() => WalletCreateNestedOneWithoutCollectionsInputSchema)
         .optional(),
@@ -20365,7 +20443,7 @@ export const CollectionUncheckedCreateWithoutNftsInputSchema: z.ZodType<Prisma.C
       chain_id: z.number().int(),
       num_items: z.number().int().optional().nullable(),
       num_owners: z.number().int().optional().nullable(),
-      last_refreshed: z.coerce.date().optional().nullable(),
+      mint_data_id: z.string(),
       creator_address: z
         .string()
         .refine((val) => getAddress(val), {
@@ -20373,13 +20451,9 @@ export const CollectionUncheckedCreateWithoutNftsInputSchema: z.ZodType<Prisma.C
         })
         .optional()
         .nullable(),
-      created_at: z.coerce.date().optional(),
-      updated_at: z.coerce.date().optional(),
-      mint_data: z
-        .lazy(
-          () => MintDataUncheckedCreateNestedOneWithoutCollectionInputSchema
-        )
-        .optional(),
+      last_refreshed: z.coerce.string().optional().nullable(),
+      created_at: z.coerce.string().optional(),
+      updated_at: z.coerce.string().optional(),
       max_items_1155: z
         .lazy(
           () => MaxItem1155UncheckedCreateNestedManyWithoutCollectionInputSchema
@@ -20826,20 +20900,20 @@ export const CollectionUpdateWithoutNftsInputSchema: z.ZodType<Prisma.Collection
         .nullable(),
       last_refreshed: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional()
         .nullable(),
       created_at: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       updated_at: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -20847,7 +20921,7 @@ export const CollectionUpdateWithoutNftsInputSchema: z.ZodType<Prisma.Collection
         .lazy(() => ChainUpdateOneRequiredWithoutCollectionNestedInputSchema)
         .optional(),
       mint_data: z
-        .lazy(() => MintDataUpdateOneWithoutCollectionNestedInputSchema)
+        .lazy(() => MintDataUpdateOneRequiredWithoutCollectionNestedInputSchema)
         .optional(),
       creator: z
         .lazy(() => WalletUpdateOneWithoutCollectionsNestedInputSchema)
@@ -21080,13 +21154,12 @@ export const CollectionUncheckedUpdateWithoutNftsInputSchema: z.ZodType<Prisma.C
         ])
         .optional()
         .nullable(),
-      last_refreshed: z
+      mint_data_id: z
         .union([
-          z.coerce.date(),
-          z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
-        .optional()
-        .nullable(),
+        .optional(),
       creator_address: z
         .union([
           z
@@ -21098,22 +21171,24 @@ export const CollectionUncheckedUpdateWithoutNftsInputSchema: z.ZodType<Prisma.C
         ])
         .optional()
         .nullable(),
+      last_refreshed: z
+        .union([
+          z.coerce.string(),
+          z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
       created_at: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       updated_at: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
-      mint_data: z
-        .lazy(
-          () => MintDataUncheckedUpdateOneWithoutCollectionNestedInputSchema
-        )
         .optional(),
       max_items_1155: z
         .lazy(
@@ -21592,9 +21667,9 @@ export const CollectionCreateWithoutMint_dataInputSchema: z.ZodType<Prisma.Colle
       discord: z.string().optional().nullable(),
       num_items: z.number().int().optional().nullable(),
       num_owners: z.number().int().optional().nullable(),
-      last_refreshed: z.coerce.date().optional().nullable(),
-      created_at: z.coerce.date().optional(),
-      updated_at: z.coerce.date().optional(),
+      last_refreshed: z.coerce.string().optional().nullable(),
+      created_at: z.coerce.string().optional(),
+      updated_at: z.coerce.string().optional(),
       chain: z.lazy(() => ChainCreateNestedOneWithoutCollectionInputSchema),
       creator: z
         .lazy(() => WalletCreateNestedOneWithoutCollectionsInputSchema)
@@ -21648,7 +21723,6 @@ export const CollectionUncheckedCreateWithoutMint_dataInputSchema: z.ZodType<Pri
       chain_id: z.number().int(),
       num_items: z.number().int().optional().nullable(),
       num_owners: z.number().int().optional().nullable(),
-      last_refreshed: z.coerce.date().optional().nullable(),
       creator_address: z
         .string()
         .refine((val) => getAddress(val), {
@@ -21656,8 +21730,9 @@ export const CollectionUncheckedCreateWithoutMint_dataInputSchema: z.ZodType<Pri
         })
         .optional()
         .nullable(),
-      created_at: z.coerce.date().optional(),
-      updated_at: z.coerce.date().optional(),
+      last_refreshed: z.coerce.string().optional().nullable(),
+      created_at: z.coerce.string().optional(),
+      updated_at: z.coerce.string().optional(),
       nfts: z
         .lazy(() => NftUncheckedCreateNestedManyWithoutCollectionInputSchema)
         .optional(),
@@ -21924,20 +21999,20 @@ export const CollectionUpdateWithoutMint_dataInputSchema: z.ZodType<Prisma.Colle
         .nullable(),
       last_refreshed: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional()
         .nullable(),
       created_at: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       updated_at: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -22178,13 +22253,6 @@ export const CollectionUncheckedUpdateWithoutMint_dataInputSchema: z.ZodType<Pri
         ])
         .optional()
         .nullable(),
-      last_refreshed: z
-        .union([
-          z.coerce.date(),
-          z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
-        ])
-        .optional()
-        .nullable(),
       creator_address: z
         .union([
           z
@@ -22196,15 +22264,22 @@ export const CollectionUncheckedUpdateWithoutMint_dataInputSchema: z.ZodType<Pri
         ])
         .optional()
         .nullable(),
+      last_refreshed: z
+        .union([
+          z.coerce.string(),
+          z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
       created_at: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       updated_at: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -23896,12 +23971,12 @@ export const CollectionCreateWithoutChainInputSchema: z.ZodType<Prisma.Collectio
       discord: z.string().optional().nullable(),
       num_items: z.number().int().optional().nullable(),
       num_owners: z.number().int().optional().nullable(),
-      last_refreshed: z.coerce.date().optional().nullable(),
-      created_at: z.coerce.date().optional(),
-      updated_at: z.coerce.date().optional(),
-      mint_data: z
-        .lazy(() => MintDataCreateNestedOneWithoutCollectionInputSchema)
-        .optional(),
+      last_refreshed: z.coerce.string().optional().nullable(),
+      created_at: z.coerce.string().optional(),
+      updated_at: z.coerce.string().optional(),
+      mint_data: z.lazy(
+        () => MintDataCreateNestedOneWithoutCollectionInputSchema
+      ),
       creator: z
         .lazy(() => WalletCreateNestedOneWithoutCollectionsInputSchema)
         .optional(),
@@ -23953,7 +24028,7 @@ export const CollectionUncheckedCreateWithoutChainInputSchema: z.ZodType<Prisma.
       discord: z.string().optional().nullable(),
       num_items: z.number().int().optional().nullable(),
       num_owners: z.number().int().optional().nullable(),
-      last_refreshed: z.coerce.date().optional().nullable(),
+      mint_data_id: z.string(),
       creator_address: z
         .string()
         .refine((val) => getAddress(val), {
@@ -23961,13 +24036,9 @@ export const CollectionUncheckedCreateWithoutChainInputSchema: z.ZodType<Prisma.
         })
         .optional()
         .nullable(),
-      created_at: z.coerce.date().optional(),
-      updated_at: z.coerce.date().optional(),
-      mint_data: z
-        .lazy(
-          () => MintDataUncheckedCreateNestedOneWithoutCollectionInputSchema
-        )
-        .optional(),
+      last_refreshed: z.coerce.string().optional().nullable(),
+      created_at: z.coerce.string().optional(),
+      updated_at: z.coerce.string().optional(),
       nfts: z
         .lazy(() => NftUncheckedCreateNestedManyWithoutCollectionInputSchema)
         .optional(),
@@ -24201,12 +24272,15 @@ export const CollectionScalarWhereInputSchema: z.ZodType<Prisma.CollectionScalar
         .union([z.lazy(() => IntNullableFilterSchema), z.number()])
         .optional()
         .nullable(),
-      last_refreshed: z
-        .union([z.lazy(() => DateTimeNullableFilterSchema), z.coerce.date()])
-        .optional()
-        .nullable(),
+      mint_data_id: z
+        .union([z.lazy(() => StringFilterSchema), z.string()])
+        .optional(),
       creator_address: z
         .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+        .optional()
+        .nullable(),
+      last_refreshed: z
+        .union([z.lazy(() => DateTimeNullableFilterSchema), z.coerce.date()])
         .optional()
         .nullable(),
       created_at: z
@@ -24440,13 +24514,13 @@ export const CollectionCreateWithoutCreatorInputSchema: z.ZodType<Prisma.Collect
       discord: z.string().optional().nullable(),
       num_items: z.number().int().optional().nullable(),
       num_owners: z.number().int().optional().nullable(),
-      last_refreshed: z.coerce.date().optional().nullable(),
-      created_at: z.coerce.date().optional(),
-      updated_at: z.coerce.date().optional(),
+      last_refreshed: z.coerce.string().optional().nullable(),
+      created_at: z.coerce.string().optional(),
+      updated_at: z.coerce.string().optional(),
       chain: z.lazy(() => ChainCreateNestedOneWithoutCollectionInputSchema),
-      mint_data: z
-        .lazy(() => MintDataCreateNestedOneWithoutCollectionInputSchema)
-        .optional(),
+      mint_data: z.lazy(
+        () => MintDataCreateNestedOneWithoutCollectionInputSchema
+      ),
       nfts: z
         .lazy(() => NftCreateNestedManyWithoutCollectionInputSchema)
         .optional(),
@@ -24496,14 +24570,10 @@ export const CollectionUncheckedCreateWithoutCreatorInputSchema: z.ZodType<Prism
       chain_id: z.number().int(),
       num_items: z.number().int().optional().nullable(),
       num_owners: z.number().int().optional().nullable(),
-      last_refreshed: z.coerce.date().optional().nullable(),
-      created_at: z.coerce.date().optional(),
-      updated_at: z.coerce.date().optional(),
-      mint_data: z
-        .lazy(
-          () => MintDataUncheckedCreateNestedOneWithoutCollectionInputSchema
-        )
-        .optional(),
+      mint_data_id: z.string(),
+      last_refreshed: z.coerce.string().optional().nullable(),
+      created_at: z.coerce.string().optional(),
+      updated_at: z.coerce.string().optional(),
       nfts: z
         .lazy(() => NftUncheckedCreateNestedManyWithoutCollectionInputSchema)
         .optional(),
@@ -27290,25 +27360,25 @@ export const CollectionUpdateWithoutChainInputSchema: z.ZodType<Prisma.Collectio
         .nullable(),
       last_refreshed: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional()
         .nullable(),
       created_at: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       updated_at: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       mint_data: z
-        .lazy(() => MintDataUpdateOneWithoutCollectionNestedInputSchema)
+        .lazy(() => MintDataUpdateOneRequiredWithoutCollectionNestedInputSchema)
         .optional(),
       creator: z
         .lazy(() => WalletUpdateOneWithoutCollectionsNestedInputSchema)
@@ -27538,13 +27608,12 @@ export const CollectionUncheckedUpdateWithoutChainInputSchema: z.ZodType<Prisma.
         ])
         .optional()
         .nullable(),
-      last_refreshed: z
+      mint_data_id: z
         .union([
-          z.coerce.date(),
-          z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
-        .optional()
-        .nullable(),
+        .optional(),
       creator_address: z
         .union([
           z
@@ -27556,22 +27625,24 @@ export const CollectionUncheckedUpdateWithoutChainInputSchema: z.ZodType<Prisma.
         ])
         .optional()
         .nullable(),
+      last_refreshed: z
+        .union([
+          z.coerce.string(),
+          z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
       created_at: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       updated_at: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
-      mint_data: z
-        .lazy(
-          () => MintDataUncheckedUpdateOneWithoutCollectionNestedInputSchema
-        )
         .optional(),
       nfts: z
         .lazy(() => NftUncheckedUpdateManyWithoutCollectionNestedInputSchema)
@@ -27800,13 +27871,12 @@ export const CollectionUncheckedUpdateManyWithoutChainInputSchema: z.ZodType<Pri
         ])
         .optional()
         .nullable(),
-      last_refreshed: z
+      mint_data_id: z
         .union([
-          z.coerce.date(),
-          z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
-        .optional()
-        .nullable(),
+        .optional(),
       creator_address: z
         .union([
           z
@@ -27818,15 +27888,22 @@ export const CollectionUncheckedUpdateManyWithoutChainInputSchema: z.ZodType<Pri
         ])
         .optional()
         .nullable(),
+      last_refreshed: z
+        .union([
+          z.coerce.string(),
+          z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
       created_at: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       updated_at: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -28237,20 +28314,20 @@ export const CollectionUpdateWithoutCreatorInputSchema: z.ZodType<Prisma.Collect
         .nullable(),
       last_refreshed: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional()
         .nullable(),
       created_at: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       updated_at: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional(),
@@ -28258,7 +28335,7 @@ export const CollectionUpdateWithoutCreatorInputSchema: z.ZodType<Prisma.Collect
         .lazy(() => ChainUpdateOneRequiredWithoutCollectionNestedInputSchema)
         .optional(),
       mint_data: z
-        .lazy(() => MintDataUpdateOneWithoutCollectionNestedInputSchema)
+        .lazy(() => MintDataUpdateOneRequiredWithoutCollectionNestedInputSchema)
         .optional(),
       nfts: z
         .lazy(() => NftUpdateManyWithoutCollectionNestedInputSchema)
@@ -28491,29 +28568,30 @@ export const CollectionUncheckedUpdateWithoutCreatorInputSchema: z.ZodType<Prism
         ])
         .optional()
         .nullable(),
+      mint_data_id: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
       last_refreshed: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional()
         .nullable(),
       created_at: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       updated_at: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
-      mint_data: z
-        .lazy(
-          () => MintDataUncheckedUpdateOneWithoutCollectionNestedInputSchema
-        )
         .optional(),
       nfts: z
         .lazy(() => NftUncheckedUpdateManyWithoutCollectionNestedInputSchema)
@@ -28748,22 +28826,28 @@ export const CollectionUncheckedUpdateManyWithoutCreatorInputSchema: z.ZodType<P
         ])
         .optional()
         .nullable(),
+      mint_data_id: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
       last_refreshed: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional()
         .nullable(),
       created_at: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       updated_at: z
         .union([
-          z.coerce.date(),
+          z.coerce.string(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional(),
