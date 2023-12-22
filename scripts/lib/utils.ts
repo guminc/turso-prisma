@@ -160,6 +160,7 @@ export function saveBatchSqlStatements(
   const outputPath = path.join("./dump/", `${tableName}.sql`);
 
   fs.writeFileSync(outputPath, "", "utf8");
+
   objects.forEach((cleanedObj, index) => {
     const keys = Object.keys(cleanedObj);
     const columns = keys.join(", ");

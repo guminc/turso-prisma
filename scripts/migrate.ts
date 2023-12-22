@@ -19,6 +19,8 @@ import {
   OpenRaritySchema,
   User,
   UserSchema,
+  Wallet,
+  WalletSchema,
 } from "../types/generated";
 import {
   getMongoTableFromFileByName,
@@ -64,12 +66,13 @@ function cleanCollectionForSqlite(
     creator_address: collectionMongo.creator
       ? ethers.getAddress(collectionMongo.creator)
       : null,
-    token_address: collectionMongo.token_address ?? null,
+    address: collectionMongo.token_address ?? null,
     royalties_address: collectionMongo.royalties_address ?? null,
     discounts: JSON.stringify(collectionMongo.discounts), // JSON serialized as a string
     mint_info: JSON.stringify(collectionMongo.mint_info), // JSON serialized as a string
     socials: JSON.stringify(collectionMongo.socials), // JSON serialized as a string
     trait_counts: JSON.stringify(collectionMongo.trait_counts), // JSON serialized as a string
+    chain_id: 1,
     last_refreshed: collectionMongo.last_refreshed
       ? new Date(collectionMongo.last_refreshed)
       : null,
@@ -133,7 +136,7 @@ function cleanNftForSqlite(
   nftMongo: any,
   collections: Collection[]
 ): [Nft | null, OpenRarity | null, NftOwner1155[]] {
-  let token_address: string;
+  let address: string;
   let foundCollection: any;
   let collection_id: string;
 
@@ -142,9 +145,9 @@ function cleanNftForSqlite(
   let nftOwner1155Result: NftOwner1155[] = [];
 
   try {
-    token_address = nftMongo.token_address;
+    address = nftMongo.token_address;
     foundCollection = collections.find(
-      (collection) => collection?.token_address == token_address
+      (collection) => collection?.address == address
     );
     collection_id = foundCollection!.id;
   } catch {
@@ -168,7 +171,7 @@ function cleanNftForSqlite(
     id: cuid(),
     name: nftMongo.name ? String(nftMongo.name) : null,
     collection_id,
-    token_address,
+    address,
     owner_of: nftMongo.owner_of ?? null,
     token_id: Number(nftMongo.token_id),
     attributes: JSON.stringify(nftMongo.attributes), // JSON serialized as a string
@@ -226,8 +229,11 @@ function cleanNftForSqlite(
   return [nftResult, openRarityResult, nftOwner1155Result];
 }
 
-function cleanUserForSqlite(userMongo: any): User {
-  const input = {
+function cleanUserForSqlite(userMongo: any): {
+  cleanedUser: User;
+  cleanedWallet: Wallet;
+} {
+  const userInput = {
     ...userMongo,
     id: cuid(),
     status: "active",
@@ -237,14 +243,30 @@ function cleanUserForSqlite(userMongo: any): User {
     updated_at: new Date(),
   };
 
-  const result = UserSchema.safeParse(input);
+  const cleanedUser = UserSchema.safeParse(userInput);
 
-  if (!result.success) {
-    console.error({ error: result.error });
-    throw new Error(`Invalid user: ${result.error}`);
+  if (!cleanedUser.success) {
+    console.error({ error: cleanedUser.error, userInput });
+    throw new Error(`Invalid user: ${cleanedUser.error}`);
   }
 
-  return result.data;
+  const walletInput = {
+    id: cuid(),
+    address: userMongo.address,
+    owner_id: cleanedUser.data.id,
+    chain_id: 1,
+    created_at: new Date(),
+    updated_at: new Date(),
+  };
+
+  const cleanedWallet = WalletSchema.safeParse(walletInput);
+
+  if (!cleanedWallet.success) {
+    console.error({ error: cleanedWallet.error });
+    throw new Error(`Invalid user: ${cleanedWallet.error}`);
+  }
+
+  return { cleanedUser: cleanedUser.data, cleanedWallet: cleanedWallet.data };
 }
 
 async function writeToDb(batchStatementPaths: string[], write: string) {
@@ -270,6 +292,7 @@ async function main() {
   console.log("\n🚀 Initiating migration from:", source, "\n");
 
   try {
+    await seedInitialData(write);
     await writeUsersToDb(source, write);
     const cleanedCollections = await writeCollectionsToDb(source, write);
     await writeNftsToDb(source, write, cleanedCollections);
@@ -286,13 +309,32 @@ async function getBySource(source: ISourceArg, table: string) {
     : getMongoTableFromFileByName(table);
 }
 
+async function seedInitialData(write: IWriteArg) {
+  console.log("\n🌱 Seeding initial data\n");
+  const batchStatementPaths = ["dump/seed.sql"];
+  await writeToDb(batchStatementPaths, write);
+}
+
 async function writeUsersToDb(source: ISourceArg, write: IWriteArg) {
   console.log("\n🧕 Writing Users to DB\n");
   const usersMongo = await getBySource(source, "Users");
 
-  const cleanedUsers = usersMongo.map((user) => cleanUserForSqlite(user));
+  const userResults = usersMongo.map((user) => cleanUserForSqlite(user));
 
-  const batchStatementPaths = [saveBatchSqlStatements(cleanedUsers, "User")];
+  const cleanedUsers = userResults.map(({ cleanedUser }) => cleanedUser);
+  const cleanedWallets = userResults.map(({ cleanedWallet }) => cleanedWallet);
+
+  console.log({
+    // cleanedUsers,
+    usersCount: cleanedUsers.length,
+    // cleanedWallets,
+    walletsCount: cleanedWallets.length,
+  });
+
+  const batchStatementPaths = [
+    saveBatchSqlStatements(cleanedUsers, "User"),
+    saveBatchSqlStatements(cleanedWallets, "Wallet"),
+  ];
 
   await writeToDb(batchStatementPaths, write);
 }
@@ -301,22 +343,26 @@ async function writeCollectionsToDb(source: ISourceArg, write: IWriteArg) {
   console.log("\n🧳 Writing Collections to DB\n");
   let batchStatementPaths: string[] = [];
 
-  const collectionsMongo = await getBySource(source, "Collections");
+  const collectionsMongo = (await getBySource(source, "Collections")) as any;
 
   const cleanedCollections: Collection[] = [];
   const cleanedMaxItem1155s: MaxItem1155[] = [];
   const cleanedMintDatas: MintData[] = [];
 
   for (const collection of collectionsMongo) {
+    if (!collection.token_address) {
+      continue;
+    }
+
     const [cleanedCollection, cleanedMintData, cleanedMaxItem1155] =
       cleanCollectionForSqlite(collection);
     if (cleanedCollection != null && cleanedCollection.creator_address) {
-      const user = await prisma.user.findFirst({
+      const wallet = await prisma.wallet.findFirst({
         where: { address: cleanedCollection.creator_address },
       });
-      if (!user) {
+      if (!wallet) {
         console.log(
-          "Error: User does not exist:",
+          "Error: Wallet does not exist:",
           cleanedCollection.creator_address
         );
       }

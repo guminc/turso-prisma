@@ -48,6 +48,6 @@ async fn main() {
     println!("Sending SQL batch");
     match client.batch(commands).await {
         Ok(_) => println!("Batch executed successfully"),
-        Err(e) => eprintln!("Error executing batch: {}", e),
+        Err(e) => eprintln!("Error executing batch: {:?}", e),
     }
 }

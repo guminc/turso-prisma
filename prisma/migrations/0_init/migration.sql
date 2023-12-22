@@ -4,7 +4,6 @@ CREATE TABLE "Collection" (
     "name" TEXT,
     "max_items" INTEGER,
     "symbol" TEXT,
-    "creator_address" TEXT,
     "is_hidden" BOOLEAN,
     "sort_order" INTEGER,
     "is_mint_active" BOOLEAN,
@@ -18,7 +17,7 @@ CREATE TABLE "Collection" (
     "slug" TEXT,
     "mint_info" TEXT,
     "socials" TEXT,
-    "token_address" TEXT,
+    "address" TEXT,
     "trait_counts" TEXT,
     "avatar_uri" TEXT,
     "banner_uri" TEXT,
@@ -29,13 +28,15 @@ CREATE TABLE "Collection" (
     "twitter" TEXT,
     "website" TEXT,
     "discord" TEXT,
-    "network" TEXT,
+    "chain_id" INTEGER NOT NULL,
     "num_items" INTEGER,
     "num_owners" INTEGER,
     "last_refreshed" DATETIME,
+    "creator_address" TEXT,
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" DATETIME NOT NULL,
-    CONSTRAINT "Collection_creator_address_fkey" FOREIGN KEY ("creator_address") REFERENCES "User" ("address") ON DELETE CASCADE ON UPDATE CASCADE
+    CONSTRAINT "Collection_chain_id_fkey" FOREIGN KEY ("chain_id") REFERENCES "Chain" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "Collection_creator_address_fkey" FOREIGN KEY ("creator_address") REFERENCES "Wallet" ("address") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -125,7 +126,6 @@ CREATE TABLE "OpenRarity" (
 -- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "address" TEXT NOT NULL,
     "avatar_uri" TEXT,
     "banner_uri" TEXT,
     "username" TEXT,
@@ -271,7 +271,7 @@ CREATE TABLE "_RoleToUser" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Collection_token_address_network_key" ON "Collection"("token_address", "network");
+CREATE UNIQUE INDEX "Collection_address_chain_id_key" ON "Collection"("address", "chain_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "MaxItem1155_token_id_collection_id_key" ON "MaxItem1155"("token_id", "collection_id");
@@ -284,9 +284,6 @@ CREATE UNIQUE INDEX "MintData_collection_id_key" ON "MintData"("collection_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "OpenRarity_nft_id_key" ON "OpenRarity"("nft_id");
-
--- CreateIndex
-CREATE UNIQUE INDEX "User_address_key" ON "User"("address");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Connection_provider_id_key" ON "Connection"("provider_id");
@@ -317,6 +314,9 @@ CREATE UNIQUE INDEX "Wallet_address_key" ON "Wallet"("address");
 
 -- CreateIndex
 CREATE INDEX "Wallet_owner_id_idx" ON "Wallet"("owner_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Wallet_address_chain_id_key" ON "Wallet"("address", "chain_id");
 
 -- CreateIndex
 CREATE INDEX "Session_user_id_idx" ON "Session"("user_id");

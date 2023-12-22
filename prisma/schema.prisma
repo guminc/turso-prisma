@@ -21,7 +21,6 @@ model Collection {
   name                   String?
   max_items              Int?
   symbol                 String?
-  creator_address        String? ///@zod.import(["import { getAddress } from 'ethers'"]).custom.use(z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }))
   is_hidden              Boolean?
   sort_order             Int?
   is_mint_active         Boolean?
@@ -35,7 +34,7 @@ model Collection {
   slug                   String?
   mint_info              String? // JSON serialized as a string
   socials                String? // JSON serialized as a string
-  token_address          String? ///@zod.import(["import { getAddress } from 'ethers'"]).custom.use(z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }))
+  address                String? ///@zod.import(["import { getAddress } from 'ethers'"]).custom.use(z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }))
   trait_counts           String? // JSON serialized as a string
   avatar_uri             String?
   banner_uri             String?
@@ -46,19 +45,21 @@ model Collection {
   twitter                String?
   website                String?
   discord                String?
-  network                String?
+  chain                  Chain         @relation(fields: [chain_id], references: [id])
+  chain_id               Int
   num_items              Int?
   num_owners             Int?
   last_refreshed         DateTime?
   mint_data              MintData?
-  creator                User?         @relation(fields: [creator_address], references: [address], onDelete: Cascade, onUpdate: Cascade)
+  creator                Wallet?       @relation(fields: [creator_address], references: [address], onDelete: Cascade, onUpdate: Cascade)
+  creator_address        String? ///@zod.import(["import { getAddress } from 'ethers'"]).custom.use(z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }))
   nfts                   Nft[]
   max_items_1155         MaxItem1155[]
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  @@unique([token_address, network])
+  @@unique([address, chain_id])
 }
 
 model MaxItem1155 {
@@ -155,16 +156,15 @@ model OpenRarity {
 
 /// @zod.import(["import { getAddress } from 'ethers'"])
 model User {
-  id          String  @id @default(cuid())
-  address     String  @unique ///@zod.import(["import { getAddress } from 'ethers'"]).custom.use(z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }))
+  id       String  @id @default(cuid())
+  username String? /// @zod.custom.use(z.string().transform(str => (str.length > 64 ? str.slice(0, 64) : str)))
+  ens      String?
+  status   String  @default("pending")
+
   avatar_uri  String? /// @zod.string.url({ message: "Invalid url" })
   banner_uri  String? /// @zod.string.url({ message: "Invalid url" })
-  username    String? /// @zod.string.max(64, { message: "too lengthy" })
-  description String? /// @zod.string.max(512, { message: "too long" })
-  ens         String?
-  status      String  @default("pending")
+  description String? /// @zod.custom.use(z.string().transform(str => (str.length > 512 ? str.slice(0, 512) : str)))
 
-  collections Collection[]
   wallets     Wallet[]
   sessions    Session[]
   roles       Role[]
@@ -210,12 +210,13 @@ model Chain {
   created_at DateTime  @default(now())
   updated_at DateTime? @updatedAt
 
-  wallet Wallet[]
+  wallet     Wallet[]
+  Collection Collection[]
 }
 
 model Wallet {
   id      String @id @default(cuid())
-  address String @unique
+  address String @unique ///@zod.import(["import { getAddress } from 'ethers'"]).custom.use(z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }))
 
   owner    User   @relation(fields: [owner_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
   owner_id String
@@ -228,6 +229,9 @@ model Wallet {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
+  collections Collection[]
+
+  @@unique([address, chain_id])
   // non-unique foreign key
   @@index([owner_id])
 }
