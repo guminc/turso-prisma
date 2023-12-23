@@ -56,10 +56,9 @@ model Collection {
   nfts            Nft[]
   max_items_1155  MaxItem1155[]
 
-  // last_refreshed DateTime? ///@zod.custom.use(z.coerce.string().nullish().refine((date) => date ? date.toISOString() : null))
-  last_refreshed DateTime? ///@zod.custom.use(z.coerce.string())
-  created_at     DateTime  @default(now()) ///@zod.custom.use(z.coerce.string())
-  updated_at     DateTime  @updatedAt ///@zod.custom.use(z.coerce.string())
+  last_refreshed DateTime?
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
 
   @@unique([address, chain_id])
 }
@@ -119,7 +118,7 @@ model NftOwner1155 {
 model MintData {
   id                  String     @id @default(cuid())
   block_last_mint     Int?
-  date_last_mint      DateTime? ///@zod.custom.use(z.coerce.string().nullish())
+  date_last_mint      DateTime?
   mints_last_1h       Int?
   mints_last_12h      Int?
   mints_last_24h      Int?
@@ -136,12 +135,12 @@ model MintData {
   last_7d_decimal     Float?
   last_1m_decimal     Float?
   last_6m_decimal     Float?
-  date_last_sale      DateTime? ///@zod.custom.use(z.coerce.string().nullish())
+  date_last_sale      DateTime?
   collection          Collection @relation(fields: [collection_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
   collection_id       String     @unique
 
-  created_at DateTime @default(now()) ///@zod.custom.use(z.coerce.string())
-  updated_at DateTime @updatedAt ///@zod.custom.use(z.coerce.string())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 }
 
 model OpenRarity {
