@@ -45,12 +45,12 @@ model Collection {
   twitter                String?
   website                String?
   discord                String?
-  chain_id               Int
   num_items              Int?
   num_owners             Int?
 
   mint_data       MintData?
   chain           Chain         @relation(fields: [chain_id], references: [id])
+  chain_id        Int
   creator         Wallet?       @relation(fields: [creator_address], references: [address], onDelete: Cascade, onUpdate: Cascade)
   creator_address String? ///@zod.import(["import { getAddress } from 'ethers'"]).custom.use(z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }))
   nfts            Nft[]
