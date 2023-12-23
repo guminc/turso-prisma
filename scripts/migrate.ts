@@ -295,7 +295,7 @@ async function main() {
     await seedInitialData(write);
     await writeUsersToDb(source, write);
     const cleanedCollections = await writeCollectionsToDb(source, write);
-    // await writeNftsToDb(source, write, cleanedCollections);
+    await writeNftsToDb(source, write, cleanedCollections);
   } catch (error) {
     console.error(error);
     process.exit(1);
