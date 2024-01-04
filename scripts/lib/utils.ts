@@ -175,6 +175,7 @@ export function saveBatchSqlStatements(
         ? `'${value.replace(/'/g, "''")}'`
         : value;
     });
+
     const insertStatement = `INSERT INTO ${tableName} (${columns}) VALUES (${values});\n`;
 
     batchSql += insertStatement;
@@ -186,6 +187,7 @@ export function saveBatchSqlStatements(
       batchSql = "";
     }
   });
+
   return outputPath;
 }
 

@@ -2,6 +2,7 @@ node_modules/
 dist/
 *.env
 prisma/dev.db*
+prisma/client*
 dump.sql
 scripts/rust/target/
 invalidNfts.log
@@ -9,3 +10,5 @@ invalidNfts.log
 dump/*
 # But do not ignore dump/seed.sql
 !dump/seed.sql
+
+.DS_Store

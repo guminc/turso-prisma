@@ -229,10 +229,14 @@ function cleanNftForSqlite(
   return [nftResult, openRarityResult, nftOwner1155Result];
 }
 
-function cleanUserForSqlite(userMongo: any): {
+async function cleanUserForSqlite(
+  userMongo: any,
+  userRoleId: string
+): Promise<{
   cleanedUser: User;
   cleanedWallet: Wallet;
-} {
+  cleanedRole: { A: string; B: string };
+}> {
   const userInput = {
     ...userMongo,
     id: cuid(),
@@ -253,7 +257,7 @@ function cleanUserForSqlite(userMongo: any): {
   const walletInput = {
     id: cuid(),
     address: userMongo.address,
-    owner_id: cleanedUser.data.id,
+    user_id: cleanedUser.data.id,
     chain_id: 1,
     created_at: new Date(),
     updated_at: new Date(),
@@ -266,7 +270,16 @@ function cleanUserForSqlite(userMongo: any): {
     throw new Error(`Invalid user: ${cleanedWallet.error}`);
   }
 
-  return { cleanedUser: cleanedUser.data, cleanedWallet: cleanedWallet.data };
+  const cleanedRole = {
+    A: userRoleId,
+    B: cleanedUser.data.id,
+  };
+
+  return {
+    cleanedRole,
+    cleanedUser: cleanedUser.data,
+    cleanedWallet: cleanedWallet.data,
+  };
 }
 
 async function writeToDb(batchStatementPaths: string[], write: string) {
@@ -293,6 +306,9 @@ async function main() {
 
   try {
     await seedInitialData(write);
+
+    await writeRolesAndPermissionsToDb();
+
     await writeUsersToDb(source, write);
     const cleanedCollections = await writeCollectionsToDb(source, write);
     await writeNftsToDb(source, write, cleanedCollections);
@@ -315,25 +331,93 @@ async function seedInitialData(write: IWriteArg) {
   await writeToDb(batchStatementPaths, write);
 }
 
+async function writeRolesAndPermissionsToDb() {
+  try {
+    console.log("\n👮‍♂️ Writing Roles and Permissions to DB\n");
+
+    const permissions = await prisma.permission.findMany();
+
+    console.log({ permissions });
+
+    console.time("🔑 Created permissions...");
+    const entities = ["user", "note"];
+    const actions = ["create", "read", "update", "delete"];
+    const accesses = ["own", "any"] as const;
+    for (const entity of entities) {
+      for (const action of actions) {
+        for (const access of accesses) {
+          await prisma.permission.create({ data: { entity, action, access } });
+        }
+      }
+    }
+    console.timeEnd("🔑 Created permissions...");
+
+    console.time("👑 Created roles...");
+    await prisma.role.create({
+      data: {
+        name: "admin",
+        permissions: {
+          connect: await prisma.permission.findMany({
+            select: { id: true },
+            where: { access: "any" },
+          }),
+        },
+      },
+    });
+    await prisma.role.create({
+      data: {
+        name: "user",
+        permissions: {
+          connect: await prisma.permission.findMany({
+            select: { id: true },
+            where: { access: "own" },
+          }),
+        },
+      },
+    });
+    console.timeEnd("👑 Created roles...");
+
+    return true;
+  } catch (error) {
+    throw new Error(`Error writing roles and permissions ${error}`);
+  }
+}
+
 async function writeUsersToDb(source: ISourceArg, write: IWriteArg) {
   console.log("\n🧕 Writing Users to DB\n");
   const usersMongo = await getBySource(source, "Users");
 
-  const userResults = usersMongo.map((user) => cleanUserForSqlite(user));
+  const cleanedUsers: User[] = [];
+  const cleanedWallets: Wallet[] = [];
+  const cleanedRoles: { A: string; B: string }[] = [];
 
-  const cleanedUsers = userResults.map(({ cleanedUser }) => cleanedUser);
-  const cleanedWallets = userResults.map(({ cleanedWallet }) => cleanedWallet);
+  const userRole = await prisma.role.findFirst({ where: { name: "user" } });
+
+  if (!userRole) {
+    throw new Error("User role not found");
+  }
+
+  for (const user of usersMongo) {
+    const { cleanedUser, cleanedWallet, cleanedRole } =
+      await cleanUserForSqlite(user, userRole.id);
+
+    cleanedUsers.push(cleanedUser);
+    cleanedWallets.push(cleanedWallet);
+    cleanedRoles.push(cleanedRole);
+  }
 
   console.log({
     // cleanedUsers,
     usersCount: cleanedUsers.length,
     // cleanedWallets,
     walletsCount: cleanedWallets.length,
+    rolesCount: cleanedRoles.length,
   });
 
   const batchStatementPaths = [
     saveBatchSqlStatements(cleanedUsers, "User"),
     saveBatchSqlStatements(cleanedWallets, "Wallet"),
+    saveBatchSqlStatements(cleanedRoles, "_RoleToUser"),
   ];
 
   await writeToDb(batchStatementPaths, write);
@@ -361,6 +445,7 @@ async function writeCollectionsToDb(source: ISourceArg, write: IWriteArg) {
       const wallet = await prisma.wallet.findFirst({
         where: { address: cleanedCollection.creator_address },
       });
+
       if (!wallet) {
         console.log(
           "Error: Wallet does not exist:",

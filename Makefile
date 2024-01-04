@@ -46,7 +46,7 @@ seed-remote:
 	turso db shell --location iad $$REMOTE_DB_NAME < ./dump.sql
 
 create-remote:
-	turso db create $$REMOTE_DB_NAME --from-file ./prisma/dev.db
+	turso db create $$REMOTE_DB_NAME --group default --from-file ./prisma/dev.db
 
 destroy-remote:
 	yes | turso db destroy $$REMOTE_DB_NAME
@@ -85,10 +85,10 @@ main:
 
 # use source=network to fetch data in-memory
 # use source=file to dump data to disk
-	@if [ "$(source)" = "file" ]; then \
-		$(MAKE) dump-mongo-everything; \
-		$(MAKE) convert-bson-to-json; \
-	fi
+#@if [ "$(source)" = "file" ]; then \
+#	$(MAKE) dump-mongo-everything; \
+#	$(MAKE) convert-bson-to-json; \
+#fi
 
 	$(MAKE) reset-local
 	$(MAKE) build-rust-binary
@@ -96,11 +96,11 @@ main:
 
 # use write=rust to delete and import each table individually using `turso db shell`
 # use write=prod to drop the whole table and recreate it based on the local prisma db
-	@if [ "$(write)" = "rust" ]; then \
-		$(MAKE) wipe-remote; \
-		$(MAKE) migrate-remote; \
-		$(MAKE) seed-remote-rust; \
-	else \
-		$(MAKE) destroy-remote; \
-		$(MAKE) create-remote; \
-	fi
+# @if [ "$(write)" = "rust" ]; then \
+# 	$(MAKE) wipe-remote; \
+# 	$(MAKE) migrate-remote; \
+# 	$(MAKE) seed-remote-rust; \
+# else \
+# 	$(MAKE) destroy-remote; \
+# 	$(MAKE) create-remote; \
+# fi
