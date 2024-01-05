@@ -6,9 +6,10 @@ generator client {
 }
 
 generator zod {
-  provider                 = "zod-prisma-types"
-  output                   = "../types/generated"
-  writeNullishInModelTypes = true
+  provider                  = "zod-prisma-types"
+  output                    = "../types/generated"
+  writeNullishInModelTypes  = true
+  createRelationValuesTypes = true
 }
 
 datasource db {
@@ -17,7 +18,7 @@ datasource db {
 }
 
 model Collection {
-  id                     String        @id @default(cuid())
+  id                     String   @id @default(cuid())
   name                   String?
   max_items              Int?
   symbol                 String?
@@ -45,19 +46,20 @@ model Collection {
   twitter                String?
   website                String?
   discord                String?
-  chain                  Chain         @relation(fields: [chain_id], references: [id])
-  chain_id               Int
   num_items              Int?
   num_owners             Int?
-  last_refreshed         DateTime?
-  mint_data              MintData?
-  creator                Wallet?       @relation(fields: [creator_address], references: [address], onDelete: Cascade, onUpdate: Cascade)
-  creator_address        String? ///@zod.import(["import { getAddress } from 'ethers'"]).custom.use(z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }))
-  nfts                   Nft[]
-  max_items_1155         MaxItem1155[]
 
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  mint_data       MintData?
+  chain           Chain         @relation(fields: [chain_id], references: [id])
+  chain_id        Int
+  creator         Wallet?       @relation(fields: [creator_address], references: [address], onDelete: Cascade, onUpdate: Cascade)
+  creator_address String? ///@zod.import(["import { getAddress } from 'ethers'"]).custom.use(z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }))
+  nfts            Nft[]
+  max_items_1155  MaxItem1155[]
+
+  last_refreshed DateTime?
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
 
   @@unique([address, chain_id])
 }
@@ -218,8 +220,8 @@ model Wallet {
   id      String @id @default(cuid())
   address String @unique ///@zod.import(["import { getAddress } from 'ethers'"]).custom.use(z.string().refine((val) => getAddress(val), { message: 'is not a valid Ethereum address' }))
 
-  owner    User   @relation(fields: [owner_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  owner_id String
+  user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user_id String
 
   chain    Chain @relation(fields: [chain_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
   chain_id Int
@@ -233,7 +235,7 @@ model Wallet {
 
   @@unique([address, chain_id])
   // non-unique foreign key
-  @@index([owner_id])
+  @@index([user_id])
 }
 
 model Session {
